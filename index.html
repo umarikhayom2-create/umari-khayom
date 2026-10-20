@@ -478,6 +478,25 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 .vbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;max-width:1168px;margin:10px auto 0;width:calc(100% - 0px);padding:10px 12px;border-radius:16px;background:linear-gradient(100deg,color-mix(in srgb,#2f6bff 14%,var(--sf)),color-mix(in srgb,#8e54e9 12%,var(--sf)));border:1px solid color-mix(in srgb,#2f6bff 35%,var(--bd));font-size:14px;font-weight:600}
 .vbar[hidden]{display:none}
 .pver{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.pv-ok{color:var(--ok);font-weight:700;font-size:14px}.pv-no{flex:1 1 100%;font-size:13px;color:var(--er);font-weight:600}
+.amx{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:12px}
+@media (min-width:700px){.amx{grid-template-columns:repeat(3,1fr)}}
+.amc{border-radius:18px;padding:12px;color:#1d1d1f;border:1px solid rgba(0,0,0,.06)}
+.amc.gAN,.amc.gAX,.amc.gAY,.amc.gBX{background:#d8f5e3}.amc.gAZ,.amc.gBY,.amc.gCX,.amc.gBN{background:#fff1c9}.amc.gBZ,.amc.gCY,.amc.gCZ,.amc.gCN{background:#f9d6d6}
+.amh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}.amh b{font:800 22px var(--fb)}.amh span{font-size:12.5px;opacity:.75}
+.amc ol{margin:0;padding-left:20px}.amc li{font-size:13.5px;margin:4px 0}.amc li::marker{font-weight:700}.amc li{display:list-item}.amc li span{display:inline-block;width:calc(100% - 92px);vertical-align:top}.amc li em{display:inline-block;width:88px;text-align:right;vertical-align:top;font-style:normal;font-weight:700}
+.amx{grid-template-columns:repeat(3,1fr)}.amc:not(.am0){grid-column:1/-1}.am0{padding:8px 10px}.am0 .amh{margin:0;flex-direction:column;align-items:flex-start;gap:2px}.am0 .amh b{font-size:17px}.am0 .ame{display:none}
+@media (min-width:700px){.amc:not(.am0){grid-column:auto}}
+.amc details summary{cursor:pointer;font-size:13px;font-weight:700;margin-top:4px}
+.ame{margin:0;font-size:13px;opacity:.6}.amt{display:block;margin-top:8px;font-size:11.5px;opacity:.75;line-height:1.35}
+.abs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.abs div{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:10px}.abs b{display:block;font:800 16px/1.2 var(--fb);overflow-wrap:anywhere}.abs span{font-size:12px;color:var(--mut)}
+.amm{margin:4px 0 0 20px;font-size:12.5px;opacity:.7}.amx .amt{display:none}
+.cdw{margin-top:18px;padding:14px;border-radius:20px;background:var(--sf2);border:1px solid var(--bd)}.cdw[hidden]{display:none}
+.cdh{margin-bottom:10px}.cdh b{display:block;font:800 17px var(--fb);margin-bottom:4px}.cdh span{display:block;font-size:13px;color:var(--mut);line-height:1.4}.cdok{display:block;margin-top:8px;font-style:normal;color:var(--ok);font-weight:700;font-size:13px}
+.cdi{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:10px;margin-bottom:10px}
+.cdt{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;margin-bottom:6px}.cdt b{font-size:15px}.cdt small{color:var(--mut);font-size:12.5px}
+.cdi textarea{width:100%;min-height:44px}
+.cdf{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.cdchip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:5px 8px;border-radius:10px;background:var(--sf2);font-size:12.5px;overflow:hidden}.cdchip i{font-style:normal;color:var(--mut)}.cdchip button{border:0;background:none;color:var(--er);font-size:16px;line-height:1;padding:0 2px}
 
 </style>
 
@@ -549,7 +568,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <label class="opt"><input type="radio" name="ct" value="c"><span><b>Компания</b><em>Счёт-фактура и накладная М-15</em></span></label>
 <label class="opt"><input type="radio" name="ct" value="w"><span><b>Оптовый покупатель</b><em>Из регионов: накладная с весом и скидками</em></span></label></div></fieldset>
 <div class="fl"><label for="org">Организация или ИП (необязательно)</label><input id="org" autocomplete="organization" placeholder="Название компании или ИП"><small class="er" id="e-org"></small></div>
-<p class="note" id="ctw" hidden style="color:var(--tx)"></p>
+<p class="note" id="ctw" hidden style="color:var(--tx)"></p><p class="note" id="ctc" hidden style="color:var(--tx);padding:10px 12px;border-radius:12px;background:var(--sf2)">🏢 Для счёт-фактуры пришлите документы компании: «Мой профиль» → «Документы компании». <a href="#" data-a="prof">Открыть профиль</a></p>
 <fieldset><legend>Получение</legend><div class="opts">
 <label class="opt on"><input type="radio" name="dm" value="d" checked><span><b>Доставка</b><em>По указанному адресу</em></span></label>
 <label class="opt"><input type="radio" name="dm" value="p"><span><b>Самовывоз</b><em>Адрес магазина пришлём в WhatsApp</em></span></label></div></fieldset>
@@ -584,7 +603,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <div class="fl"><label for="pcty">Город или район</label><input id="pcty" autocomplete="address-level2" placeholder="Например, Душанбе"></div>
 <div class="fl"><label for="pad">Адрес</label><textarea id="pad" rows="2" autocomplete="street-address" placeholder="Улица, дом, квартира, ориентир"></textarea></div>
 <div class="sum" id="pid" hidden></div>
-<button class="btn w100" type="submit">Сохранить данные</button></form></section>
+<button class="btn w100" type="submit">Сохранить данные</button></form><div class="cdw" id="cdw" hidden></div></section>
 <section id="vd" hidden><div class="ok">Заказ <span id="dn"></span> оформлен</div><p>Спасибо! Ожидайте обратного вызова: мы позвоним по номеру <b id="dp"></b>.</p><p class="note" id="dq" hidden style="color:var(--tx);background:var(--sf2);border-radius:12px;padding:12px">Связь с магазином сейчас слабая. Заказ сохранён на вашем телефоне и отправится автоматически, как только появится интернет. Ничего повторно делать не нужно.</p><div class="row"><button class="btn o" data-a="hist">Отследить заказ</button><button class="btn" data-a="close">Вернуться в каталог</button></div></section>
 </div>
 <div class="df" id="dfc"><div class="tl"><span>Итого</span><b id="tt"></b></div><div class="row"><button class="btn o" data-a="hist">Мои заказы</button><button class="btn" id="go" data-a="checkout" style="flex:1">Оформить заказ</button></div></div>
@@ -892,9 +911,9 @@ function tick(){q("otpre").disabled=left>0;q("otpre").textContent=left>0?"Ещё
 function cool(n){left=n;tick();clearInterval(tm);tm=setInterval(function(){left--;tick();if(left<=0)clearInterval(tm)},1000)}
 var E={bad:"Номер указан неверно",rate:"Слишком много попыток. Попробуйте позже или напишите нам в WhatsApp",send:"Не удалось отправить код. Проверьте, что на этом номере есть WhatsApp",busy:"Сервер занят, попробуйте ещё раз"};
 function send(){q("otpt").textContent="Отправляем код в WhatsApp…";q("otpre").disabled=true;
-apiRaw({a:"otp_send",ph:ph}).then(function(j){if(j.error==="off"){close();res();return}
-if(j.ok){q("otpt").innerHTML="Мы отправили код в WhatsApp на номер <b>"+esc(ph)+"</b>. Введите его ниже.";cool(60);q("otpc").focus();return}
-q("otpt").textContent="Код не отправлен.";if(j.error==="wait"){msg("Подождите "+j.sec+" с и повторите");cool(j.sec||60)}else{msg(E[j.error]||"Ошибка. Попробуйте ещё раз");cool(15)}}).catch(function(){q("otpt").textContent="Код не отправлен.";msg("Нет связи с сервером");cool(10)})}
+apiRaw({a:"otp_send",ph:ph}).then(function(j){if(j.error==="off"){q("otpt").textContent="Подтверждение номеров сейчас выключено в настройках магазина.";msg("Ничего делать не нужно — цены загрузятся и так.");setTimeout(function(){close();res()},2500);return}
+if(j.ok){q("otpt").innerHTML="Мы отправили код в WhatsApp на номер <b>"+esc(ph)+"</b>. Введите его ниже. Если сообщения нет 1–2 минуты, проверьте, что WhatsApp открыт на этом номере, и нажмите «Отправить ещё раз».";cool(60);q("otpc").focus();return}
+q("otpt").textContent="Код не отправлен.";if(j.error==="wait"){msg("Подождите "+j.sec+" с и повторите");cool(j.sec||60)}else{msg((E[j.error]||"Ошибка сервера")+(j.error&&!E[j.error]?" (код: "+String(j.error).slice(0,60)+")":"")+". Если повторяется — напишите нам в WhatsApp +992 98 686 86 62");cool(15)}}).catch(function(){q("otpt").textContent="Код не отправлен.";msg("Нет связи с сервером");cool(10)})}
 q("otpre").onclick=function(){msg("");send()};
 q("otpx").onclick=function(){close();rej()};
 q("otpok").onclick=function(){var c=q("otpc").value.replace(/\D/g,"");if(c.length!==6){msg("Введите 6 цифр из сообщения");return}
@@ -907,7 +926,7 @@ function otpGate(ph){if(!API_URL)return Promise.resolve();return fetch(API_URL+"
 e.preventDefault();e.stopImmediatePropagation();otpGate(ph).then(function(){pass=true;f.dispatchEvent(new Event("submit",{cancelable:true,bubbles:true}))},function(){})},true)}
 guard("fm","ph",function(){return Object.keys(cart).length>0});guard("pf","pph")})();
 function custId(ph){var d=String(ph).replace(/\D/g,"");return "K-"+d.slice(-9)}
-function fillProfForm(){var p=ld("uh_prof",{}),b=$("pid");try{pverUi(p)}catch(x){}$("pnm").value=p.nm||"";$("pph").value=p.ph||"+992 ";$("porg").value=p.org||"";$("pct").value=CT[p.ct]?p.ct:"r";$("pcty").value=p.cty||"";$("pad").value=p.ad||"";if(p.ph){b.hidden=false;b.innerHTML='<div><span>Ваш код клиента</span><b>'+esc(custId(p.ph))+'</b></div>'}else b.hidden=true}
+function fillProfForm(){var p=ld("uh_prof",{}),b=$("pid");try{pverUi(p)}catch(x){}$("pnm").value=p.nm||"";$("pph").value=p.ph||"+992 ";$("porg").value=p.org||"";$("pct").value=CT[p.ct]?p.ct:"r";try{cdRender()}catch(x){}$("pcty").value=p.cty||"";$("pad").value=p.ad||"";if(p.ph){b.hidden=false;b.innerHTML='<div><span>Ваш код клиента</span><b>'+esc(custId(p.ph))+'</b></div>'}else b.hidden=true}
 function fillCheckout(){var p=ld("uh_prof",{});if(p.ct&&CT[p.ct]){var rr=document.querySelector('input[name="ct"][value="'+p.ct+'"]');if(rr)rr.checked=true}try{ctUi()}catch(x){};if(p.nm)$("nm").value=p.nm;if(p.ph)$("ph").value=p.ph;if(p.org)$("org").value=p.org;if(p.cty)$("cty").value=p.cty;if(p.ad)$("ad").value=p.ad}
 $("pf").addEventListener("submit",function(e){e.preventDefault();var nm=$("pnm").value.trim(),ph=$("pph").value.trim(),a=err("pnm",nm?"":"Укажите имя"),b=err("pph",ph.replace(/\D/g,"").length>=9?"":"Введите номер телефона, не меньше 9 цифр");if(!(a&&b))return;
 var old=ld("uh_prof",{}),p={nm:nm,ph:ph,ct:$("pct").value,org:$("porg").value.trim(),cty:$("pcty").value.trim(),ad:$("pad").value.trim(),id:custId(ph)};sv("uh_prof",p);if(old.ph!==ph)notifyReg(p);fillCheckout();fillProfForm();toast("Данные сохранены");loadMy()});
@@ -1675,22 +1694,21 @@ function abcKey(ts,g){if(g==="d")return dkey(ts);if(g==="m")return dkey(ts).slic
 function abcData(rows){rows=rows.filter(function(r){return r.st!=="cancel"});var now=Date.now(),st,en,g=A.gr,t,keys=[],seen={},res={list:[],mx:{},n:0,g:g,tot:0};
 if(!rows.length)return res;
 st=A.from?new Date(A.from+"T00:00:00").getTime():Math.min.apply(null,rows.map(function(r){return r.ts}));en=A.to?new Date(A.to+"T00:00:00").getTime():now;if(en<st)en=st;
-if(g==="auto")g=(en-st)/864e5<=120?"w":"m";res.g=g;
-for(t=st;t<=en+864e5-1;t+=864e5){var k=abcKey(t,g);if(!seen[k]){seen[k]=1;keys.push(k)}}
+if(g==="auto"){var sp=(en-st)/864e5;g=sp<=21?"d":sp<=120?"w":"m"}res.g=g;
+for(t=st;t<=en;t+=864e5){var k=abcKey(t,g);if(!seen[k]){seen[k]=1;keys.push(k)}}var ke=abcKey(en,g);if(!seen[ke]){seen[ke]=1;keys.push(ke)}
 var P={};rows.forEach(function(r){var k=abcKey(r.ts,g);(r.o.items||[]).forEach(function(it){if(!(it.q>0)||!it.n)return;var p=P[it.n]||(P[it.n]={n:it.n,s:0,q:0,by:{}});p.s+=it.sum;p.q+=it.q*(it.m||1);p.by[k]=(p.by[k]||0)+it.q*(it.m||1)})});
 var L=Object.keys(P).map(function(k){return P[k]}).sort(function(a,b){return b.s-a.s}),tot=0,cum=0;L.forEach(function(p){tot+=p.s});res.tot=tot;res.n=keys.length;
 L.forEach(function(p){var prev=cum,xs,mean,sd=0,i;cum+=p.s;p.sh=tot?p.s/tot*100:0;p.cum=tot?cum/tot*100:0;p.abc=(tot&&prev/tot*100>=95)?"C":(tot&&prev/tot*100>=80)?"B":"A";
 xs=keys.map(function(k){return p.by[k]||0});mean=p.q/keys.length;xs.forEach(function(v){sd+=(v-mean)*(v-mean)});sd=Math.sqrt(sd/keys.length);p.cv=mean?sd/mean*100:0;
 p.xyz=keys.length<2?"—":p.cv<=10?"X":p.cv<=25?"Y":"Z";p.grp=p.abc+(p.xyz==="—"?"":p.xyz);var key=p.abc+p.xyz;var m=res.mx[key]||(res.mx[key]={n:0,s:0});m.n++;m.s+=p.s});
 res.list=L;return res}
-var ABCH={AX:"Стабильные лидеры: держите постоянный запас, автозаказ.",AY:"Важные, но колеблются: страховой запас, следите за сезонностью.",AZ:"Крупная выручка, спрос скачет: заказывайте под клиента, небольшой запас.",BX:"Стабильные середняки: регулярное пополнение.",BY:"Средние с колебаниями: умеренный запас.",BZ:"Средние нерегулярные: пополнять по факту продаж.",CX:"Мелкие стабильные: минимальный запас, можно сократить ассортимент.",CY:"Мелкие с колебаниями: кандидаты на сокращение.",CZ:"Мелкие нерегулярные: под заказ или вывод из ассортимента."};
+var ABCHN={"A—":"Главные по выручке","B—":"Средние","C—":"Мелкие по выручке"};var ABCH={AX:"Стабильные лидеры: держите постоянный запас, автозаказ.",AY:"Важные, но колеблются: страховой запас, следите за сезонностью.",AZ:"Крупная выручка, спрос скачет: заказывайте под клиента, небольшой запас.",BX:"Стабильные середняки: регулярное пополнение.",BY:"Средние с колебаниями: умеренный запас.",BZ:"Средние нерегулярные: пополнять по факту продаж.",CX:"Мелкие стабильные: минимальный запас, можно сократить ассортимент.",CY:"Мелкие с колебаниями: кандидаты на сокращение.",CZ:"Мелкие нерегулярные: под заказ или вывод из ассортимента."};
 function admAbc(rows){var r=abcData(rows),h='<div class="row" style="margin-bottom:10px;align-items:center"><span class="note" style="margin:0">Разбивка для XYZ:</span><select class="pin" id="agr"><option value="auto"'+(A.gr==="auto"?" selected":"")+'>Авто</option><option value="d"'+(A.gr==="d"?" selected":"")+'>По дням</option><option value="w"'+(A.gr==="w"?" selected":"")+'>По неделям</option><option value="m"'+(A.gr==="m"?" selected":"")+'>По месяцам</option></select></div>';
 if(!r.list.length)return h+'<div class="emp">За выбранный период нет продаж</div>';
-h+='<div class="pr">Период: <b>'+esc(perLabel())+'</b>. Товаров: <b>'+r.list.length+'</b>, интервалов для XYZ: <b>'+r.n+'</b> ('+({d:"дни",w:"недели",m:"месяцы"}[r.g])+'), выручка: <b>'+f(r.tot)+'</b>.<br>ABC по выручке: A — до 80%, B — до 95%, C — остальное. XYZ по коэффициенту вариации спроса: X ≤ 10%, Y ≤ 25%, Z > 25%.'+(r.n<3?'<br><b>Для надёжного XYZ нужно не меньше 3 интервалов, расширьте период.</b>':'')+'</div>';
-h+='<h3>Матрица ABC-XYZ</h3><div class="tw"><table class="tb am"><tr><th></th><th>X</th><th>Y</th><th>Z</th></tr>'+["A","B","C"].map(function(a){return'<tr><th>'+a+'</th>'+["X","Y","Z"].map(function(z){var m=r.mx[a+z]||{n:0,s:0};return'<td class="g'+a+z+'"><b>'+m.n+' тов.</b><br><small>'+(r.tot?(m.s/r.tot*100).toFixed(1):"0")+'% выручки</small></td>'}).join("")+'</tr>'}).join("")+'</table></div>';
-h+='<div class="row" style="margin:12px 0"><button class="btn sm" data-ad="acsv">Скачать Excel (CSV)</button><button class="btn sm o" data-ad="apdf">Скачать PDF</button></div>';
-h+='<div class="tw"><table class="tb"><tr><th>№</th><th>Товар</th><th>Шт.</th><th>Выручка</th><th>Доля</th><th>Накопл.</th><th>ABC</th><th>CV</th><th>XYZ</th></tr>'+r.list.map(function(p,i){return'<tr><td>'+(i+1)+'</td><td>'+esc(p.n)+'</td><td>'+p.q+'</td><td>'+f(p.s)+'</td><td>'+p.sh.toFixed(1)+'%</td><td>'+p.cum.toFixed(1)+'%</td><td><b>'+p.abc+'</b></td><td>'+(r.n<2?"—":p.cv.toFixed(0)+"%")+'</td><td><b>'+p.xyz+'</b></td></tr>'}).join("")+'</table></div>';
-h+='<h3>Что делать с группами</h3><div class="pr">'+Object.keys(ABCH).map(function(k){return'<b>'+k+'</b> — '+ABCH[k]}).join("<br>")+'</div>';return h}
+h+='<div class="abs"><div><b>'+r.list.length+'</b><span>товаров</span></div><div><b>'+f(r.tot)+'</b><span>выручка</span></div><div><b>'+esc(perLabel())+'</b><span>период</span></div></div>';var noX=r.list.some(function(p){return p.xyz==="—"}),ZC=noX?["—"]:["X","Y","Z"],BY={};r.list.forEach(function(p){(BY[p.abc+p.xyz]=BY[p.abc+p.xyz]||[]).push(p)});
+h+=(noX?'<p class="note">Пока только ABC: продажи в одном интервале, XYZ появится позже.</p>':'')+'<div class="amx">'+["A","B","C"].map(function(a){return ZC.map(function(z){var L=BY[a+z]||[],m=r.mx[a+z]||{n:0,s:0},sh=r.tot?(m.s/r.tot*100).toFixed(1):"0";
+return'<div class="amc g'+a+(z==="—"?"N":z)+(L.length?'':' am0')+'"><div class="amh"><b>'+a+(z==="—"?"":z)+'</b><span>'+L.length+' тов. · '+sh+'%</span></div>'+(L.length?'<ol>'+L.slice(0,3).map(function(p){return'<li><span>'+esc(p.n)+'</span><em>'+f(p.s)+'</em></li>'}).join("")+'</ol>'+(L.length>3?'<p class="amm">и ещё '+(L.length-3)+' — в Excel</p>':''):'<p class="ame">нет товаров</p>')+(L.length&&(ABCH[a+z]||ABCHN[a+z])?'<small class="amt">'+(ABCH[a+z]||ABCHN[a+z])+'</small>':'')+'</div>'}).join("")}).join("")+'</div>';
+h+='<div class="row" style="margin:12px 0"><button class="btn sm" data-ad="acsv">📊 Полный отчёт в Excel</button><button class="btn sm o" data-ad="apdf">PDF</button></div>';return h}
 function abcCsv(){var r=abcData(viewRows()),L=['"№";"Товар";"Шт.";"Выручка";"Доля %";"Накопительная %";"ABC";"Коэф. вариации %";"XYZ";"Группа"'];function n2(v){return String(Math.round(v*100)/100).replace(".",",")}
 r.list.forEach(function(p,i){L.push([i+1,'"'+p.n.replace(/"/g,'""')+'"',p.q,n2(p.s),n2(p.sh),n2(p.cum),p.abc,n2(p.cv),p.xyz,p.grp].join(";"))});return"﻿"+L.join("\r\n")}
 function drawAbc(){var r=abcData(viewRows()),W=1240,H=1754,M=70,CW=W-2*M,CN=[50,430,90,150,90,100,60,70,60],pages=[],cv,x,y;
@@ -1772,10 +1790,10 @@ else if(a==="payfill"){r=rw(t.dataset.n);if(r){var rest=r.sum-paidOf(r),vv=t.dat
 else if(a==="wa"){r=rw(t.dataset.n);if(r){var lp=lastPay(r);offerWa(r,t.dataset.k,lp.amt)}}
 else if(a==="wax")$("wsh").hidden=true
 else if(a==="wasent"){$("wsh").hidden=true;r=A.wa&&rw(A.wa.no);if(r){var nt="Открыл WhatsApp для уведомления клиента ("+(A.wa.kind==="recv"?"получение заказа":A.wa.kind==="adj"?"корректировка заказа":A.wa.kind==="new"?"подтверждение заказа":"оплата")+")";if(!API_URL)pushLog(r,nt);else api({a:"admin_note",key:A.key,role:A.role,who:A.who,no:r.no,text:nt}).then(function(j){if(j.log)r.log=j.log}).catch(function(){})}}
-else if(a==="inv"){r=rw(t.dataset.n);if(r)deliverPdf(r.o,null,"m15")}else if(a==="whl"){r=rw(t.dataset.n);if(r)deliverPdf(r.o,null,"w")}else if(a==="ctset"){r=rw(t.dataset.n);if(r)ctSet(r,t.dataset.v)}else if(a==="card"){r=rw(t.dataset.n);if(r)cardGo(r.o,orderNth(r.o,A.rows),loyOf(r.o,A.rows))}
+else if(a==="inv"){r=rw(t.dataset.n);if(r)deliverPdf(r.o,null,"m15")}else if(a==="whl"){r=rw(t.dataset.n);if(r)deliverPdf(r.o,null,"w")}else if(a==="cdocs"){r=rw(t.dataset.n);if(r){if(!DOCS_URL){toast("Приём документов ещё не подключён");return}cdocInfo(r.o.cust.ph).then(function(j){if(j&&j.url){window.open(j.url,"_blank");toast("Получены "+dtx(j.ts)+(j.n?", файлов: "+j.n:""))}else toast("Клиент ещё не прислал документы")})}}else if(a==="ctset"){r=rw(t.dataset.n);if(r)ctSet(r,t.dataset.v)}else if(a==="card"){r=rw(t.dataset.n);if(r)cardGo(r.o,orderNth(r.o,A.rows),loyOf(r.o,A.rows))}
 else if(a==="csv")saveAny("zakazy-"+(A.from||"all")+"-"+(A.to||"all")+".csv",csvOf(viewRows()),"text/csv;charset=utf-8");
 else if(a==="pdf")saveAny("otchet-"+(A.from||"all")+"-"+(A.to||"all")+".pdf",pagesPdf(drawReport(viewRows()),595,842),"application/pdf");
-else if(a==="acsv")saveAny("abc-xyz-"+(A.from||"all")+"-"+(A.to||"all")+".csv",abcCsv(),"text/csv;charset=utf-8");
+else if(a==="acsv"){abcXlsx()}else if(a==="acsv_old")saveAny("abc-xyz-"+(A.from||"all")+"-"+(A.to||"all")+".csv",abcCsv(),"text/csv;charset=utf-8");
 else if(a==="apdf")saveAny("abc-xyz-"+(A.from||"all")+"-"+(A.to||"all")+".pdf",pagesPdf(drawAbc(),595,842),"application/pdf");
 else if(a==="prrm"){var pl=A.pend[t.dataset.n]||[];pl.splice(parseInt(t.dataset.i,10),1);admRefreshList()}
 else if(a==="cli"){A.q=t.dataset.ph;A.tab="o";admRender()}});
@@ -2034,7 +2052,42 @@ WX.d={at:Date.now(),t:+cu.temperature_2m,fl:+cu.apparent_temperature,c:+cu.weath
 function wxInfo(){var d=WX.d;if(!d){toast("Погода пока не загрузилась");return}var T=WXT[WX.k]||WXT.clear,sg=function(v){v=Math.round(v);return(v>0?"+":"")+v+"°"};
 toast("Душанбе · "+WXP[WX.ph]+": "+T[0].toLowerCase()+", "+sg(d.t)+" (ощущается "+sg(d.fl)+"), днём "+sg(d.mx)+", ночью "+sg(d.mn)+". Ветер "+Math.round(d.w)+" м/с, влажность "+Math.round(d.hu)+"%")}
 document.addEventListener("click",function(e){if(e.target.closest("#wxb")){e.preventDefault();wxInfo()}});
-/*ANIMS*/
+/*ANIMS*//* ===== Документы компании (корпоративные клиенты) ===== */
+var DOCS_URL="";/* адрес отдельного сервера документов — впишу после его развертывания */
+var CDK=[["sh","Шаҳодатнома","Свидетельство о регистрации","Номер и дата свидетельства"],["oi","Оиннома","Устав",""],["bk","Суратҳисоби бонкӣ","Банковские реквизиты","Банк, расчётный счёт, корр. счёт, БИК, ИНН"],["iq","Иқтибос","Выписка из реестра","Номер и дата выписки"],["dr","Директор","Руководитель","ФИО директора, телефон"],["dg","Дигар маълумотҳои зарурӣ","Другие нужные данные","Что ещё важно знать о компании"]];
+var CD={files:{},txt:ld("uh_cdtxt",{})};
+function cdocHtml(){var st=ld("uh_cdocs",null);return'<div class="cdh"><b>🏢 Документы компании</b><span>Нужны для счёт-фактуры и накладных. Можно прикрепить файлы любого формата (фото, PDF, Word, Excel) — по несколько в каждый пункт — или ввести данные вручную.</span>'+(st?'<em class="cdok">✅ Отправлено '+dtx(st.ts)+(st.n?' · файлов: '+st.n:'')+'. Можно дополнить и отправить ещё раз.</em>':'')+'</div>'+
+CDK.map(function(k){var fl=CD.files[k[0]]||[];return'<div class="cdi"><div class="cdt"><b>'+k[1]+'</b><small>'+k[2]+'</small></div><textarea class="pin" rows="2" data-cdt="'+k[0]+'" placeholder="'+esc(k[3]||"Можно ввести вручную")+'">'+esc(CD.txt[k[0]]||"")+'</textarea>'+
+'<div class="cdf">'+fl.map(function(x,i){return'<span class="cdchip">📎 '+esc(x.name)+' <i>'+Math.max(1,Math.round(x.size/1024))+' КБ</i><button type="button" data-cdx="'+k[0]+'" data-i="'+i+'" aria-label="Убрать">×</button></span>'}).join("")+'<label class="btn sm o attach">+ Файлы<input type="file" multiple hidden data-cdf="'+k[0]+'"></label></div></div>'}).join("")+
+'<button type="button" class="btn w100" id="cdsend">Отправить документы</button><p class="note" id="cdmsg" style="margin:8px 0 0"></p>'}
+function cdRender(){var w=$("cdw");if(!w)return;var on=($("pct")||{}).value==="c";w.hidden=!on;if(on)w.innerHTML=cdocHtml()}
+function cdSize(){var n=0;Object.keys(CD.files).forEach(function(k){CD.files[k].forEach(function(x){n+=x.size})});return n}
+function cdRead(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(String(r.result).split(",")[1]||"")};r.onerror=rej;r.readAsDataURL(f)})}
+document.addEventListener("change",function(e){var t=e.target;if(!t)return;if(t.id==="pct"){cdRender();return}
+if(t.dataset&&t.dataset.cdf){var k=t.dataset.cdf,L=CD.files[k]=CD.files[k]||[];[].forEach.call(t.files||[],function(f){if(f.size>10*1048576){toast("Файл «"+f.name+"» больше 10 МБ — сожмите его или сфотографируйте");return}L.push(f)});if(cdSize()>25*1048576){toast("Всего не больше 25 МБ за раз");while(cdSize()>25*1048576)L.pop()}t.value="";cdRender()}});
+document.addEventListener("input",function(e){var t=e.target;if(t&&t.dataset&&t.dataset.cdt){CD.txt[t.dataset.cdt]=t.value;sv("uh_cdtxt",CD.txt)}});
+document.addEventListener("click",function(e){var t=e.target;if(!t)return;if(t.dataset&&t.dataset.cdx){e.preventDefault();CD.files[t.dataset.cdx].splice(+t.dataset.i,1);cdRender();return}
+if(t.id==="cdsend"){e.preventDefault();cdSend()}});
+function cdSend(){var p=ld("uh_prof",{}),ph=($("pph")||{}).value||p.ph,org=($("porg")||{}).value||p.org,nm=($("pnm")||{}).value||p.nm,m=$("cdmsg");
+if(!ph||ph.replace(/\D/g,"").length<9){m.textContent="Сначала укажите телефон";return}if(!org){m.textContent="Укажите название организации или ИП";return}
+var has=CDK.some(function(k){return(CD.txt[k[0]]||"").trim()||(CD.files[k[0]]||[]).length});if(!has){m.textContent="Прикрепите хотя бы один файл или заполните данные";return}
+if(!DOCS_URL){var L=["Документы компании","Компания: "+org,"Контакт: "+nm+", "+ph];CDK.forEach(function(k){if((CD.txt[k[0]]||"").trim())L.push(k[1]+" ("+k[2]+"): "+CD.txt[k[0]].trim())});
+m.innerHTML='Приём файлов на сайте скоро заработает. Пока отправьте данные в WhatsApp: <a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/'+PHONE+'?text='+encodeURIComponent(L.join("\n"))+'">Открыть WhatsApp</a> — файлы прикрепите там же.';return}
+var b=$("cdsend");b.disabled=true;b.textContent="Отправляем документы…";m.textContent="";var items=[],n=0;
+Promise.all(CDK.map(function(k){return Promise.all((CD.files[k[0]]||[]).map(function(f){return cdRead(f).then(function(b64){n++;return{name:f.name,type:f.type||"application/octet-stream",b64:b64}})})).then(function(fs){items.push({key:k[0],title:k[1]+" ("+k[2]+")",text:(CD.txt[k[0]]||"").trim(),files:fs})})})).then(function(){
+return WT_F(DOCS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({a:"company_docs",ph:ph,nm:nm,org:org,items:items})})}).then(function(r){return r.json()}).then(function(j){
+if(!j||!j.ok)throw new Error(j&&j.error||"bad");sv("uh_cdocs",{ts:Date.now(),n:n});CD.files={};toast("Документы отправлены ✓");cdRender()}).catch(function(er){b.disabled=false;b.textContent="Отправить документы";m.textContent="Не удалось отправить: "+((er&&er.message)||"нет связи")+". Попробуйте ещё раз."})}
+function cdocInfo(ph){if(!DOCS_URL)return Promise.resolve(null);return WT_F(DOCS_URL+"?a=info&ph="+encodeURIComponent(p9(ph))).then(function(r){return r.json()}).catch(function(){return null})}
+
+function abcXlsx(){var r=abcData(viewRows()),pl=perLabel(),G={d:"дни",w:"недели",m:"месяцы"}[r.g]||"";
+var S=[["Отчёт ABC-XYZ · Умари Хайём"],["Период: "+pl],["Товаров: "+r.list.length+" · Выручка: "+r2(r.tot)+" сом. · Интервалов для XYZ: "+r.n+" ("+G+")"],["ABC по выручке: A — до 80%, B — до 95%, C — остальное. XYZ по коэффициенту вариации спроса: X ≤ 10%, Y ≤ 25%, Z > 25%."],[],["Группа","Товаров","Выручка, сом.","Доля выручки, %","Что делать"]];
+["A","B","C"].forEach(function(a){["X","Y","Z","—"].forEach(function(z){var m=r.mx[a+z];if(!m||!m.n)return;S.push([a+(z==="—"?"":z),m.n,r2(m.s),r.tot?r2(m.s/r.tot*100):0,ABCH[a+z]||ABCHN[a+z]||""])})});
+var P=[["№","Товар","Категория","Продано, шт.","Выручка, сом.","Доля, %","Накопительная доля, %","ABC","Коэф. вариации, %","XYZ","Группа","Что делать"]];
+r.list.forEach(function(p,i){var pr=prodOf(p.n);P.push([i+1,p.n,pr?pr.c:"",p.q,r2(p.s),r2(p.sh),r2(p.cum),p.abc,r.n<2?"":Math.round(p.cv),p.xyz==="—"?"":p.xyz,p.grp,ABCH[p.abc+p.xyz]||ABCHN[p.abc+p.xyz]||""])});
+var ks={};r.list.forEach(function(p){Object.keys(p.by).forEach(function(k){ks[k]=1})});var K=Object.keys(ks).sort(),I=[["Товар"].concat(K.map(function(k){return/^\d{4}-\d\d-\d\d$/.test(k)?dshow(k):k})).concat(["Всего"])];
+r.list.forEach(function(p){I.push([p.n].concat(K.map(function(k){return p.by[k]||0})).concat([p.q]))});
+saveAny("ABC-XYZ-"+(A.from||"all")+"-"+(A.to||"all")+".xlsx",xlsxBytes([{name:"Сводка",rows:S,wd:[10,10,14,14,70]},{name:"Товары",rows:P,wd:[6,48,18,12,14,10,14,8,12,8,10,60]},{name:"Продажи по интервалам",rows:I,wd:[48].concat(K.map(function(){return 11})).concat([10])}]),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+
 function pverUi(p){var e=$("pver");if(!e)return;if(!p||!p.ph){e.innerHTML='<span class="note" style="margin:0">Сохраните данные — затем подтвердите номер кодом из WhatsApp</span>';return}
 if(isVer(p.ph)){e.innerHTML='<span class="pv-ok">✅ Номер подтверждён</span>';return}
 e.innerHTML='<span class="pv-no">Номер не подтверждён — без этого не видны ваши личные цены и статусы заказов</span><button type="button" class="btn sm" id="pvgo">Подтвердить номер</button>'}
@@ -2073,7 +2126,7 @@ function ctSet(r,v){var tx="Тип клиента: "+CTN[v];if(!API_URL){pushLog
 function ctBlock(r,n){var T=rType(r),hint=(r.o.cust||{}).ct,h='<div class="ctsel"><b>Тип клиента:</b> '+["r","c","w"].map(function(v){return'<button class="btn sm'+(T.t===v?"":" o")+'" data-ad="ctset" data-v="'+v+'" data-n="'+n+'">'+CTN[v]+'</button>'}).join("")+'</div>';
 if(!T.t)h+='<p class="note" style="margin:6px 0 0">'+(CT[hint]?'Клиент при заказе указал: <b>'+CT[hint]+'</b>. ':'')+'Подтвердите тип клиента — после этого появятся нужные документы.</p>';else if(T.src==="c")h+='<p class="note" style="margin:6px 0 0">Тип взят из прошлых заказов этого клиента. Нажмите, чтобы закрепить за заказом.</p>';return h}
 function docBtns(r,n){var t=rType(r).t;if(t==="r")return'<button class="btn sm" data-ad="card" data-n="'+n+'">🎉 Карточка заказа для клиента</button>';
-if(t==="c")return'<button class="btn sm" data-ad="inv" data-n="'+n+'">Накладная М-15</button>'+(can("inv2")?'<button class="btn sm" data-ad="sf" data-n="'+n+'">Счёт-фактура</button>':'');
+if(t==="c")return'<button class="btn sm o" data-ad="cdocs" data-n="'+n+'">📁 Документы компании</button><button class="btn sm" data-ad="inv" data-n="'+n+'">Накладная М-15</button>'+(can("inv2")?'<button class="btn sm" data-ad="sf" data-n="'+n+'">Счёт-фактура</button>':'');
 if(t==="w")return'<button class="btn sm" data-ad="whl" data-n="'+n+'">Оптовая накладная (цены, скидки, вес, штрихкоды)</button>';return""}
 function ctChip(r){var t=rType(r).t;return t?'<span class="chip ct-'+t+'">'+CTN[t]+'</span>':'<span class="chip ct-x">Тип не определён</span>'}
 /* ===== Карточка заказа для розничного клиента ===== */
@@ -2197,7 +2250,7 @@ if(sig){var bx2=M+bw+60,s=Math.min(bw*.46/sig.img.width,90/sig.img.height);x.dra
 pages.forEach(function(p,i){var g=p.getContext("2d");g.textBaseline="top";g.font="400 17px sans-serif";g.fillStyle="#666";g.textAlign="center";g.fillText("Оптовая накладная № "+o.no+" · Умари Хайём · Стр. "+(i+1)+" из "+pages.length,W/2,H-38)});return pages}
 function ctUi(){var v=val("ct")||"r",w=$("ctw");[].forEach.call(document.querySelectorAll('input[name="ct"]'),function(r){r.closest(".opt").classList.toggle("on",r.checked)});
 var lb=document.querySelector('label[for="org"]');if(lb)lb.textContent=v==="r"?"Организация или ИП (необязательно)":"Организация или ИП *";
-if(w){var cw2=cartW();w.hidden=v!=="w";w.innerHTML=v==="w"?'⚖️ Вес заказа: нетто <b>'+fkg(cw2[0])+' кг</b>, брутто <b>'+fkg(cw2[1])+' кг</b>. В оптовой накладной будут вес и все скидки.':''}}
+var cc2=$("ctc");if(cc2)cc2.hidden=v!=="c";if(w){var cw2=cartW();w.hidden=v!=="w";w.innerHTML=v==="w"?'⚖️ Вес заказа: нетто <b>'+fkg(cw2[0])+' кг</b>, брутто <b>'+fkg(cw2[1])+' кг</b>. В оптовой накладной будут вес и все скидки.':''}}
 document.addEventListener("change",function(e){if(e.target&&e.target.name==="ct")ctUi()});
 /* ===== Кнопка быстрой прокрутки: вверх / вниз ===== */
 (function(){var b=document.createElement("button");b.type="button";b.className="stb";b.setAttribute("aria-label","Прокрутить");
@@ -2237,7 +2290,7 @@ function wtEnd(user,ok){WT.n=Math.max(0,WT.n-1);if(!WT.n){var b=$("wtb");if(b){b
 if(!user)return;WT.u=Math.max(0,WT.u-1);if(WT.u)return;clearTimeout(WT.tm);clearInterval(WT.iv);var e=$("wto");if(!e)return;
 if(e.classList.contains("vis")&&ok){e.classList.add("ok");$("wtt").textContent="Готово!";$("wts").textContent="";$("wti").textContent="✅";$("wth").hidden=true;setTimeout(function(){e.classList.remove("on","vis","ok")},650)}else e.classList.remove("on","vis","ok")}
 window.fetch=function(u,o){var url=String(u&&u.url||u||"");if(!API_URL||url.indexOf(API_URL)!==0)return WT_F(u,o);
-var body=String(o&&o.body||""),m=body.match(/"a":"([a-z_0-9]+)"/)||url.match(/[?&]a=([a-z_0-9]+)/),a=m?m[1]:"",bg=a==="shift",user=!bg&&Date.now()-WT.ui<2500;wtStart(user,WT_ACT[a]||"Загружаем");
+var body=String(o&&o.body||""),m=body.match(/"a":"([a-z_0-9]+)"/)||url.match(/[?&]a=([a-z_0-9]+)/),a=m?m[1]:"",bg=a==="shift"||a==="otp_send"||a==="otp_check"||a==="my"||a==="status"||a==="cfg",user=!bg&&Date.now()-WT.ui<2500;wtStart(user,WT_ACT[a]||"Загружаем");
 return WT_F(u,o).then(function(r){wtEnd(user,r&&r.ok);return r},function(er){wtEnd(user,false);throw er})};
 
 /* ===== Анимации: появление, переходы, корзина, избранное, тема ===== */

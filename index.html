@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
 <style>
+.repg{margin-top:12px;padding:12px;border:1px dashed var(--bd);border-radius:14px}.repg div{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--bd)}.repg div.on{font-weight:800;color:var(--ac,#d9480f)}
+.snote{margin:0 0 12px;padding:10px 14px;border-radius:12px;background:var(--sf2,#f1ece6);color:var(--tx);font-size:14px;font-weight:600}.rib{position:sticky;top:0;z-index:45;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 14px;background:#1f2937;color:#fff;font-size:14px}.rib b{font-weight:700}.rib button{border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:10px;padding:6px 12px;font:inherit;cursor:pointer}
 [hidden]{display:none!important}
 .fold{margin-bottom:12px;border:1px dashed var(--bd);border-radius:16px;padding:0 12px}.fold>summary{padding:14px 0;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;gap:8px}.fold>summary span{font-weight:500;color:var(--mt,#777)}.fold[open]{padding-bottom:2px}.apm{border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;background:var(--plate)}.apm label.rem{display:flex;gap:8px;align-items:center;margin:8px 0}
 /* Layout: sticky shop header, split hero, filterable catalog grid, slide-in cart + checkout drawer */
@@ -250,13 +252,13 @@ legend{padding:0;margin-bottom:8px}
 
 <section class="bn" id="bn" aria-label="Акции"><div class="bnt" id="bnt"></div><div class="bnd" id="bnd"></div></section>
 <h2 class="sec" id="catalog">Каталог</h2>
-<div class="tb"><input id="q" type="search" placeholder="Поиск по названию" aria-label="Поиск по названию" autocomplete="off">
+<div class="tb"><input id="q" type="search" placeholder="Поиск: например, руч гел 0,5" aria-label="Поиск по названию" autocomplete="off">
 <select id="so" aria-label="Сортировка"><option value="def">Как в прайсе</option><option value="pa">Сначала дешевле</option><option value="pd">Сначала дороже</option><option value="n">По названию</option></select>
 <input id="pmin" type="number" min="0" inputmode="decimal" placeholder="Цена от" aria-label="Цена от" style="flex:0 1 110px"><input id="pmax" type="number" min="0" inputmode="decimal" placeholder="до" aria-label="Цена до" style="flex:0 1 110px"></div>
 <div class="chips" id="chips"></div>
-<p class="cnt" id="cnt"></p>
+<p class="cnt" id="cnt"></p><p class="snote" id="sn" hidden></p>
 <div class="g" id="g"></div>
-<div class="none" id="n" hidden>Ничего не найдено. Измените запрос или категорию.</div>
+<div class="none" id="n" hidden>Здесь пока пусто. Выберите другую категорию или сбросьте фильтры.</div>
 <div class="more"><button class="btn" id="mr" data-a="more" hidden></button><button class="btn o" id="cl" data-a="less" hidden>Свернуть</button></div>
 
 <h2 class="sec" id="how">Как заказать</h2>
@@ -304,7 +306,7 @@ legend{padding:0;margin-bottom:8px}
 </form></section>
 <section id="vs" hidden>
 <div class="ok">Заказ <span id="on"></span> подготовлен</div>
-<p class="note" style="margin:0 0 12px">Заказ ещё не отправлен магазину. Он уйдёт, когда вы отправите сообщение в WhatsApp.</p>
+<p class="note" style="margin:0 0 12px">Заказ сохранён на вашем устройстве и отправится магазину автоматически, как только появится связь. Чтобы ускорить, отправьте текст ниже в WhatsApp.</p>
 <textarea id="ot" readonly aria-label="Текст заказа"></textarea>
 <p class="note">Нажмите «Оформить заказ»: заказ уйдёт магазину, а следить за его статусом можно в разделе «Мои заказы».</p>
 <p class="note" id="fb" hidden style="color:var(--tx);background:var(--sf2);border-radius:12px;padding:12px">Теперь откройте WhatsApp кнопкой ниже. Если он не открылся, откройте его сами, найдите номер <b style="user-select:all">+992 98 686 86 62</b>, вставьте скопированный текст и прикрепите сохранённый PDF через скрепку.</p>
@@ -321,15 +323,16 @@ legend{padding:0;margin-bottom:8px}
 <div class="fl"><label for="pad">Адрес</label><textarea id="pad" rows="2" autocomplete="street-address" placeholder="Улица, дом, квартира, ориентир"></textarea></div>
 <div class="sum" id="pid" hidden></div>
 <button class="btn w100" type="submit">Сохранить данные</button></form></section>
-<section id="vd" hidden><div class="ok">Заказ <span id="dn"></span> оформлен</div><p>Спасибо! Ожидайте обратного вызова: мы позвоним по номеру <b id="dp"></b>.</p><div class="row"><button class="btn o" data-a="hist">Отследить заказ</button><button class="btn" data-a="close">Вернуться в каталог</button></div></section>
+<section id="vd" hidden><div class="ok">Заказ <span id="dn"></span> оформлен</div><p>Спасибо! Ожидайте обратного вызова: мы позвоним по номеру <b id="dp"></b>.</p><p class="note" id="dq" hidden style="color:var(--tx);background:var(--sf2);border-radius:12px;padding:12px">Связь с магазином сейчас слабая. Заказ сохранён на вашем телефоне и отправится автоматически, как только появится интернет. Ничего повторно делать не нужно.</p><div class="row"><button class="btn o" data-a="hist">Отследить заказ</button><button class="btn" data-a="close">Вернуться в каталог</button></div></section>
 </div>
 <div class="df" id="dfc"><div class="tl"><span>Итого</span><b id="tt"></b></div><div class="row"><button class="btn o" data-a="hist">Мои заказы</button><button class="btn" id="go" data-a="checkout" style="flex:1">Оформить заказ</button></div></div>
 <div class="df" id="dfk" hidden><button class="btn o w100" data-a="back">Назад в корзину</button></div>
 </aside>
 
 <div class="md" id="md" hidden data-a="mclose"><div class="mdc" id="mdc" role="dialog" aria-modal="true"></div></div>
+<div class="rib" id="rib" hidden></div>
 <div class="adm" id="adm" hidden><div class="ah"><b>Панель поставщика</b><div class="row"><button class="btn sm o" data-ad="ref">Обновить</button><button class="btn sm o" data-ad="out">Выйти</button><button class="btn sm" data-ad="close">Закрыть</button></div></div>
-<div class="aw"><form id="alg"><h3>Вход для поставщика</h3><p class="note" id="alh" style="margin:0 0 12px"></p><div class="fl"><label for="arole">Роль</label><select class="pin" id="arole"><option value="operator">Оператор</option><option value="admin">Администратор</option><option value="accountant">Бухгалтер</option><option value="director">Руководитель</option><option value="content">Контент-менеджер</option><option value="partner">Партнёр (логин)</option></select></div><div class="fl"><label for="anm">Ваше имя</label><input class="pin" id="anm" autocomplete="name" placeholder="Для истории изменений"></div><div class="fl"><label for="apw">Пароль роли</label><input id="apw" type="password" autocomplete="current-password"></div><button class="btn w100" type="submit">Войти</button></form>
+<div class="aw"><form id="alg"><h3>Вход для поставщика</h3><p class="note" id="alh" style="margin:0 0 12px"></p><div class="fl"><label for="arole">Роль</label><select class="pin" id="arole"><option value="operator">Оператор</option><option value="admin">Администратор</option><option value="accountant">Бухгалтер</option><option value="director">Руководитель</option><option value="content">Контент-менеджер</option><option value="partner">Партнёр (логин)</option><option value="sales">Торговый представитель</option></select></div><div class="fl"><label for="anm">Ваше имя</label><input class="pin" id="anm" autocomplete="name" placeholder="Для истории изменений"></div><div class="fl"><label for="apw">Пароль роли</label><input id="apw" type="password" autocomplete="current-password"></div><button class="btn w100" type="submit">Войти</button></form>
 <div id="amain" hidden><p class="note" id="awho" style="margin:0 0 10px"></p><div class="row" id="per1" style="margin-bottom:8px"><button class="btn sm o" data-ad="per" data-p="today">Сегодня</button><button class="btn sm o" data-ad="per" data-p="week">7 дней</button><button class="btn sm o" data-ad="per" data-p="month">Месяц</button><button class="btn sm o" data-ad="per" data-p="all">Всё время</button></div>
 <div class="row" id="per2" style="margin-bottom:12px;align-items:center"><span class="note" style="margin:0">с</span><input class="pin" type="date" id="adf"><span class="note" style="margin:0">по</span><input class="pin" type="date" id="adt"></div>
 <div class="row atabs"><button class="btn sm o" data-ad="tab" data-t="o">Заказы</button><button class="btn sm o" data-ad="tab" data-t="s">Статистика</button><button class="btn sm o" data-ad="tab" data-t="r">Отчёт</button><button class="btn sm o" data-ad="tab" data-t="a">ABC-XYZ</button><button class="btn sm o" data-ad="tab" data-t="c">Клиенты</button><button class="btn sm o" data-ad="tab" data-t="j">Журнал</button><button class="btn sm o" data-ad="tab" data-t="k">Каталог</button><button class="btn sm o" data-ad="tab" data-t="u">Партнёры</button><button class="btn sm o" data-ad="tab" data-t="x">Доступы</button></div>
@@ -360,6 +363,7 @@ function f(n){return n.toFixed(2).replace(".",",")+" сом."}
 function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var PF0=ld("uh_prof",{}),DG=ld("uh_dg",100),GR0=ld("uh_grp",null),GRP=(GR0&&PF0.ph&&GR0.p===String(PF0.ph).replace(/\D/g,"").slice(-9))?GR0.g:DG,LP=0,LE=0,LOYI=null,LOYC={d:90,n:10,p1:3,sum:500,p2:5,p3:10};
+var REP=false,REPG=ld("uh_repg",100);
 var cart=ld("uh_cart2",{}),favs=ld("uh_fav",{}),hist=ld("uh_hist",[]),sel={},cat="Все",q="",sort="def",pmin=0,pmax=0,lim=7,favOnly=false,dopen=false,mid=null,tmr,clr=false;
 function pk(k){var s=String(k).split("|");return{i:s[0],u:s[1]||"u"}}
 function mult(p,u){return u==="p"?p.k:u==="b"?p.b:1}
@@ -388,7 +392,7 @@ CATO=ld(API_URL?"uh_catc":"uh_cat",[]);applyCat(CATO);
 clean();
 var HEART='<svg viewBox="0 0 24 24" stroke-linejoin="round"><path d="M12 21s-7.500-4.600-9.500-9.200C1.200 8.600 3.100 5 6.500 5c2.100 0 3.700 1.200 5.500 3.300C13.800 6.200 15.400 5 17.500 5c3.400 0 5.300 3.600 4 6.800C19.500 16.400 12 21 12 21z"/></svg>';
 function toast(t){var e=$("ts");e.textContent=t;e.hidden=false;clearTimeout(tmr);tmr=setTimeout(function(){e.hidden=true},2400)}
-function tot(){var l=0,s0=0,s=0,pc=0,so=0;Object.keys(cart).forEach(function(k){var o=pk(k),p=D[o.i];s0+=cart[k]*upr(p,o.u,cart[k]);so+=oldTot(p,o.u,cart[k])});LE=Math.max(LP,s0>=LOYC.sum?LOYC.p2:0);Object.keys(cart).forEach(function(k){var o=pk(k),p=D[o.i],m=mult(p,o.u);l++;s+=cart[k]*upc(p,o.u,cart[k]);pc+=cart[k]*m});return{l:l,s:s,pc:pc,s0:s0,so:Math.max(so,s)}}
+function tot(){var l=0,s0=0,s=0,pc=0,so=0;Object.keys(cart).forEach(function(k){var o=pk(k),p=D[o.i];s0+=cart[k]*upr(p,o.u,cart[k]);so+=oldTot(p,o.u,cart[k])});LE=REP?0:Math.max(LP,s0>=LOYC.sum?LOYC.p2:0);Object.keys(cart).forEach(function(k){var o=pk(k),p=D[o.i],m=mult(p,o.u);l++;s+=cart[k]*upc(p,o.u,cart[k]);pc+=cart[k]*m});return{l:l,s:s,pc:pc,s0:s0,so:Math.max(so,s)}}
 function stepper(k){return '<div class="st"><button data-a="dec" data-k="'+k+'" aria-label="Меньше">−</button><input class="qi" type="number" min="0" max="99999" inputmode="numeric" value="'+cart[k]+'" data-k="'+k+'" aria-label="Количество"><button data-a="inc" data-k="'+k+'" aria-label="Больше">+</button></div>'}
 function ctl(i){var k=i+"|"+cu(i);return cart[k]?stepper(k):'<button class="btn sm" data-a="add" data-k="'+k+'">В корзину</button>'}
 function usel(i){var p=D[i],o=uopts(p);if(o.length<2)return"";
@@ -399,7 +403,49 @@ return '<article class="c"><button class="fv'+(fv?' on':'')+'" data-a="fav" data
 '<button class="im'+(p.i?'':' no')+'" data-a="view" data-i="'+i+'" aria-label="Подробнее"'+(imgs(p).length>1?' data-n="'+imgs(p).length+'"':'')+'>'+imgHtml(p)+'</button>'+
 '<div class="ct">'+esc(p.c)+'</div><h3>'+esc(p.n)+'</h3><p class="m">'+esc(metaTxt(i))+'</p>'+(p.disc&&p.disc.length?'<p class="dsc">'+esc(discTxt(p))+'</p>':'')+usel(i)+
 '<div class="b"><span class="p">'+priceHtml(p,cu(i),cart[i+"|"+cu(i)]||0)+'</span>'+ctl(i)+'</div></article>'}
-function ids(){var r=[];D.forEach(function(p,i){if(!vis(p))return;if(cat!=="Все"&&p.c!==cat)return;if(favOnly&&!favs[i])return;if(q&&p.n.toLowerCase().indexOf(q)<0)return;if(pmin&&bp(p)<pmin)return;if(pmax&&bp(p)>pmax)return;r.push(i)});
+
+/* ===== Умный поиск ===== */
+var SE=(function(){
+var LC={a:"а",b:"б",c:"к",d:"д",e:"е",f:"ф",g:"г",h:"х",i:"и",j:"ж",k:"к",l:"л",m:"м",n:"н",o:"о",p:"п",q:"к",r:"р",s:"с",t:"т",u:"у",v:"в",w:"в",x:"кс",y:"и",z:"з"},
+CL={"а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"c","ч":"ch","ш":"sh","щ":"sh","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya"},
+KB={q:"й",w:"ц",e:"у",r:"к",t:"е",y:"н",u:"г",i:"ш",o:"щ",p:"з",a:"ф",s:"ы",d:"в",f:"а",g:"п",h:"р",j:"о",k:"л",l:"д",z:"я",x:"ч",c:"с",v:"м",b:"и",n:"т",m:"ь"};
+function tok(s){s=String(s||"").toLowerCase().replace(/ё/g,"е").replace(/(\d)[.,](\d)/g,"$1§$2").replace(/[^a-z0-9§Ѐ-ӿ]+/g," ").replace(/§/g,".");return s.match(/\d+(?:\.\d+)?|[a-z]+|[Ѐ-ӿ]+/g)||[]}
+function l2c(w){return w.replace(/sh/g,"ш").replace(/ch/g,"ч").replace(/zh/g,"ж").replace(/ya/g,"я").replace(/yu/g,"ю").replace(/kh/g,"х").replace(/[a-z]/g,function(c){return LC[c]})}
+function c2l(w){return w.replace(/[Ѐ-ӿ]/g,function(c){return CL[c]!=null?CL[c]:c})}
+function kb(w){return w.replace(/[a-z]/g,function(c){return KB[c]||c})}
+function dl(a,b){var la=a.length,lb=b.length,d=[],i,j;if(Math.abs(la-lb)>2)return 9;for(i=0;i<=la;i++){d[i]=[i]}for(j=1;j<=lb;j++)d[0][j]=j;
+for(i=1;i<=la;i++)for(j=1;j<=lb;j++){d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a.charAt(i-1)===b.charAt(j-1)?0:1));if(i>1&&j>1&&a.charAt(i-1)===b.charAt(j-2)&&a.charAt(i-2)===b.charAt(j-1))d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1)}return d[la][lb]}
+function ix(p){var k=p.n+"|"+p.c+"|"+(p.desc||"")+"|"+(p.m||"");if(p._ik===k)return p._ix;p._ik=k;p._ix={nt:tok(p.n),ot:tok(p.c+" "+(p.desc||"")+" "+(p.m||""))};return p._ix}
+function tm(q,w){var qn=/^\d/.test(q),wn=/^\d/.test(w);
+if(qn||wn){if(!(qn&&wn))return 0;if(parseFloat(q)===parseFloat(w))return 3;if(q.length>=2&&q.indexOf(".")<0&&w.indexOf(q)===0)return 1.4;return 0}
+if(q===w)return 3;var lq=q.length,lw=w.length;if(w.indexOf(q)===0)return lq>=2?2.6:1;
+var cp=0;while(cp<lq&&cp<lw&&q.charCodeAt(cp)===w.charCodeAt(cp))cp++;
+if(lq>=4&&cp>=Math.max(3,Math.min(lq,lw)-2)&&Math.abs(lq-lw)<=3)return 2;
+if(lq>=3&&w.indexOf(q)>0)return 1.5;
+if(lq>=4){var m=lq>=7?2:1;if(dl(q,w.slice(0,lq))<=m||dl(q,w)<=m)return 1.2}
+if(lq>=3&&q.charAt(0)===w.charAt(0)&&lw>lq){var j=0,k;for(k=0;k<lw&&j<lq;k++)if(w.charAt(k)===q.charAt(j))j++;if(j===lq)return 1}
+return 0}
+function alts(t){var a=[t];if(/^[a-z]+$/.test(t)){a.push(l2c(t));a.push(kb(t))}else if(/^[Ѐ-ӿ]+$/.test(t))a.push(c2l(t));return a}
+function sc(p,Q){var I=ix(p),tot=0,hit=0,i,j,k,best,s,pos;
+for(i=0;i<Q.length;i++){best=0;pos=-1;for(j=0;j<Q[i].length;j++){var f=j?0.9:1;for(k=0;k<I.nt.length;k++){s=tm(Q[i][j],I.nt[k])*f;if(s>best){best=s;pos=k}}for(k=0;k<I.ot.length;k++){s=tm(Q[i][j],I.ot[k])*f*0.55;if(s>best){best=s;pos=-1}}}
+if(best>0){hit++;tot+=best;if(pos>-1)tot+=(0.7-0.15*Math.min(pos,4))*(best>=2.5?1:0.5)}}
+if(hit&&I.nt.length&&Q.length&&tm(Q[0][0],I.nt[0])>=2.5)tot+=0.6;return{hit:hit,tot:tot}}
+function tri(s){var o={},i;s="  "+s+" ";for(i=0;i<s.length-2;i++)o[s.substr(i,3)]=1;return o}
+function sim(a,b){var k,n=0,u=0;for(k in a){u++;if(b[k])n++}for(k in b)if(!a[k])u++;return u?n/u:0}
+function search(q,pool){var T=tok(q);if(!T.length)return{ids:pool.slice(),kind:"exact"};
+var Q=T.map(alts),R=[],i,x;
+pool.forEach(function(ii){var r=sc(D[ii],Q);if(r.hit)R.push({i:ii,hit:r.hit,tot:r.tot})});
+function cmp(a,b){return b.hit-a.hit||b.tot-a.tot||D[a.i].n.localeCompare(D[b.i].n,"ru")}
+var st=R.filter(function(r){return r.hit===Q.length}).sort(cmp);if(st.length)return{ids:st.map(function(r){return r.i}),kind:"exact"};
+var need=Math.max(1,Math.ceil(Q.length/2)),pt=R.filter(function(r){return r.hit>=need}).sort(cmp);if(pt.length)return{ids:pt.slice(0,40).map(function(r){return r.i}),kind:"partial"};
+if(R.length){R.sort(cmp);return{ids:R.slice(0,30).map(function(r){return r.i}),kind:"partial"}}
+var qt=tri(T.join(" ")),cl=[];pool.forEach(function(ii){var I=ix(D[ii]),m=Math.max(sim(qt,tri(I.nt.join(" "))),sim(qt,tri(c2l(I.nt.join(" ")))));if(m>0.18)cl.push({i:ii,m:m})});
+if(cl.length){cl.sort(function(a,b){return b.m-a.m});return{ids:cl.slice(0,12).map(function(r){return r.i}),kind:"close"}}
+return{ids:pool.slice(0,12),kind:"any"}}
+return{search:search,tok:tok}})();
+var SK="exact";
+function skMsg(){if(SK==="exact")return"";var t=q?" «"+esc(q)+"»":"";return SK==="partial"?"По запросу"+t+" нашлись похожие товары (совпала часть слов):":SK==="close"?"Возможно, вы искали:":"Точного совпадения нет. Смотрите, что чаще всего заказывают:"}
+function ids(){var r=[];D.forEach(function(p,i){if(!vis(p))return;if(cat!=="Все"&&p.c!==cat)return;if(favOnly&&!favs[i])return;if(pmin&&bp(p)<pmin)return;if(pmax&&bp(p)>pmax)return;r.push(i)});SK="exact";if(q){var RS=SE.search(q,r);r=RS.ids;SK=RS.kind}
 if(sort==="pa")r.sort(function(a,b){return bp(D[a])-bp(D[b])});else if(sort==="pd")r.sort(function(a,b){return bp(D[b])-bp(D[a])});else if(sort==="n")r.sort(function(a,b){return D[a].n.localeCompare(D[b].n,"ru")});
 return r}
 var NV=0;function chips(){var cnt={},h="";NV=0;D.forEach(function(p){if(!vis(p))return;NV++;cnt[p.c]=(cnt[p.c]||0)+1});
@@ -410,7 +456,7 @@ function badges(){var t=tot(),fc=Object.keys(favs).length;
 $("cc").hidden=!t.l;$("cc").textContent=t.l;$("fc").hidden=!fc;$("fc").textContent=fc;
 $("bar").hidden=!t.l||dopen;$("bt").innerHTML=t.l+" поз. · "+totHtml(t.so,t.s)}
 function render(){var r=ids(),h="";r.slice(0,lim).forEach(function(i){h+=card(i)});
-$("g").innerHTML=h;$("n").hidden=r.length>0;$("cnt").textContent="Найдено: "+r.length;
+$("g").innerHTML=h;$("n").hidden=r.length>0;$("cnt").textContent=(SK==="exact"?"Найдено: ":"Похоже на запрос: ")+r.length;var sn=$("sn");if(sn){sn.hidden=SK==="exact"||!r.length;sn.innerHTML=skMsg()}
 $("mr").hidden=r.length<=lim;$("mr").textContent="Далее · ещё "+Math.min(7,r.length-lim);
 $("cl").hidden=!(lim>7&&r.length>7);chips();badges()}
 function cartView(){var k=Object.keys(cart),h="",t=tot();
@@ -521,16 +567,23 @@ var ST={new:"Обрабатывается",ready:"Готов к отгрузке
 function stepsOf(o){return o.cust.dm==="d"?["new","ready","courier","done","recv"]:["new","ready","done","recv"]}
 function stLbl(o,k){if(o.cust.dm!=="d"){if(k==="ready")return"Готов к выдаче";if(k==="done")return"Выдан"}return ST[k]}
 function b64(u){var s="",i;for(i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)}
-function slim(o){return{no:o.no,date:o.date,ts:o.ts,sum:o.sum,pc:o.pc,cust:o.cust,items:o.items,loy:o.loy||0,sg:o.sg,grp:o.grp}}
-function api(pl){var vv=ld("uh_ver",{});if(vv.tk)pl.tk=vv.tk;return fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(pl)}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){if(!j||!j.ok)throw 0;return j})}
+function slim(o){return{salesBy:o.salesBy,no:o.no,date:o.date,ts:o.ts,sum:o.sum,pc:o.pc,cust:o.cust,items:o.items,loy:o.loy||0,sg:o.sg,grp:o.grp}}
+function api(pl){var vv=ld("uh_ver",{});if(vv.tk)pl.tk=vv.tk;return fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(pl)}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){if(!j||!j.ok){var er=new Error(j&&j.error?String(j.error).slice(0,150):"bad");er.code=er.message;throw er}return j})}
 function tgApi(m,fd){return fetch("https://api.telegram.org/bot"+TG_TOKEN+"/"+m,fd)}
 function tgText(text){return tgApi("sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:TG_CHAT,text:text})}).then(function(r){if(!r.ok)throw 0})}
 function tgDoc(o,sig,cap){var fd=new FormData();fd.append("chat_id",TG_CHAT);fd.append("caption",cap);fd.append("document",new Blob([makePdf(o,sig)],{type:"application/pdf"}),"M15-"+fnm(o.no)+(sig?"-podpis":"")+".pdf");return tgApi("sendDocument",{method:"POST",body:fd}).then(function(r){if(!r.ok)throw 0})}
-function anyOk(tasks){return Promise.all(tasks.map(function(p){return p.then(function(){return true},function(){return false})})).then(function(r){if(!r.some(Boolean))throw 0})}
+function anyOk(tasks){var le=0;return Promise.all(tasks.map(function(p){return p.then(function(){return true},function(e){le=e||le;return false})})).then(function(r){if(!r.some(Boolean))throw le})}
 function thumb(src){return new Promise(function(res){if(!src){res({});return}var done=false,im=new Image();function fin(v){if(!done){done=true;res(v)}}setTimeout(function(){fin(/^https:/.test(src)?{iu:src}:{})},4000);if(/^https:/.test(src))im.crossOrigin="anonymous";im.onload=function(){try{var k=Math.min(1,240/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));var g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);fin({img:c.toDataURL("image/jpeg",.72).split(",")[1]})}catch(e){fin(/^https:/.test(src)?{iu:src}:{})}};im.onerror=function(){fin(/^https:/.test(src)?{iu:src}:{})};im.src=src})}
 function pickData(o){return Promise.all(o.items.filter(function(it){return it.q>0}).map(function(it){var p=D.filter(function(x){return x.n===it.n})[0];return thumb(p&&p.i)})).catch(function(){return[]})}
-function sendNew(o,msg){if(!(API_URL||(TG_TOKEN&&TG_CHAT)))return null;return pickData(o).then(function(pk){return sendNew2(o,msg,pk)})}
-function sendNew2(o,msg,pk){var tk=[];if(API_URL)tk.push(api({a:"order",order:slim(o),text:msg,pick:pk}));if(TG_TOKEN&&TG_CHAT)tk.push(tgText(msg).then(function(){return tgDoc(o,null,"Накладная М-15 "+o.no).catch(function(){})}));return tk.length?anyOk(tk):null}
+function qGet(){return ld("uh_q",[])}
+function qAdd(o,msg){var q=qGet().filter(function(x){return x.o.no!==o.no});q.push({o:slim(o),msg:msg});sv("uh_q",q)}
+function qDel(no){sv("uh_q",qGet().filter(function(x){return x.o.no!==no}))}
+var qBusy=false;
+function qRun(){if(qBusy||!API_URL||!navigator.onLine)return;var q=qGet();if(!q.length)return;qBusy=true;var x=q[0];
+pickData(x.o).then(function(pk){return api({a:"order",order:x.o,text:x.msg,pick:pk,pdf:b64(makePdf(x.o,null))})}).then(function(){qDel(x.o.no);toast("Заказ "+x.o.no+" отправлен магазину")},function(){}).then(function(){qBusy=false;if(qGet().length>1)setTimeout(qRun,500)})}
+setInterval(qRun,20000);window.addEventListener("online",qRun);setTimeout(qRun,2500);
+function sendNew(o,msg){if(!(API_URL||(TG_TOKEN&&TG_CHAT)))return null;qAdd(o,msg);return pickData(o).then(function(pk){return sendNew2(o,msg,pk)}).then(function(r){qDel(o.no);return r})}
+function sendNew2(o,msg,pk){var tk=[];if(API_URL)tk.push(api({a:"order",order:slim(o),text:msg,pick:pk,pdf:b64(makePdf(o,null))}));if(TG_TOKEN&&TG_CHAT)tk.push(tgText(msg).then(function(){return tgDoc(o,null,"Накладная М-15 "+o.no).catch(function(){})}));return tk.length?anyOk(tk):null}
 function sendSigned(o,sig){var tk=[];if(API_URL)tk.push(api({a:"signed",no:o.no,name:sig.name,time:sig.time,order:slim(o),pdf:b64(makePdf(o,sig))}));if(TG_TOKEN&&TG_CHAT)tk.push(tgDoc(o,sig,"Подписанная накладная М-15 "+o.no+" — получил: "+sig.name+", "+sig.time));if(!tk.length){toast("Накладная сохранена. Отправка на почту включится после подключения сервера");return}anyOk(tk).then(function(){toast("Подписанная накладная отправлена на почту магазина")},function(){toast("Не удалось отправить на почту. Накладная сохранена у вас")})}
 function notifyReg(p){var t="Новый клиент\nКод: "+p.id+"\nИмя: "+p.nm+"\nТелефон: "+p.ph+(p.org?"\nОрганизация: "+p.org:"")+(p.cty||p.ad?"\nАдрес: "+(p.cty?p.cty+", ":"")+p.ad:"");if(API_URL)api({a:"reg",client:p}).catch(function(){});if(TG_TOKEN&&TG_CHAT)tgText(t).catch(function(){})}
 function syncSt(){if(!API_URL)return;var nos=hist.filter(function(o){return o.cust}).map(function(o){return o.no});if(!nos.length)return;
@@ -615,7 +668,7 @@ else if(a==="less"){lim=7;render();goCatalog()}
 else if(a==="theme")setTheme();
 else if(a==="opencart")openD("vc");
 else if(a==="close")closeD();
-else if(a==="checkout"){if(Object.keys(cart).length)view("vk")}
+else if(a==="checkout"){if(Object.keys(cart).length){if(REP)repCheckout();else view("vk")}}
 else if(a==="back")view("vc");
 else if(a==="hist"){view("vh");syncSt()}
 else if(a==="adm")admOpen();
@@ -662,7 +715,7 @@ if(LE)L.push("","Бонусная скидка: "+LE+"% (уже в ценах)")
 var ord={no:no,date:ds,ts:d.getTime(),sum:t.s,pc:t.pc,cust:{id:cid,nm:nm,ph:ph,org:org,dm:dm,cty:cty,ad:ad,tm:tm,pay:pay,cm:cm},items:items,loy:LE,sg:Math.round(t.s0*100)/100,grp:GRP};
 clog(ord,"Заказ оформлен");LAST=ord;hist.unshift(ord);hist=hist.slice(0,300);sv("uh_hist",hist);setTimeout(loadMy,2500);
 $("on").textContent=no;$("ot").value=msg;sent=false;$("wa2").textContent="Оформить заказ";var ENC=encodeURIComponent(msg);$("fb").hidden=true;$("wa2").href=/Android/i.test(navigator.userAgent)?"intent://send?phone="+PHONE+"&text="+ENC+"#Intent;scheme=whatsapp;package=com.whatsapp;end":"whatsapp://send?phone="+PHONE+"&text="+ENC;
-var tk=sendNew(ord,msg);if(!tk)view("vs");else{var bt=e.submitter;if(bt)bt.disabled=true;tk.then(function(){$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd")}).catch(function(){toast("Не удалось отправить заказ. Попробуйте ещё раз или отправьте через WhatsApp");view("vs")}).then(function(){if(bt)bt.disabled=false})}})});
+var tk=sendNew(ord,msg);if(!tk)view("vs");else{var bt=e.submitter;if(bt)bt.disabled=true;tk.then(function(){$("dq").hidden=true;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd")}).catch(function(er){toast("Не удалось отправить: "+((er&&er.code)||"нет связи")+". Заказ сохранён и отправится автоматически");try{window.__lastErr=er&&er.code}catch(x){}setTimeout(qRun,8000);$("dq").hidden=false;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd")}).then(function(){if(bt)bt.disabled=false})}})});
 fillCheckout();fillProfForm();
 var th=ld("uh_th",null);if(th==="dark"||th==="light")document.documentElement.setAttribute("data-theme",th);
 var A={fo:{},qf:"all",open:{},role:"",who:"",pend:{},draft:{},gr:"auto",key:"",rows:[],tab:"o",from:"",to:"",q:"",fs:"",fp:"",ok:false};
@@ -678,7 +731,7 @@ if(pt.st&&pt.st!==r.st){var tx="Изменил статус: «"+stN(r,r.st)+"»
 if(!API_URL){r.o.st=r.st;if(tx)pushLog(r,tx);sv("uh_hist",hist);return Promise.resolve({wa:"off"})}
 return api({a:"admin_set",key:A.key,role:A.role,who:A.who,no:r.no,st:r.st}).then(function(j){if(j.log)r.log=j.log;return j}).catch(function(){r.st=oS;toast("Не удалось сохранить: нет прав или нет связи с сервером");return null})}
 function inRange(r){var a=A.from?new Date(A.from+"T00:00:00").getTime():0,b=A.to?new Date(A.to+"T23:59:59").getTime():1e15;return r.ts>=a&&r.ts<=b}
-function viewRows(){return A.rows.filter(inRange)}
+function viewRows(){return A.rows.filter(inRange).filter(function(r){return A.role!=="sales"||String(r.o.salesBy||"")===String(A.who).toLowerCase()})}
 function calc(rows){var s={n:rows.length,rev:0,paid:0,cancel:0,byDay:{},prod:{},cli:{},st:{},pay:{},dm:{d:0,p:0}};
 rows.forEach(function(r){var c=r.o.cust,pd,dk,ck,cl;s.st[r.st]=(s.st[r.st]||0)+1;if(r.st==="cancel"){s.cancel++;return}
 pd=paidOf(r);s.rev+=r.sum;s.paid+=pd;dk=dkey(r.ts);s.byDay[dk]=(s.byDay[dk]||0)+r.sum;
@@ -688,11 +741,11 @@ s.pay[c.pay]=(s.pay[c.pay]||0)+r.sum;s.dm[c.dm]=(s.dm[c.dm]||0)+r.sum});
 s.act=s.n-s.cancel;s.debt=s.rev-s.paid;s.avg=s.act?s.rev/s.act:0;return s}
 function perLabel(){if(!A.from&&!A.to)return"за всё время";return(A.from?dshow(A.from):"…")+" — "+(A.to?dshow(A.to):"…")}
 
-var ROLES={operator:"Оператор",admin:"Администратор",accountant:"Бухгалтер",director:"Руководитель",content:"Контент-менеджер",partner:"Партнёр"},RL={system:"Система",client:"Клиент",operator:"Оператор",admin:"Администратор",accountant:"Бухгалтер",director:"Руководитель",content:"Контент-менеджер",partner:"Партнёр"};
-var PERM={operator:{st:"fwd",pay:0,rep:0,jr:0,lg:0,adj:1,px:0,inv2:0,nord:1},admin:{st:"any",pay:1,rev:1,rep:0,jr:1,lg:1,adj:1,px:1,inv2:1,nord:1,acc:1},accountant:{st:0,pay:1,rev:0,rep:1,jr:0,lg:1,adj:0,px:0,inv2:1},director:{st:"any",pay:1,rev:1,rep:1,jr:1,cat:1,lg:1,adj:1,px:1,inv2:1,nord:1,grp:1,usr:1,acc:1},content:{st:0,pay:0,rev:0,rep:0,jr:0,cat:1},partner:{st:0,pay:0,rev:0,rep:0,jr:0,cat:0,part:1}};
-var TABS={operator:["o","c"],admin:["o","c","j","x"],accountant:["o","s","r","a","c"],director:["o","s","r","a","c","j","k","u","x"],content:["k"],partner:["k"]};
-var PERMD=JSON.parse(JSON.stringify(PERM)),EDR=["operator","admin","accountant","content"],PL=[["st","Статус заказа"],["nord","Оформлять заказ за клиента"],["adj","Корректировка заказов"],["px","Менять цены при корректировке"],["pay","Принимать оплату"],["rev","Сторнировать платежи"],["inv2","Счёт-фактура"],["lg","Видеть журнал заказа"],["rep","Статистика, отчёты, ABC-XYZ"],["jr","Журнал изменений"],["cat","Каталог товаров"],["grp","Группы цен клиентов"]];
-function tabsFor(r){var P=PERM[r]||{},t=[];if(r==="content"||r==="partner")return P.cat||P.part?["k"]:[];t.push("o");if(P.rep)t.push("s","r","a");t.push("c");if(P.jr)t.push("j");if(P.cat)t.push("k");if(P.usr)t.push("u");if(P.acc)t.push("x");return t}
+var ROLES={operator:"Оператор",admin:"Администратор",accountant:"Бухгалтер",director:"Руководитель",content:"Контент-менеджер",partner:"Партнёр",sales:"Торговый представитель"},RL={system:"Система",client:"Клиент",operator:"Оператор",admin:"Администратор",accountant:"Бухгалтер",director:"Руководитель",content:"Контент-менеджер",partner:"Партнёр",sales:"Торговый представитель"};
+var PERM={operator:{st:"fwd",pay:0,rep:0,jr:0,lg:0,adj:1,px:0,inv2:0,nord:1},admin:{st:"any",pay:1,rev:1,rep:0,jr:1,lg:1,adj:1,px:1,inv2:1,nord:1,acc:1},accountant:{st:0,pay:1,rev:0,rep:1,jr:0,lg:1,adj:0,px:0,inv2:1},director:{st:"any",pay:1,rev:1,rep:1,jr:1,cat:1,lg:1,adj:1,px:1,inv2:1,nord:1,grp:1,usr:1,acc:1},content:{st:0,pay:0,rev:0,rep:0,jr:0,cat:1},partner:{st:0,pay:0,rev:0,rep:0,jr:0,cat:0,part:1},sales:{st:0,pay:0,rev:0,rep:0,jr:0,lg:0,adj:0,px:0,inv2:0,nord:1,cat:0,grp:0}};
+var TABS={operator:["o","c"],admin:["o","c","j","x"],accountant:["o","s","r","a","c"],director:["o","s","r","a","c","j","k","u","x"],content:["k"],partner:["k"],sales:["o"]};
+var PERMD=JSON.parse(JSON.stringify(PERM)),EDR=["operator","admin","accountant","content","sales"],PL=[["st","Статус заказа"],["nord","Оформлять заказ за клиента"],["adj","Корректировка заказов"],["px","Менять цены при корректировке"],["pay","Принимать оплату"],["rev","Сторнировать платежи"],["inv2","Счёт-фактура"],["lg","Видеть журнал заказа"],["rep","Статистика, отчёты, ABC-XYZ"],["jr","Журнал изменений"],["cat","Каталог товаров"],["grp","Группы цен клиентов"]];
+function tabsFor(r){var P=PERM[r]||{},t=[];if(r==="sales")return["o"];if(r==="content"||r==="partner")return P.cat||P.part?["k"]:[];t.push("o");if(P.rep)t.push("s","r","a");t.push("c");if(P.jr)t.push("j");if(P.cat)t.push("k");if(P.usr)t.push("u");if(P.acc)t.push("x");return t}
 function applyPerms(m){if(!m)return;Object.keys(m).forEach(function(r){if(EDR.indexOf(r)<0)return;PERM[r]=Object.assign({},PERMD[r],m[r]);if(r==="admin")PERM.admin.acc=1;TABS[r]=tabsFor(r)})}
 function can(k){return !!(A.role&&PERM[A.role]&&PERM[A.role][k])}
 function stN(r,k){return k==="cancel"?"Отменён":stLbl(r.o,k)}
@@ -781,9 +834,9 @@ function admCat(){var q=(A.cq||"").trim().toLowerCase(),h='<div class="row" styl
 h+='<h3 style="margin-top:6px">PDF по категориям</h3><div class="row">'+catGroups().map(function(g){return'<button class="chipb" data-ad="cpdf" data-c="'+esc(g.c)+'">'+esc(g.c)+' <b>'+g.items.length+'</b> · PDF</button>'}).join("")+'</div>';
 h+='<h3>Товары</h3><div class="row" style="margin-bottom:10px"><input class="pin" id="cq" placeholder="Поиск по названию" value="'+esc(A.cq||"")+'" style="flex:1;min-width:180px"><select class="pin" id="cc"><option value="">Все категории</option>'+catGroups().map(function(g){return'<option'+(A.cc===g.c?" selected":"")+'>'+esc(g.c)+'</option>'}).join("")+'</select></div><div id="clist">'+catList()+'</div>';
 h+='<h3>История изменений каталога</h3><div id="clog">'+catLogHtml()+'</div>';return h}
-function catList(){var q=(A.cq||"").trim().toLowerCase(),n=0,h="";D.forEach(function(p,i){if(A.cc&&p.c!==A.cc)return;if(q&&p.n.toLowerCase().indexOf(q)<0)return;n++;if(n>(A.cmax||40))return;
+function catList(){var q=(A.cq||"").trim(),n=0,h="",pool=[];D.forEach(function(p,i){if(!A.cc||p.c===A.cc)pool.push(i)});var ord=pool;if(q){var RS=SE.search(q,pool);ord=RS.ids;if(RS.kind!=="exact")h+='<p class="snote">Точного совпадения нет. Показаны похожие товары.</p>'}ord.forEach(function(i){var p=D[i];n++;if(n>(A.cmax||40))return;
 h+='<div class="kr" data-ad="cedit" data-i="'+i+'"><div class="kth">'+(p.i?'<img alt="" src="'+esc(p.i)+'">':'')+'</div><div class="kri"><b>'+esc(p.n)+'</b><span>'+esc(p.c)+' · '+f(p.p)+' / '+esc(ub(p))+(p.k>1?' · пачка '+p.k:'')+(p.b>1?' · коробка '+p.b:'')+'</span>'+(p.disc&&p.disc.length?'<span class="dsc">'+esc(discTxt(p))+'</span>':'')+(p.hide?'<span class="chip st-cancel">скрыт</span>':'')+'</div><span class="note" style="margin:0">Изменить</span></div>'});
-if(n>(A.cmax||40))h+='<button class="btn sm o" data-ad="cmore">Показать ещё ('+(n-(A.cmax||40))+')</button>';return h||'<div class="emp">Ничего не найдено</div>'}
+if(n>(A.cmax||40))h+='<button class="btn sm o" data-ad="cmore">Показать ещё ('+(n-(A.cmax||40))+')</button>';return h||'<div class="emp">Каталог пуст</div>'}
 function catLogHtml(){var L=(A.clog||[]).slice().sort(function(a,b){return b.ts-a.ts}).slice(0,60);return L.length?L.map(function(l){return logLine(l,false,null)}).join(""):'<div class="pr">Изменений пока нет</div>'}
 function edDisc(){var h=E.disc.map(function(d,i){return'<div class="kdrow"><span>от</span><input class="pin" type="number" min="1" data-dq="'+i+'" value="'+(d.q||"")+'" inputmode="numeric"><select class="pin" data-du="'+i+'"><option value="u"'+(d.u==="u"?" selected":"")+'>шт</option><option value="p"'+(d.u==="p"?" selected":"")+'>пач.</option><option value="b"'+(d.u==="b"?" selected":"")+'>кор.</option></select><span>−</span><input class="pin" type="number" min="1" max="90" step="0.5" data-dp="'+i+'" value="'+(d.pct||"")+'" inputmode="decimal"><span>%</span><button type="button" class="px2" data-ad="cddel" data-i="'+i+'" aria-label="Убрать">×</button></div>'}).join("");$("cdl").innerHTML=h||'<div class="pr">Скидок нет</div>'}
 function catEdit(i,po){var p=po||(i==null?{id:"N"+Date.now(),n:"",c:A.cc||(D[0]&&D[0].c)||"",p:"",ub:"шт",k:1,b:1,w:0,vat:0,desc:"",disc:[],i:"",hide:false,sd:10,ims:[]}:D[i]);
@@ -873,7 +926,7 @@ var a3=u3>now,a5=u5>now,b=[0,0,0],cc=0;L.forEach(function(o){var ag=now-o.ts;if(
 var mc=b[0]+b[1]+b[2],t3=mc===3&&cc===0&&(a3||a5);
 return{pct:t3?LOYC.p3:a5?LOYC.p2:a3?LOYC.p1:0,cnt:cnt,a3:a3,a5:a5,u3:u3,u5:u5,mc:mc,cc:cc,t3:t3}}
 function isN(x){return typeof x==="number"&&isFinite(x)}
-function applyMy(g,ol){GRP=isN(g)?g:(isN(GRP)?GRP:100);if(!isN(DG))DG=100;LOYI=loyalty(ol);LP=LOYI.pct;render();if(dopen&&!$("vc").hidden)cartView();if(!$("vp").hidden)profBonus();buildBanner()}
+function applyMy(g,ol){GRP=isN(g)?g:(isN(GRP)?GRP:100);if(!isN(DG))DG=100;LOYI=loyalty(ol);LP=LOYI.pct;if(REP){GRP=REPG;LP=0}render();if(dopen&&!$("vc").hidden)cartView();if(!$("vp").hidden)profBonus();buildBanner()}
 function loadMy(){var p=ld("uh_prof",{});
 if(!API_URL){var m=ld("uh_grpmap",{}),k=p.ph?p9(p.ph):"",g=(k&&m[k]!=null)?m[k]:(m["*"]!=null?m["*"]:100);DG=m["*"]!=null?m["*"]:100;applyMy(g,localOl());return}
 if(!p.ph){GRP=isN(DG)?DG:100;LOYI=null;LP=0;render();buildBanner();return}
@@ -955,6 +1008,19 @@ if(!API_URL){var m=ld("uh_perm",{});m[r]=o;sv("uh_perm",m);done();return}
 api({a:"admin_perm_save",key:A.key,role:A.role,who:A.who,target:r,perms:o}).then(done).catch(function(){toast("Не удалось сохранить: нет прав или нет связи с сервером")})}
 (function(){var ad=$("adm");ad.addEventListener("click",function(e){var t=e.target.closest("[data-ad=pms]");if(!t)return;e.preventDefault();e.stopPropagation();permSave(t.dataset.r)},true);
 ad.addEventListener("toggle",function(e){var t=e.target;if(t.dataset&&t.dataset.fk)A.fo[t.dataset.fk]=t.open},true)})();
+
+
+/* ===== Торговый представитель ===== */
+function repRib(){var r=$("rib");if(!r)return;r.hidden=!REP;if(!REP){r.innerHTML="";return}
+r.innerHTML='<span>Торговый представитель: <b>'+esc(A.who)+'</b></span><span style="display:flex;gap:6px;flex-wrap:wrap">'+[100,50,30,10,0].map(function(g){return'<button data-ad="repg" data-g="'+g+'"'+(g===REPG?' style="background:#fff;color:#111"':'')+'>'+(g>0?"+":"")+g+'%</button>'}).join("")+'</span><span style="display:flex;gap:6px"><button data-ad="repo">Мои заказы</button><button data-ad="repx">Выйти</button></span>'}
+function repMode(on){REP=on;if(on){GRP=REPG;LP=0;LE=0}else loadMy();repRib();$("go").textContent=on?"Оформить для клиента":"Оформить заказ";render();if(dopen&&!$("vc").hidden)cartView();if(mid!=null&&!$("md").hidden)modal(mid)}
+function repCheckout(){NO={c:{nm:"",ph:"",org:"",dm:"p",cty:"",ad:"",pay:"Наличными при получении",cm:""},rows:[],sug:[]};
+Object.keys(cart).forEach(function(k){var o=pk(k);NO.rows.push({i:o.i,u:o.u,q:cart[k],pr:"",ov:false})});$("adm").hidden=false;document.body.style.overflow="hidden";noDraw();$("nod").hidden=false}
+(function(){var r=$("rib");r.addEventListener("click",function(e){var t=e.target.closest("[data-ad]");if(!t)return;var a=t.dataset.ad;
+if(a==="repg"){REPG=+t.dataset.g;sv("uh_repg",REPG);GRP=REPG;repRib();render();if(dopen&&!$("vc").hidden)cartView();if(mid!=null&&!$("md").hidden)modal(mid);toast("Цены для клиента: "+(REPG>0?"+":"")+REPG+"%")}
+else if(a==="repo"){A.keepOpen=1;A.tab="o";admOpen();A.keepOpen=0;admRender()}
+else if(a==="repx"){A.ok=false;A.key="";A.role="";A.who="";A.rows=[];try{sessionStorage.removeItem("uh_adm")}catch(x){}repMode(false);toast("Вы вышли из режима представителя")}})})();
+var _modal=modal;modal=function(i){_modal(i);if(REP){var m=$("mdc");if(m&&!m.querySelector(".repg"))m.insertAdjacentHTML("beforeend",'<div class="repg"><b>Цены по категориям (за 1 '+esc(ulabel(D[i],cu(i)))+')</b>'+[100,50,30,10,0,-5].map(function(g){return'<div'+(g===REPG?' class="on"':'')+'><span>'+(g>0?"+":"")+g+'%</span><b>'+f(upr(D[i],cu(i),1,g))+'</b></div>'}).join("")+'<p class="note" style="margin:6px 0 0">Выбрать категорию для клиента можно в верхней строке (−5% только просмотр).</p></div>')}};
 
 /* ===== Корректировка заказа ===== */
 function invItems(o){return o.items.filter(function(it){return it.q>0})}
@@ -1096,7 +1162,7 @@ function savePP(r){saveAny("Priem-peredacha-"+fnm(r.no)+".pdf",pagesPdf(drawPP(r
 var NO={c:{},rows:[],sug:[]};
 function noOpen(){NO={c:{nm:"",ph:"",org:"",dm:"p",cty:"",ad:"",pay:"Наличными при получении",cm:""},rows:[],sug:[]};noDraw();$("nod").hidden=false}
 function noClients(q){var d=q.replace(/\D/g,""),t=q.trim().toLowerCase(),seen={},out=[];A.rows.forEach(function(r){var c=r.o.cust,k=String(c.ph).replace(/\D/g,"");if(seen[k])return;if((d.length>=3&&k.indexOf(d)>-1)||(t.length>=2&&String(c.nm).toLowerCase().indexOf(t)>-1)){seen[k]=1;out.push(c)}});return out.slice(0,5)}
-function noRowCalc(x){if(x.k==="m"){var q=+x.q||0,p=+x.pr||0;return{pr:r2(p),sum:r2(q*p)}}var p0=D[x.i],q1=+x.q||0,pr=(x.pr!==""&&x.pr!=null&&x.ov)?r2(+x.pr):upr(p0,x.u,q1||1,grpOf((document.getElementById("nph")||{}).value||(NO.c&&NO.c.ph)||""));return{pr:pr,sum:r2(pr*q1)}}
+function noRowCalc(x){if(x.k==="m"){var q=+x.q||0,p=+x.pr||0;return{pr:r2(p),sum:r2(q*p)}}var p0=D[x.i],q1=+x.q||0,pr=(x.pr!==""&&x.pr!=null&&x.ov)?r2(+x.pr):upr(p0,x.u,q1||1,REP?REPG:grpOf((document.getElementById("nph")||{}).value||(NO.c&&NO.c.ph)||""));return{pr:pr,sum:r2(pr*q1)}}
 function noDraw(){var c=NO.c,pays=["Наличными при получении","Переводом на карту","Оплата через расчётный счёт","Мобильный кошелёк"],h='<div class="kew"><h3 style="margin:0 0 4px">Новый заказ</h3><p class="note" style="margin:0 0 12px">Оформите заказ за клиента, если ему сложно пользоваться сайтом. Заказ попадёт в общий список и пройдёт те же статусы.</p>'+
 '<div class="fl"><label>Телефон клиента *</label><input class="pin" id="nph" type="tel" inputmode="tel" autocomplete="off" value="'+esc(c.ph)+'" placeholder="+992 …"></div><div id="nsg">'+noSugHtml()+'</div>'+
 '<div class="fl"><label>Имя клиента *</label><input class="pin" id="nnm" value="'+esc(c.nm)+'"></div><div class="fl"><label>Организация</label><input class="pin" id="nor" value="'+esc(c.org)+'"></div>'+
@@ -1120,9 +1186,9 @@ else{var p=D[x.i];items.push({n:p.n,u:x.u,q:q,m:mult(p,x.u),pr:cc.pr,sum:cc.sum,
 if(bad){toast(bad);return}
 var btn=document.querySelector("#nod [data-ad=nosave]");if(btn)btn.disabled=true;
 nextNo().then(function(no){var d=new Date(),sum=r2(items.reduce(function(a,i){return a+i.sum},0)),pc=Math.round(items.reduce(function(a,i){return a+i.q*i.m},0)),ds=pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear(),cid=custId(c.ph),
-ord={no:no,date:ds,ts:d.getTime(),sum:sum,pc:pc,cust:{id:cid,nm:c.nm,ph:c.ph,org:c.org,dm:c.dm,cty:c.cty,ad:c.dm==="d"?c.ad:"",tm:"Как можно скорее",pay:c.pay,cm:c.cm},items:items,src:"staff"};
+ord={no:no,date:ds,ts:d.getTime(),sum:sum,pc:pc,cust:{id:cid,nm:c.nm,ph:c.ph,org:c.org,dm:c.dm,cty:c.cty,ad:c.dm==="d"?c.ad:"",tm:"Как можно скорее",pay:c.pay,cm:c.cm},items:items,src:"staff",salesBy:(A.role==="sales"?String(A.who).toLowerCase():undefined),grp:REP?REPG:grpOf(c.ph)};
 var txt="Заказ "+no+" (оформлен сотрудником)\nКлиент: "+c.nm+", тел. "+c.ph+"\nИтого: "+f(sum),lt="Оформил заказ за клиента (вручную): "+items.length+" поз. на "+fn(sum)+" сом.";
-function fin(){$("nod").hidden=true;admLoad().then(function(){admRender();toast("Заказ "+no+" оформлен");var r=A.rows.filter(function(x){return x.no===no})[0];if(r)offerWa(r,"new")})}
+function fin(){$("nod").hidden=true;if(REP){cart={};sv("uh_cart2",cart);render();closeD();admClose()}admLoad().then(function(){admRender();toast("Заказ "+no+" оформлен");var r=A.rows.filter(function(x){return x.no===no})[0];if(r)offerWa(r,"new")})}
 if(!API_URL){ord.log=[{ts:Date.now(),r:A.role,w:A.who,t:lt}];hist.unshift(ord);sv("uh_hist",hist);fin();return}
 pickData(ord).then(function(pk){return api({a:"admin_order",key:A.key,role:A.role,who:A.who,order:slim(ord),text:txt,pick:pk})}).then(fin).catch(function(){if(btn)btn.disabled=false;toast("Не удалось оформить заказ: нет прав или нет связи с сервером")})})}
 
@@ -1173,7 +1239,7 @@ function admOpen(){$("adm").hidden=false;document.body.style.overflow="hidden";$
 var kk=null;try{kk=JSON.parse(sessionStorage.getItem("uh_adm")||"null")}catch(x){}if(kk&&kk.role&&!A.ok){A.key=kk.key;A.role=kk.role;A.who=kk.who;admLogin()}else admRender()}
 function admClose(){$("adm").hidden=true;document.body.style.overflow=""}
 function admLogin(){A.ok=false;if(!API_URL){if(A.key!=="demo"){toast("Неверный пароль");admRender();return}}
-return admLoad().then(function(){A.ok=true;try{sessionStorage.setItem("uh_adm",JSON.stringify({role:A.role,who:A.who,key:A.key}))}catch(x){}admRender()}).catch(function(){A.key="";A.role="";try{sessionStorage.removeItem("uh_adm")}catch(x){}toast("Неверный пароль или нет связи с сервером");admRender()})}
+return admLoad().then(function(){A.ok=true;try{sessionStorage.setItem("uh_adm",JSON.stringify({role:A.role,who:A.who,key:A.key}))}catch(x){}if(A.role==="sales"){repMode(true);if(!$("adm").hidden&&!A.keepOpen){admClose();toast("Режим торгового представителя включён")}}admRender()}).catch(function(){A.key="";A.role="";try{sessionStorage.removeItem("uh_adm")}catch(x){}toast("Неверный пароль или нет связи с сервером");admRender()})}
 function saveAny(name,data,type){if(window.claude&&window.claude.use){return window.claude.use("downloads").then(function(dl){if(!dl){toast("Скачивание недоступно");return}return dl.save({filename:name,data:data}).then(function(){toast("Файл сохранён")})}).catch(function(e){toast(e&&e.code==="declined"?"Не сохранено":"Не удалось сохранить")})}
 try{var b=new Blob([data],{type:type}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},4000);toast("Файл сохранён")}catch(x){toast("Не удалось сохранить")}return Promise.resolve()}
 function csvOf(rows){var H=["Заказ","Дата","Клиент","Телефон","Организация","Получение","Адрес","Способ оплаты","Статус","Оплата","Сумма","Оплачено","Остаток","Оплата: способ","Оплата: кто принял","Оплата: комментарий"],L=[H.map(q).join(";")];function q(v){return'"'+String(v==null?"":v).replace(/"/g,'""')+'"'}function n2(v){return String(Math.round(v*100)/100).replace(".",",")}
@@ -1197,7 +1263,7 @@ function rw(n){return A.rows.filter(function(x){return x.no===n})[0]}
 if(a==="close")admClose();
 else if(a==="pp"){r=rw(t.dataset.n);if(r)savePP(r)}
 else if(a==="nord"&&can("nord"))noOpen()
-else if(a==="nox")$("nod").hidden=true
+else if(a==="nox"){$("nod").hidden=true;if(REP)admClose()}
 else if(a==="noman"){noSync();NO.rows.push({k:"m",n:"",lbl:"шт.",q:1,pr:""});noRows()}
 else if(a==="nodel"){noSync();NO.rows.splice(+t.dataset.i,1);noRows()}
 else if(a==="noadd"){noSync();NO.rows.push({k:"c",i:+t.dataset.i,u:"u",q:1,pr:"",ov:false});$("nsq").value="";$("nsr").innerHTML="";noRows()}
@@ -1256,7 +1322,7 @@ if(t.dataset&&t.dataset.st){r=A.rows.filter(function(x){return x.no===t.dataset.
 else if(t.id==="agr"){A.gr=t.value;admRender()}else if(t.id==="adf"){A.from=t.value;admRender()}else if(t.id==="adt"){A.to=t.value;admRender()}
 else if(t.id==="afs"){A.fs=t.value;admRefreshList()}else if(t.id==="afp"){A.fp=t.value;admRefreshList()}});
 ad.addEventListener("input",function(e){var t=e.target;if(t.dataset&&(t.dataset.aq!=null||t.dataset.ap!=null||t.dataset.an!=null)){var ai=+(t.dataset.aq!=null?t.dataset.aq:t.dataset.ap!=null?t.dataset.ap:t.dataset.an);if(t.dataset.aq!=null)AJ.rows[ai].q=t.value;else if(t.dataset.ap!=null)AJ.rows[ai].pr=t.value;else AJ.rows[ai].n=t.value;ajTot()}
-if(t.id==="nsq"){var qq=t.value.trim().toLowerCase(),hh="";if(qq.length>=2){var n8=0;D.forEach(function(p,i){if(n8>=8||!vis(p))return;if(p.n.toLowerCase().indexOf(qq)>-1){n8++;hh+='<button type="button" class="chipb" data-ad="noadd" data-i="'+i+'">'+esc(p.n)+" · "+f(p.p)+"</button>"}});if(!n8)hh='<div class="pr">Не найдено. Добавьте позицию вручную.</div>'}$("nsr").innerHTML=hh}
+if(t.id==="nsq"){var qq=t.value.trim().toLowerCase(),hh="";if(qq.length>=1){var pl0=[];D.forEach(function(p,i){if(vis(p))pl0.push(i)});var RS=SE.search(qq,pl0);if(RS.kind!=="exact")hh+='<div class="pr">Точного нет, возможно подойдёт:</div>';RS.ids.slice(0,8).forEach(function(i){var p=D[i];hh+='<button type="button" class="chipb" data-ad="noadd" data-i="'+i+'">'+esc(p.n)+" · "+f(p.p)+"</button>"})}$("nsr").innerHTML=hh}
 if(t.id==="nph"||t.id==="nnm"){NO.sug=noClients(t.value);var sg=$("nsg");if(sg)sg.innerHTML=noSugHtml()}
 if(t.dataset&&(t.dataset.nq!=null||t.dataset.np!=null||t.dataset.nn!=null)){var ni=+(t.dataset.nq!=null?t.dataset.nq:t.dataset.np!=null?t.dataset.np:t.dataset.nn),nr=NO.rows[ni];if(t.dataset.nq!=null)nr.q=t.value;else if(t.dataset.np!=null){nr.pr=t.value;nr.ov=true}else nr.n=t.value;noTot();if(nr.k==="c"&&!nr.ov){var pi=document.querySelector('[data-np="'+ni+'"]');if(pi&&document.activeElement!==pi)pi.value=noRowCalc(nr).pr}}
 if(t.id==="cq"){A.cq=t.value;A.cmax=40;catRefreshList()}if(t.dataset){if(t.dataset.dq!=null)E.disc[+t.dataset.dq].q=parseFloat(t.value)||0;if(t.dataset.dp!=null)E.disc[+t.dataset.dp].pct=parseFloat(t.value)||0}if(/^p(am|mt|wh|co)-/.test(t.id||""))A.draft[t.id]=t.value;if(e.target.id==="aq"){A.q=e.target.value;admRefreshList()}})})();
@@ -1264,6 +1330,7 @@ if(location.hash==="#admin")admOpen();
 
 if(API_URL){fetch(API_URL+"?a=catalog").then(function(r){return r.json()}).then(function(j){if(j&&typeof j.otp==="boolean"){OTP_ON=j.otp;sv("uh_otpon",OTP_ON)}if(j&&j.dg!=null){DG=j.dg;sv("uh_dg",DG);if(!ld("uh_prof",{}).ph){GRP=DG;render()}}if(j&&j.items){CATO=j.items;sv("uh_catc",CATO);applyCat(CATO);clean();render();buildBanner()}}).catch(function(){})}
 loadMy();buildBanner();
+try{var kk0=JSON.parse(sessionStorage.getItem("uh_adm")||"null");if(kk0&&kk0.role==="sales"){A.key=kk0.key;A.role="sales";A.who=kk0.who;admLogin()}}catch(x){}
 render();syncSt();setInterval(function(){if(!document.hidden)syncSt()},30000);
 })();
 </script>

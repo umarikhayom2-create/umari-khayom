@@ -901,8 +901,9 @@ function p9(ph){return String(ph).replace(/\D/g,"").slice(-9)}
 function isVer(ph){var v=ld("uh_ver",{});return !!(v.tk&&v.p===p9(ph)&&v.exp>Date.now())}
 function apiRaw(pl){var v=ld("uh_ver",{});if(v.tk)pl.tk=v.tk;return fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(pl)}).then(function(r){return r.json()})}
 function otpHint(){OTP_ON=true;sv("uh_otpon",true);if(otpShown)return;otpShown=true;toast("Подтвердите номер телефона, чтобы видеть статусы заказов: откройте «Профиль» и нажмите «Сохранить данные»")}
-function otpAsk(ph){return new Promise(function(res,rej){var m=document.createElement("div"),tm=null,left=0;m.className="md";m.style.zIndex=95;
-m.innerHTML='<div class="mdc"><h3 style="margin:0 0 6px">Подтвердите номер</h3><p class="note" id="otpt" style="margin:0 0 12px"></p><div class="fl"><label for="otpc">Код из WhatsApp</label><input class="pin" id="otpc" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6 цифр"><small class="er" id="otpe"></small></div><button class="btn w100" id="otpok">Подтвердить</button><div class="row" style="margin-top:10px"><button class="btn sm o" id="otpre" disabled>Отправить ещё раз</button><button class="btn sm" id="otpx">Отмена</button></div></div>';
+function otpOff(){OTP_ON=false;sv("uh_otpon",false);var b=$("vbar");if(b)b.hidden=true;try{pverUi(ld("uh_prof",{}))}catch(x){}}
+function otpAsk(ph){return new Promise(function(res,rej){var m=document.createElement("div"),tm=null,left=0;m.className="md";m.style.zIndex=95;m.style.display="none";
+m.innerHTML='<div class="mdc"><h3 style="margin:0 0 6px">Подтвердите номер</h3><p class="note" id="otpt" style="margin:0 0 12px"></p><div class="fl"><label for="otpc">Код из WhatsApp</label><input class="pin" id="otpc" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6 цифр"><small class="er" id="otpe"></small></div><button class="btn w100" id="otpok">Подтвердить</button><div class="row" style="margin-top:10px"><button class="btn sm o" id="otpre" disabled>Отправить ещё раз</button><button class="btn sm o" id="otpx">Отмена</button></div></div>';
 document.body.appendChild(m);
 function q(i){return m.querySelector("#"+i)}
 function close(){clearInterval(tm);m.remove()}
@@ -910,10 +911,11 @@ function msg(t){q("otpe").textContent=t||""}
 function tick(){q("otpre").disabled=left>0;q("otpre").textContent=left>0?"Ещё раз через "+left+" с":"Отправить ещё раз"}
 function cool(n){left=n;tick();clearInterval(tm);tm=setInterval(function(){left--;tick();if(left<=0)clearInterval(tm)},1000)}
 var E={bad:"Номер указан неверно",rate:"Слишком много попыток. Попробуйте позже или напишите нам в WhatsApp",send:"Не удалось отправить код. Проверьте, что на этом номере есть WhatsApp",busy:"Сервер занят, попробуйте ещё раз"};
-function send(){q("otpt").textContent="Отправляем код в WhatsApp…";q("otpre").disabled=true;
-apiRaw({a:"otp_send",ph:ph}).then(function(j){if(j.error==="off"){q("otpt").textContent="Подтверждение номеров сейчас выключено в настройках магазина.";msg("Ничего делать не нужно — цены загрузятся и так.");setTimeout(function(){close();res()},2500);return}
+function send(){msg("");q("otpc").value="";q("otpt").textContent="Отправляем код в WhatsApp…";q("otpre").disabled=true;if(m.style.display==="none")toast("Отправляем код в WhatsApp…");
+apiRaw({a:"otp_send",ph:ph}).then(function(j){if(j.error==="off"){close();otpOff();toast("Подтверждение номера сейчас не требуется — данные сохранены");res();return}
+m.style.display="";
 if(j.ok){q("otpt").innerHTML="Мы отправили код в WhatsApp на номер <b>"+esc(ph)+"</b>. Введите его ниже. Если сообщения нет 1–2 минуты, проверьте, что WhatsApp открыт на этом номере, и нажмите «Отправить ещё раз».";cool(60);q("otpc").focus();return}
-q("otpt").textContent="Код не отправлен.";if(j.error==="wait"){msg("Подождите "+j.sec+" с и повторите");cool(j.sec||60)}else{msg((E[j.error]||"Ошибка сервера")+(j.error&&!E[j.error]?" (код: "+String(j.error).slice(0,60)+")":"")+". Если повторяется — напишите нам в WhatsApp +992 98 686 86 62");cool(15)}}).catch(function(){q("otpt").textContent="Код не отправлен.";msg("Нет связи с сервером");cool(10)})}
+q("otpt").textContent="Код не отправлен.";if(j.error==="wait"){msg("Подождите "+j.sec+" с и повторите");cool(j.sec||60)}else{msg((E[j.error]||"Ошибка сервера")+(j.error&&!E[j.error]?" (код: "+String(j.error).slice(0,60)+")":"")+". Если повторяется — напишите нам в WhatsApp +992 98 686 86 62");cool(15)}}).catch(function(){m.style.display="";q("otpt").textContent="Код не отправлен.";msg("Нет связи с сервером");cool(10)})}
 q("otpre").onclick=function(){msg("");send()};
 q("otpx").onclick=function(){close();rej()};
 q("otpok").onclick=function(){var c=q("otpc").value.replace(/\D/g,"");if(c.length!==6){msg("Введите 6 цифр из сообщения");return}
@@ -2090,11 +2092,12 @@ saveAny("ABC-XYZ-"+(A.from||"all")+"-"+(A.to||"all")+".xlsx",xlsxBytes([{name:"�
 
 function pverUi(p){var e=$("pver");if(!e)return;if(!p||!p.ph){e.innerHTML='<span class="note" style="margin:0">Сохраните данные — затем подтвердите номер кодом из WhatsApp</span>';return}
 if(isVer(p.ph)){e.innerHTML='<span class="pv-ok">✅ Номер подтверждён</span>';return}
+if(!OTP_ON){e.innerHTML="";return}
 e.innerHTML='<span class="pv-no">Номер не подтверждён — без этого не видны ваши личные цены и статусы заказов</span><button type="button" class="btn sm" id="pvgo">Подтвердить номер</button>'}
 document.addEventListener("click",function(e){if(e.target&&e.target.id==="pvgo"){e.preventDefault();var p=ld("uh_prof",{});if(!p.ph)return;otpAsk(p.ph).then(function(){fillProfForm();var b=$("vbar");if(b)b.hidden=true;loadMy();toast("Номер подтверждён ✓")}).catch(function(){})}});
 
 /* ===== Подтверждение номера, чтобы клиент получил свои цены ===== */
-function verBar(on){var b=$("vbar"),p=ld("uh_prof",{});if(!on||!p.ph){if(b)b.hidden=true;return}if(!b){b=document.createElement("div");b.id="vbar";b.className="vbar";b.innerHTML='<span>🔒 Подтвердите номер телефона — и сайт покажет ваши персональные цены и скидки</span><button type="button" class="btn sm" id="vbgo">Подтвердить</button>';var hd=document.querySelector(".hd");hd.parentNode.insertBefore(b,hd.nextSibling);
+function verBar(on){var b=$("vbar"),p=ld("uh_prof",{});if(!on||!OTP_ON||!p.ph){if(b)b.hidden=true;return}if(!b){b=document.createElement("div");b.id="vbar";b.className="vbar";b.innerHTML='<span>🔒 Подтвердите номер телефона — и сайт покажет ваши персональные цены и скидки</span><button type="button" class="btn sm" id="vbgo">Подтвердить</button>';var hd=document.querySelector(".hd");hd.parentNode.insertBefore(b,hd.nextSibling);
 $("vbgo").addEventListener("click",function(){var pp=ld("uh_prof",{});if(!pp.ph){fillProfForm();openD("vp");return}otpAsk(pp.ph).then(function(){b.hidden=true;loadMy()}).catch(function(){})})}b.hidden=false}
 document.addEventListener("visibilitychange",function(){if(!document.hidden&&API_URL)loadMy()});
 setInterval(function(){if(!document.hidden&&API_URL)loadMy()},5*60e3);

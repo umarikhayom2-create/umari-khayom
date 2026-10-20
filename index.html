@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>[hidden]{display:none!important}</style>
+<style>[hidden]{display:none!important}.pwan{position:relative;display:flex;align-items:center;gap:10px;margin:10px auto 0;max-width:1168px;width:calc(100% - 32px);padding:10px 12px;background:var(--plate,#fff);border:1px solid var(--bd,#e7e2d9);border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.06)}.pwan img{border-radius:10px;border:1px solid var(--bd,#e7e2d9);background:#fff;flex:0 0 auto}.pwan div{flex:1;min-width:0;line-height:1.25}.pwan b{display:block;font-size:14px}.pwan small{font-size:12.5px;color:var(--mut,#666)}.pwx{border:0;background:none;font-size:24px;line-height:1;color:var(--mut,#666);cursor:pointer;padding:4px 6px}.pwam{position:fixed;inset:0;z-index:9999;background:rgba(20,16,10,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px}.pwab{position:relative;width:100%;max-width:440px;background:var(--plate,#fff);color:var(--tx,#111);border-radius:20px;padding:18px 18px 16px;box-shadow:0 10px 40px rgba(0,0,0,.3)}.pwab .pwx{position:absolute;top:8px;right:8px}.pwh{display:flex;gap:12px;align-items:center;margin-bottom:6px}.pwh img{border-radius:14px;border:1px solid var(--bd,#e7e2d9);background:#fff}.pwh small{display:block;color:var(--mut,#666);font-size:13px}.pwab ol{margin:10px 0 16px;padding-left:22px;line-height:1.5}.pwab li{margin:6px 0}@media(min-width:700px){.pwam{align-items:center}}</style>
 <title>Умари Хайём — канцелярские товары</title>
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#faf8f4"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Умари Хайём"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -243,11 +244,13 @@ legend{padding:0;margin-bottom:8px}
 <a class="logo" href="#top">Умари Хайём<b>.</b></a>
 <nav class="nv" aria-label="Разделы"><a href="#catalog">Каталог</a><a href="#how">Как заказать</a><a href="#contacts">Контакты</a></nav>
 <div class="acts">
+<button class="ib" id="pwab" data-pw="i" aria-label="Установить приложение" title="Установить приложение" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/><path d="M10.5 18.5h3"/></svg></button>
 <button class="ib" data-a="prof" aria-label="Мой профиль"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.200 3.600-7 8-7s8 2.800 8 7"/></svg></button>
 <button class="ib" data-a="theme" aria-label="Сменить тему"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
 <button class="ib" data-a="favnav" aria-label="Избранное"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.600 3.100 5 6.500 5c2.100 0 3.700 1.200 5.500 3.300C13.800 6.200 15.400 5 17.500 5c3.400 0 5.300 3.600 4 6.800C19.500 16.400 12 21 12 21z"/></svg><i class="bd" id="fc" hidden>0</i></button>
 <button class="ib" data-a="opencart" aria-label="Корзина"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.500l2.200 11h10.600l2-8H6.200"/><circle cx="9" cy="20" r="1.300"/><circle cx="17" cy="20" r="1.300"/></svg><i class="bd" id="cc" hidden>0</i></button>
 </div></div></header>
+<div class="pwan" id="pwan" hidden><img src="icon-192.png" alt="" width="42" height="42"><div><b>Приложение «Умари Хайём»</b><small>Установите на телефон — заказывать быстрее</small></div><button class="btn sm" data-pw="i">Установить</button><button class="pwx" data-pw="x" aria-label="Скрыть">×</button></div>
 
 <main class="w" id="top">
 <section class="hero">
@@ -1688,6 +1691,26 @@ PK.wh=[s,e];PK.sun=sun;var w=[s,e,sun?1:0];sv("uh_wh",w);SHC.t=0;admRender();cdT
 if(API_URL&&(A.role==="director"||A.role==="admin")){var o=Object.assign({},PERM.operator,{wh:w});api({a:"admin_perm_save",key:A.key,role:A.role,who:A.who,target:"operator",perms:o}).then(function(){PERM.operator.wh=w}).catch(function(){})}}
 (function(){$("adm").addEventListener("click",function(e){var t=e.target.closest("[data-ad=whs]");if(!t)return;e.preventDefault();e.stopPropagation();whSave()},true);
 $("adm").addEventListener("change",function(e){if(e.target.id==="wh-all"){var d=e.target.checked;["wh-s","wh-e","wh-sun"].forEach(function(id){var x=$(id);if(x)x.disabled=d})}},true)})();
+
+/* ===== Приложение (PWA): установка на телефон ===== */
+var PWA={ev:null};
+function pwaStandalone(){try{return matchMedia("(display-mode: standalone)").matches||navigator.standalone===true}catch(x){return false}}
+function pwaIOS(){var u=navigator.userAgent||"";return/iPad|iPhone|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)}
+function pwaMobile(){return/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||"")||pwaIOS()}
+function pwaCan(){return !pwaStandalone()&&!(window.claude&&window.claude.use)&&/^https:/.test(location.protocol)&&(!!PWA.ev||pwaMobile())}
+function pwaUi(){var b=$("pwab");if(b)b.hidden=!pwaCan();var n=$("pwan");if(n){var x=0;try{x=+localStorage.getItem("uh_pwax")||0}catch(e){}n.hidden=!(pwaCan()&&pwaMobile()&&Date.now()-x>7*864e5)}}
+function pwaClose(){var m=$("pwam");if(m)m.remove()}
+function pwaHelp(){pwaClose();var ios=pwaIOS(),sh='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+var st=ios?['Откройте сайт в <b>Safari</b>.','Нажмите кнопку <b>«Поделиться»</b> '+sh+' внизу экрана (на iPad — вверху).','Прокрутите список и выберите <b>«На экран „Домой“»</b>.','Нажмите <b>«Добавить»</b>. На экране появится значок «Умари Хайём».']:['Нажмите меню браузера <b>⋮</b> справа вверху.','Выберите <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.','Подтвердите <b>«Установить»</b>. На экране появится значок «Умари Хайём».'];
+var d=document.createElement("div");d.id="pwam";d.className="pwam";d.innerHTML='<div class="pwab"><button class="pwx" data-pw="x" aria-label="Закрыть">×</button><div class="pwh"><img src="icon-192.png" alt="" width="56" height="56"><div><b>Приложение «Умари Хайём»</b><small>Каталог, заказы и бонусы в одно касание</small></div></div><ol>'+st.map(function(s){return'<li>'+s+'</li>'}).join("")+'</ol><button class="btn" data-pw="x" style="width:100%">Понятно</button></div>';document.body.appendChild(d)}
+function pwaInstall(){if(PWA.ev){var e=PWA.ev;PWA.ev=null;e.prompt();(e.userChoice||Promise.resolve({})).then(function(c){if(c&&c.outcome==="accepted")toast("Приложение устанавливается");pwaUi()});return}pwaHelp()}
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();PWA.ev=e;pwaUi()});
+window.addEventListener("appinstalled",function(){PWA.ev=null;pwaUi();toast("Приложение установлено. Ищите значок «Умари Хайём» на экране")});
+document.addEventListener("click",function(e){var t=e.target.closest("[data-pw]");if(!t)return;e.preventDefault();var a=t.dataset.pw;
+if(a==="i")pwaInstall();else if(a==="x"){if(t.closest("#pwan")){try{localStorage.setItem("uh_pwax",String(Date.now()))}catch(x){}$("pwan").hidden=true}else pwaClose()}});
+document.addEventListener("click",function(e){if(e.target.id==="pwam")pwaClose()});
+if("serviceWorker" in navigator&&/^https:/.test(location.protocol)&&!(window.claude&&window.claude.use)){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+pwaUi();setTimeout(pwaUi,1500);
 
 })();
 </script>

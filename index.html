@@ -1058,7 +1058,7 @@ if(ev==="ping"&&now-lastTs(A.who)<240000&&API_URL===""){}else if(!API_URL){var L
 else{A.sh=A.sh||{ev:[],pres:{}};if(ev!=="ping"||now-lastTs(A.who)>=240000)A.sh.ev.push(e);api({a:"shift",key:A.key,role:A.role,who:A.who,ev:ev,st:A.brk?"brk":"work"}).catch(function(){})}
 SHC.t=0}
 function shStart(){if(!shTrack())return;if(A.fresh){A.brk=false;try{sessionStorage.removeItem("uh_brk")}catch(x){}shEv("in")}else{try{A.brk=sessionStorage.getItem("uh_brk")==="1"}catch(x){A.brk=false}shEv("ping")}A.fresh=0}
-function shBrk(){if(!shTrack())return;A.brk=!A.brk;try{if(A.brk)sessionStorage.setItem("uh_brk","1");else sessionStorage.removeItem("uh_brk")}catch(x){}shEv(A.brk?"brk":"back");toast(A.brk?"Перерыв начат: нарушения по ожиданию не считаются, если все на перерыве":"С возвращением! Перерыв закончен");wlChip();if(!$("adm").hidden)admRender()}
+function shBrk(){if(!shTrack())return;A.brk=!A.brk;try{if(A.brk)sessionStorage.setItem("uh_brk","1");else sessionStorage.removeItem("uh_brk")}catch(x){}try{shEv(A.brk?"brk":"back")}catch(x){}toast(A.brk?"Перерыв начат: нарушения по ожиданию не считаются, если все на перерыве":"С возвращением! Перерыв закончен");try{wlChip()}catch(x){}if(!$("adm").hidden)admRender()}
 function shRows(R){var S=shGet(),a=perB(),o=[["Сотрудник","В смене, мин","Перерывы, мин","Чистое время, мин","Заказов собрано","Заказов в час"]];S.all.forEach(function(U){var sh=rawOv(U.ses,a[0],a[1]),br=rawOv(U.brk,a[0],a[1]),P=R.per[U.w]||R.per[Object.keys(R.per).filter(function(k){return k.toLowerCase()===U.w.toLowerCase()})[0]]||{n:0},net=Math.max(0,sh-br);o.push([U.w,Math.round(sh),Math.round(br),Math.round(net),P.n||0,net>0?Math.round((P.n||0)/(net/60)*100)/100:""])});return o}
 function shBoard(){var S=shGet(),now=Date.now(),d0=new Date();d0.setHours(0,0,0,0);d0=d0.getTime();var h='<h3>Сейчас на смене</h3>';
 var vis=S.all.filter(function(U){return U.on||rawOv(U.ses,d0,now)>0});
@@ -1083,7 +1083,8 @@ function heatH(e){e=Math.max(0,Math.min(1,e));return Math.round(120-120*e)}
 function heat(e){return"hsl("+heatH(e)+",72%,42%)"}
 function heatBg(e){return"hsla("+heatH(e)+",75%,50%,.13)"}
 function pickEv(r){var pe=null;tlOf(r).forEach(function(e){if(e.k==="pick")pe=e});return pe}
-function heatSt(r){if(r.st!=="new"&&r.st!=="pick")return"";var n=normOf(r.o),now=Date.now(),e;if(r.st==="new")e=wminX(r.ts,now)/takeSla(n);else{var pe=pickEv(r);e=wminX(pe?pe.ts:r.ts,now,pe&&pe.w)/asmSla(n)}
+function heatSt(r){if(HEAT_OFF||(r.st!=="new"&&r.st!=="pick"))return"";try{return heatSt0(r)}catch(x){return""}}
+function heatSt0(r){var n=normOf(r.o),now=Date.now(),e;if(r.st==="new")e=wminX(r.ts,now)/takeSla(n);else{var pe=pickEv(r);e=wminX(pe?pe.ts:r.ts,now,pe&&pe.w)/asmSla(n)}
 return"border-left:6px solid "+heat(e)+";background:linear-gradient(90deg,"+heatBg(e)+",transparent 70%)"}
 function wlCalc(rows){var now=Date.now(),R={q:[],pk:[],qn:0,per:{},ord:[],del:[],ov:0,vi:0,hours:{c:{},a:{}},cnt:0,np:0};
 A.rows.forEach(function(r){if(r.st!=="new"&&r.st!=="pick")return;var n=normOf(r.o);
@@ -1330,7 +1331,9 @@ function fin(){$("nod").hidden=true;if(REP){cart={};sv("uh_cart2",cart);render()
 if(!API_URL){ord.log=[{ts:Date.now(),r:A.role,w:A.who,t:lt}];hist.unshift(ord);sv("uh_hist",hist);fin();return}
 pickData(ord).then(function(pk){return api({a:"admin_order",key:A.key,role:A.role,who:A.who,order:slim(ord),text:txt,pick:pk})}).then(fin).catch(function(){if(btn)btn.disabled=false;toast("Не удалось оформить заказ: нет прав или нет связи с сервером")})})}
 
-function admRender(){var rows=viewRows(),h="";
+var HEAT_OFF=false;
+function admRender(){try{admRender0()}catch(e1){if(!HEAT_OFF){HEAT_OFF=true;try{admRender0();return}catch(e2){e1=e2}}try{$("admC").innerHTML='<div class="note" style="color:#dc2626"><b>Ошибка отображения:</b> '+esc(String(e1&&e1.message||e1))+'<br>Нажмите «Обновить». Если не помогло, сообщите этот текст.</div>'}catch(x){}}}
+function admRender0(){var rows=viewRows(),h="";
 $("amain").hidden=!A.ok;$("alg").hidden=A.ok;if(!A.ok)return;
 if((TABS[A.role]||[]).indexOf(A.tab)<0)A.tab=TABS[A.role][0];$("per1").hidden=$("per2").hidden=(A.tab==="k"||A.tab==="u"||A.tab==="x");wlChip();$("awho").textContent="Вы вошли как: "+ROLES[A.role]+", "+A.who;
 document.querySelectorAll("#adm [data-ad=tab]").forEach(function(b){b.hidden=(TABS[A.role]||[]).indexOf(b.dataset.t)<0});

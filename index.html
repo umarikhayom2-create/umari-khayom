@@ -477,6 +477,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 .wg:not(.wg-xl):not(.wg-w) .wgt b{font-size:13px;overflow-wrap:anywhere;hyphens:auto}.wg .wgt{min-width:0;max-width:100%}
 .vbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;max-width:1168px;margin:10px auto 0;width:calc(100% - 0px);padding:10px 12px;border-radius:16px;background:linear-gradient(100deg,color-mix(in srgb,#2f6bff 14%,var(--sf)),color-mix(in srgb,#8e54e9 12%,var(--sf)));border:1px solid color-mix(in srgb,#2f6bff 35%,var(--bd));font-size:14px;font-weight:600}
 .vbar[hidden]{display:none}
+.pver{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.pv-ok{color:var(--ok);font-weight:700;font-size:14px}.pv-no{flex:1 1 100%;font-size:13px;color:var(--er);font-weight:600}
 
 </style>
 
@@ -578,7 +579,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <section id="vp" hidden><div id="pbn"></div><p class="note" style="margin:0 0 14px">Регистрация нужна один раз. Мы запомним ваши данные на этом устройстве и подставим их в заказ, а по номеру телефона магазин быстро найдёт вас среди клиентов.</p>
 <form id="pf" novalidate>
 <div class="fl"><label for="pnm">Имя</label><input id="pnm" autocomplete="name" placeholder="Как к вам обращаться"><small class="er" id="e-pnm"></small></div>
-<div class="fl"><label for="pph">Телефон</label><input id="pph" type="tel" inputmode="tel" autocomplete="tel" value="+992 "><small class="er" id="e-pph"></small></div>
+<div class="fl"><label for="pph">Телефон</label><input id="pph" type="tel" inputmode="tel" autocomplete="tel" value="+992 "><small class="er" id="e-pph"></small><div id="pver" class="pver"></div></div>
 <div class="fl"><label for="pct">Кто покупает</label><select id="pct" class="pin"><option value="r">Частное лицо — документы не нужны</option><option value="c">Компания — счёт-фактура и накладная</option><option value="w">Оптовый покупатель — накладная с весом и скидками</option></select></div><div class="fl"><label for="porg">Организация или ИП</label><input id="porg" autocomplete="organization"></div>
 <div class="fl"><label for="pcty">Город или район</label><input id="pcty" autocomplete="address-level2" placeholder="Например, Душанбе"></div>
 <div class="fl"><label for="pad">Адрес</label><textarea id="pad" rows="2" autocomplete="street-address" placeholder="Улица, дом, квартира, ориентир"></textarea></div>
@@ -906,7 +907,7 @@ function otpGate(ph){if(!API_URL)return Promise.resolve();return fetch(API_URL+"
 e.preventDefault();e.stopImmediatePropagation();otpGate(ph).then(function(){pass=true;f.dispatchEvent(new Event("submit",{cancelable:true,bubbles:true}))},function(){})},true)}
 guard("fm","ph",function(){return Object.keys(cart).length>0});guard("pf","pph")})();
 function custId(ph){var d=String(ph).replace(/\D/g,"");return "K-"+d.slice(-9)}
-function fillProfForm(){var p=ld("uh_prof",{}),b=$("pid");$("pnm").value=p.nm||"";$("pph").value=p.ph||"+992 ";$("porg").value=p.org||"";$("pct").value=CT[p.ct]?p.ct:"r";$("pcty").value=p.cty||"";$("pad").value=p.ad||"";if(p.ph){b.hidden=false;b.innerHTML='<div><span>Ваш код клиента</span><b>'+esc(custId(p.ph))+'</b></div>'}else b.hidden=true}
+function fillProfForm(){var p=ld("uh_prof",{}),b=$("pid");try{pverUi(p)}catch(x){}$("pnm").value=p.nm||"";$("pph").value=p.ph||"+992 ";$("porg").value=p.org||"";$("pct").value=CT[p.ct]?p.ct:"r";$("pcty").value=p.cty||"";$("pad").value=p.ad||"";if(p.ph){b.hidden=false;b.innerHTML='<div><span>Ваш код клиента</span><b>'+esc(custId(p.ph))+'</b></div>'}else b.hidden=true}
 function fillCheckout(){var p=ld("uh_prof",{});if(p.ct&&CT[p.ct]){var rr=document.querySelector('input[name="ct"][value="'+p.ct+'"]');if(rr)rr.checked=true}try{ctUi()}catch(x){};if(p.nm)$("nm").value=p.nm;if(p.ph)$("ph").value=p.ph;if(p.org)$("org").value=p.org;if(p.cty)$("cty").value=p.cty;if(p.ad)$("ad").value=p.ad}
 $("pf").addEventListener("submit",function(e){e.preventDefault();var nm=$("pnm").value.trim(),ph=$("pph").value.trim(),a=err("pnm",nm?"":"Укажите имя"),b=err("pph",ph.replace(/\D/g,"").length>=9?"":"Введите номер телефона, не меньше 9 цифр");if(!(a&&b))return;
 var old=ld("uh_prof",{}),p={nm:nm,ph:ph,ct:$("pct").value,org:$("porg").value.trim(),cty:$("pcty").value.trim(),ad:$("pad").value.trim(),id:custId(ph)};sv("uh_prof",p);if(old.ph!==ph)notifyReg(p);fillCheckout();fillProfForm();toast("Данные сохранены");loadMy()});
@@ -1212,7 +1213,7 @@ if(!p.ph){el.innerHTML='<div class="lyb"><h3>Бонусы постоянным �
 var L=LOYI||loyalty(localOl()),h='<div class="lyb"><div class="big2">'+(L.pct?'−'+L.pct+'%':'Скидки пока нет')+'</div><p style="margin:2px 0 10px"><b>'+(L.pct?'Ваша скидка действует на все заказы':'Заказывайте чаще: скидка появится автоматически')+'</b></p>';
 h+='<p><b>Заказов подряд: '+Math.min(L.cnt,LOYC.n)+' из '+LOYC.n+'</b> → скидка '+LOYC.p1+'% на 3 месяца'+(L.a3?'<br>Действует до '+dtx(L.u3)+'. Продлевается с каждым заказом.':'')+'</p><div class="bar2"><i style="width:'+Math.min(100,L.cnt/LOYC.n*100)+'%"></i></div>';
 h+='<p><b>Заказ от '+LOYC.sum+' сом.</b> → скидка '+LOYC.p2+'% (сразу на этот заказ и на 3 месяца)'+(L.a5?'<br>Действует до '+dtx(L.u5)+'. Продлевается с каждым заказом.':'')+'</p>';
-var S3=LOYC.s3||1000;h+='<p><b>Лучший клиент → −'+LOYC.p3+'%</b><br>Покупки без перерыва 3 месяца подряд, и сумма успешных заказов за эти 3 месяца — от '+S3+' сом. Месяцев с покупками: '+L.mc+' из 3, сумма: '+f(L.s3||0)+' из '+f(S3)+'.'+(L.t3?' <b>Вы получаете максимальную скидку!</b>':'')+'</p><div class="bar2"><i style="width:'+Math.min(100,(Math.min(1,L.mc/3)+Math.min(1,(L.s3||0)/S3))/2*100)+'%"></i></div>';
+var S3=LOYC.s3||1000;h+='<p><b>Лучший клиент → −'+LOYC.p3+'%</b><br>Покупки без перерыва 3 месяца подряд, и сумма успешных заказов за эти 3 месяца — от '+S3+' сом. Месяцев с покупками: '+L.mc+' из 3, сумма: '+f(L.s3||0)+' из '+f(S3)+(L.t3?' <b>Вы получаете максимальную скидку!</b>':'')+'</p><div class="bar2"><i style="width:'+Math.min(100,(Math.min(1,L.mc/3)+Math.min(1,(L.s3||0)/S3))/2*100)+'%"></i></div>';
 el.innerHTML=h+'<p class="note" style="margin:0">Скидки не суммируются: действует наибольшая. Они применяются вместе с оптовой скидкой на товар.</p></div>'}
 function loyNote(){var t=tot();if(LE)return'<p class="note" style="margin:6px 0 8px;color:var(--tx)"><b>Ваша бонусная скидка −'+LE+'%</b> уже учтена в ценах.</p>';var need=LOYC.sum-t.s0;return'<p class="note" style="margin:6px 0 8px">'+(need>0&&t.s0>0?'Добавьте товаров ещё на <b>'+f(need)+'</b> и получите скидку '+LOYC.p2+'%.':'Заказ от '+LOYC.sum+' сом. — скидка '+LOYC.p2+'%.')+'</p>'}
 var bnI=0,bnT=null,bnH="";
@@ -2034,6 +2035,11 @@ function wxInfo(){var d=WX.d;if(!d){toast("Погода пока не загру
 toast("Душанбе · "+WXP[WX.ph]+": "+T[0].toLowerCase()+", "+sg(d.t)+" (ощущается "+sg(d.fl)+"), днём "+sg(d.mx)+", ночью "+sg(d.mn)+". Ветер "+Math.round(d.w)+" м/с, влажность "+Math.round(d.hu)+"%")}
 document.addEventListener("click",function(e){if(e.target.closest("#wxb")){e.preventDefault();wxInfo()}});
 /*ANIMS*/
+function pverUi(p){var e=$("pver");if(!e)return;if(!p||!p.ph){e.innerHTML='<span class="note" style="margin:0">Сохраните данные — затем подтвердите номер кодом из WhatsApp</span>';return}
+if(isVer(p.ph)){e.innerHTML='<span class="pv-ok">✅ Номер подтверждён</span>';return}
+e.innerHTML='<span class="pv-no">Номер не подтверждён — без этого не видны ваши личные цены и статусы заказов</span><button type="button" class="btn sm" id="pvgo">Подтвердить номер</button>'}
+document.addEventListener("click",function(e){if(e.target&&e.target.id==="pvgo"){e.preventDefault();var p=ld("uh_prof",{});if(!p.ph)return;otpAsk(p.ph).then(function(){fillProfForm();var b=$("vbar");if(b)b.hidden=true;loadMy();toast("Номер подтверждён ✓")}).catch(function(){})}});
+
 /* ===== Подтверждение номера, чтобы клиент получил свои цены ===== */
 function verBar(on){var b=$("vbar"),p=ld("uh_prof",{});if(!on||!p.ph){if(b)b.hidden=true;return}if(!b){b=document.createElement("div");b.id="vbar";b.className="vbar";b.innerHTML='<span>🔒 Подтвердите номер телефона — и сайт покажет ваши персональные цены и скидки</span><button type="button" class="btn sm" id="vbgo">Подтвердить</button>';var hd=document.querySelector(".hd");hd.parentNode.insertBefore(b,hd.nextSibling);
 $("vbgo").addEventListener("click",function(){var pp=ld("uh_prof",{});if(!pp.ph){fillProfForm();openD("vp");return}otpAsk(pp.ph).then(function(){b.hidden=true;loadMy()}).catch(function(){})})}b.hidden=false}

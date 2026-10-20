@@ -203,6 +203,37 @@ legend{padding:0;margin-bottom:8px}
 .ol li.sc{color:var(--tx);font-weight:700}.ol li.sc i{background:var(--ac);border-color:var(--ac);box-shadow:0 0 0 4px color-mix(in srgb,var(--ac) 25%,transparent)}
 .pr{font-size:14px;margin:0 0 8px;color:var(--tx)}
 @media (max-width:760px){.nv{display:none}.hero{grid-template-columns:1fr;padding-block:28px 24px;gap:22px}.hero p{font-size:16px}.stats b{font-size:22px}}
+
+html{background:var(--bg)}body{background:transparent}
+#wx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;transition:background 2s}
+#wx b,#wx i{position:absolute;display:block}
+.wxg,.wxp{inset:0}
+html[data-ph=morning] .wxp{background:radial-gradient(120% 60% at 15% 0%,rgba(255,196,140,.45),transparent 60%),linear-gradient(180deg,rgba(255,226,190,.35),transparent 45%)}
+html[data-ph=day] .wxp{background:radial-gradient(70% 45% at 88% 0%,rgba(255,214,102,.35),transparent 60%)}
+html[data-ph=evening] .wxp{background:linear-gradient(180deg,rgba(90,50,120,.42),rgba(220,110,70,.22) 38%,rgba(40,30,60,.22))}
+html[data-ph=evening]:not([data-theme=dark]) .hd{background:color-mix(in srgb,var(--bg) 82%,#5a3478)}
+html[data-ph=night] .wxp{background:radial-gradient(90% 50% at 50% 0%,rgba(70,90,160,.25),transparent 65%)}
+html[data-wx=cloud] .wxg,html[data-wx=rain] .wxg,html[data-wx=storm] .wxg,html[data-wx=fog] .wxg{background:linear-gradient(180deg,rgba(120,130,145,.30),transparent 55%)}
+html[data-wx=snow] .wxg{background:linear-gradient(180deg,rgba(200,215,235,.40),transparent 60%)}
+html[data-wx=fog] #wx{backdrop-filter:blur(.5px)}
+html[data-ph=day][data-wx=clear] .wxp,html[data-ph=day][data-wx=part] .wxp{animation:wxsun 8s ease-in-out infinite alternate}
+@keyframes wxsun{from{opacity:.75}to{opacity:1}}
+.wxs{width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:0 0 4px #fff;animation:wxtw 3s ease-in-out infinite alternate;opacity:.7}
+@keyframes wxtw{from{opacity:.15}to{opacity:.9}}
+.wxc{left:-40%;width:55vw;max-width:520px;height:120px;border-radius:50%;background:radial-gradient(closest-side,rgba(150,160,175,.38),transparent);filter:blur(6px);animation:wxcl linear infinite}
+html[data-theme=dark] .wxc{background:radial-gradient(closest-side,rgba(110,120,140,.30),transparent)}
+@keyframes wxcl{from{transform:translateX(0)}to{transform:translateX(190vw)}}
+.wxr{top:-12%;width:1.5px;height:70px;background:linear-gradient(180deg,transparent,rgba(90,120,170,.55));animation:wxrain linear infinite}
+html[data-theme=dark] .wxr{background:linear-gradient(180deg,transparent,rgba(170,195,235,.45))}
+@keyframes wxrain{from{transform:translate(0,0)}to{transform:translate(-40px,125vh)}}
+.wxf{top:-5%;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 3px rgba(120,140,170,.6);opacity:.85;animation:wxsnow linear infinite}
+@keyframes wxsnow{0%{transform:translate(0,0)}50%{transform:translate(25px,55vh)}100%{transform:translate(-15px,110vh)}}
+.wxl{inset:0;background:#fff;opacity:0;animation:wxfl 9s infinite}
+@keyframes wxfl{0%,92%,96%,100%{opacity:0}93%,95%{opacity:.35}}
+.wxb{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:7px 12px;border-radius:99px;border:1px solid var(--bd);background:var(--sf);font:600 13.5px/1.2 var(--fb);color:var(--tx);box-shadow:var(--sh)}
+.wxb[hidden]{display:none!important}.wxi{font-size:17px;line-height:1}.wxt b{font-weight:800}.wxt span{color:var(--mut);font-weight:500}
+@media (prefers-reduced-motion:reduce){#wx *{animation:none!important}.wxr,.wxf{display:none!important}}
+
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.dr,.dr.open{transition:none}}
 .p{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
 .pl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -254,7 +285,7 @@ legend{padding:0;margin-bottom:8px}
 
 <main class="w" id="top">
 <section class="hero">
-<div><h1>Канцелярские товары для офиса и учёбы</h1>
+<div><button type="button" class="wxb" id="wxb" aria-label="Погода в Душанбе" hidden></button><h1>Канцелярские товары для офиса и учёбы</h1>
 <p>Бумага, папки, ножницы, калькуляторы и степлеры. Соберите заказ из каталога, укажите адрес и способ оплаты, и мы подтвердим его в WhatsApp.</p>
 <div class="cta"><a class="btn" href="#catalog">Открыть каталог</a><a class="btn o" href="https://www.instagram.com/umari_khayom.tj" target="_blank" rel="noopener">Instagram</a></div></div>
 <div class="stats"><div><b id="s1">0</b><span>товаров</span></div><div><b id="s2">5</b><span>категорий</span></div><div><b>1 мин</b><span>на оформление</span></div></div>
@@ -284,11 +315,11 @@ legend{padding:0;margin-bottom:8px}
 <div class="box"><h3>Instagram</h3><p>Новинки и акции магазина</p><div class="num">@umari_khayom.tj</div><div class="row"><a class="btn sm" href="https://www.instagram.com/umari_khayom.tj" target="_blank" rel="noopener">Открыть профиль</a></div></div>
 </div>
 </main>
-<footer class="w"><style>.fl a{color:inherit}.fl{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0}footer p{margin:0 0 6px}footer .fc{color:var(--tx,inherit);font-weight:700}footer .fn{font-size:12px;opacity:.85}</style>
+<footer class="w"><style>.fl2 a{color:inherit}.fl2{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0}footer p{margin:0 0 6px}footer .fc{color:var(--tx,inherit);font-weight:700}footer .fn{font-size:12px;opacity:.85}</style>
 <p class="fc">© <span class="js-year">2026</span> Умари Хайём. Все права защищены.</p>
 <p>ООО «Молҳои Умари Хайём» · Таджикистан, г. Душанбе, р. Шохмансур, ул. А. Дониш, 5/3</p>
 <p>Тел.: <a href="https://wa.me/992986868662" style="color:inherit">+992 98 686 86 62</a> (WhatsApp)</p>
-<nav class="fl"><a href="privacy.html">Политика конфиденциальности</a><a href="terms.html">Условия использования</a><a href="delivery.html">Доставка и оплата</a><a href="returns.html">Возврат и обмен</a><a href="#admin" data-a="adm" style="opacity:.6">Для поставщика</a></nav>
+<nav class="fl2"><a href="privacy.html">Политика конфиденциальности</a><a href="terms.html">Условия использования</a><a href="delivery.html">Доставка и оплата</a><a href="returns.html">Возврат и обмен</a><a href="#admin" data-a="adm" style="opacity:.6">Для поставщика</a></nav>
 <p class="fn">Все материалы сайта (фотографии, тексты, логотип, дизайн) являются собственностью магазина «Умари Хайём». Копирование без письменного разрешения запрещено. Цены указаны в сомони и не являются публичной офертой до подтверждения заказа менеджером.</p>
 <script>document.querySelectorAll('.js-year').forEach(function(e){e.textContent=new Date().getFullYear()})</script></footer>
 
@@ -499,7 +530,7 @@ function err(id,m){$("e-"+id).textContent=m;return !m}
 function pad(n){return n<10?"0"+n:""+n}
 function copy(text,ta){var done=function(){toast("Скопировано")},fail=function(){if(ta){ta.select();toast("Выделено, скопируйте вручную")}else toast("Не удалось скопировать")};
 try{navigator.clipboard.writeText(text).then(done,fail)}catch(e){fail()}}
-function setTheme(){var r=document.documentElement,cur=r.getAttribute("data-theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);sv("uh_th",nx)}
+function setTheme(){var r=document.documentElement,cur=r.getAttribute("data-theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),nx=cur==="dark"?"light":"dark";r.setAttribute("data-theme",nx);sv("uh_th",{t:nx,ph:WX.ph})}
 var LAST=null,SHOP={ph:PHSHOW,addr:"",inn:""};
 var ONES=["","один","два","три","четыре","пять","шесть","семь","восемь","девять","десять","одиннадцать","двенадцать","тринадцать","четырнадцать","пятнадцать","шестнадцать","семнадцать","восемнадцать","девятнадцать"],TENS=["","","двадцать","тридцать","сорок","пятьдесят","шестьдесят","семьдесят","восемьдесят","девяносто"],HUN=["","сто","двести","триста","четыреста","пятьсот","шестьсот","семьсот","восемьсот","девятьсот"];
 function trip(n,fem){var r=[],h=Math.floor(n/100),t=n%100,o;if(h)r.push(HUN[h]);if(t<20){if(t){o=ONES[t];if(fem&&t===1)o="одна";if(fem&&t===2)o="две";r.push(o)}}else{r.push(TENS[Math.floor(t/10)]);o=ONES[t%10];if(fem&&t%10===1)o="одна";if(fem&&t%10===2)o="две";if(o)r.push(o)}return r.join(" ")}
@@ -733,7 +764,7 @@ clog(ord,"Заказ оформлен");LAST=ord;hist.unshift(ord);hist=hist.sli
 $("on").textContent=no;$("ot").value=msg;sent=false;$("wa2").textContent="Оформить заказ";var ENC=encodeURIComponent(msg);$("fb").hidden=true;$("wa2").href=/Android/i.test(navigator.userAgent)?"intent://send?phone="+PHONE+"&text="+ENC+"#Intent;scheme=whatsapp;package=com.whatsapp;end":"whatsapp://send?phone="+PHONE+"&text="+ENC;
 var tk=sendNew(ord,msg);if(!tk)view("vs");else{var bt=e.submitter;if(bt)bt.disabled=true;tk.then(function(){$("dq").hidden=true;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd")}).catch(function(er){toast("Не удалось отправить: "+((er&&er.code)||"нет связи")+". Заказ сохранён и отправится автоматически");try{window.__lastErr=er&&er.code}catch(x){}setTimeout(qRun,8000);$("dq").hidden=false;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd")}).then(function(){if(bt)bt.disabled=false})}})});
 fillCheckout();fillProfForm();
-var th=ld("uh_th",null);if(th==="dark"||th==="light")document.documentElement.setAttribute("data-theme",th);
+
 var A={fo:{},qf:"all",open:{},role:"",who:"",pend:{},draft:{},gr:"auto",key:"",rows:[],tab:"o",from:"",to:"",q:"",fs:"",fp:"",ok:false};
 var PSL={unpaid:"Не оплачен",part:"Частично",paid:"Оплачен"};
 function pts(ds){var m=/(\d+)\.(\d+)\.(\d+)/.exec(ds||"");return m?new Date(+m[3],+m[2]-1,+m[1]).getTime():0}
@@ -1557,6 +1588,9 @@ function stfRl(r){r=String(r||"");return{"Контент-менеджер":"cont
 function stfProd(pid,n0){var x=null;if(pid!=null&&pid!=="")D.forEach(function(p){if(p.id!=null&&String(p.id)===String(pid))x=p});if(!x&&/^\d+$/.test(String(pid))&&D[+pid]&&D[+pid].id==null)x=D[+pid];if(!x&&n0)D.forEach(function(p){if(p.n===n0)x=p});return x}
 
 /* Контент-менеджеры */
+var QF=["Фото","Характеристика","Доп. фото","Вес","Пачка/коробка"];
+function qlt(p){var m=[];if(!p)return{m:QF.slice(),sc:0};if(!p.i)m.push(QF[0]);if(String(p.desc||"").trim().length<20)m.push(QF[1]);if(!(p.ims&&p.ims.length))m.push(QF[2]);if(!(+p.w>0))m.push(QF[3]);if(!((+p.k||1)>1||(+p.b||1)>1))m.push(QF[4]);return{m:m,sc:Math.round((QF.length-m.length)/QF.length*100)}}
+function qcol(v){return v>=80?"var(--ok)":v>=50?"#d98a00":"var(--er)"}
 function stfCat(a,b){var G={},P={},adds=[];
 (A.clog||[]).forEach(function(l){var w=String(l.w||"").trim()||"—",r=stfRl(l.r);if(r==="partner")return;var pid=l.pid!=null?l.pid:(l.id!=null?l.id:"");
 var g=G[w.toLowerCase()+"|"+l.ts+"|"+pid]||(G[w.toLowerCase()+"|"+l.ts+"|"+pid]={w:w,r:r,ts:+l.ts||0,pid:pid,t:[]});g.t.push(String(l.t||""))});
@@ -1569,9 +1603,9 @@ if(/Изменил цену|скидк/i.test(t))p.px++;if(/Скрыл/.test(t))
 var CR=A.rows.filter(function(r){return r.o&&r.o.src!=="staff"&&r.st!=="cancel"}),now=Date.now();
 adds.forEach(function(x){var cur=stfProd(x.pid,x.n0),N={};if(cur)N[cur.n]=1;if(x.n0)N[x.n0]=1;x.n=cur?cur.n:x.n0;x.gone=!cur;x.hide=cur&&cur.hide;x.c=cur?cur.c:"";
 x.ord=0;x.q=0;x.s=0;x.lastO=0;CR.forEach(function(r){if(r.ts<x.ts||r.ts>b)return;var hit=0;(r.o.items||[]).forEach(function(it){if(N[it.n]&&!it.man){hit=1;x.q+=(+it.q||0)*(it.m||1);x.s+=+it.sum||0}});if(hit){x.ord++;if(r.ts>x.lastO)x.lastO=r.ts}});
-x.age=Math.floor((Math.min(b,now)-x.ts)/864e5)});
+x.age=Math.floor((Math.min(b,now)-x.ts)/864e5);var Q=qlt(cur);x.qm=Q.m;x.qs=Q.sc});
 var inP=adds.filter(function(x){return x.ts>=a&&x.ts<=b});
-inP.forEach(function(x){var p=P[x.k];if(!p)return;p.sold=(p.sold||0)+(x.ord?1:0);p.ord=(p.ord||0)+x.ord;p.rev=(p.rev||0)+x.s;p.dead=(p.dead||0)+(!x.ord&&x.age>=14?1:0)});
+inP.forEach(function(x){var p=P[x.k];if(!p)return;p.sold=(p.sold||0)+(x.ord?1:0);p.ord=(p.ord||0)+x.ord;p.rev=(p.rev||0)+x.s;p.dead=(p.dead||0)+(!x.ord&&x.age>=14?1:0);if(!x.gone){p.qn=(p.qn||0)+1;p.qsum=(p.qsum||0)+x.qs;p.qfull=(p.qfull||0)+(x.qm.length?0:1);p.qmf=p.qmf||{};x.qm.forEach(function(f2){p.qmf[f2]=(p.qmf[f2]||0)+1})}});
 return{P:P,adds:inP.sort(function(a,b){return b.s-a.s||b.ts-a.ts})}}
 
 /* Торговые представители */
@@ -1602,7 +1636,7 @@ return{a:a,b:b,cm:cm,adds:cat.adds,rp:rp,actC:actC,actS:actS}}
 
 function stfSig(Z,v){var S=[];
 if(v==="s")Z.rp.forEach(function(p){if(p.ag[2]>0)S.push(["er","<b>"+esc(p.w)+"</b>: долг старше 30 дней — "+f(p.ag[2])]);if(p.n&&p.pp<50)S.push(["wa","<b>"+esc(p.w)+"</b>: оплачено только "+Math.round(p.pp)+"% от суммы заявок"]);if(p.cn>=3&&p.cn>=p.n*0.2)S.push(["wa","<b>"+esc(p.w)+"</b>: отменено заявок — "+p.cn]);if(p.last&&Date.now()-p.last>3*864e5)S.push(["wa","<b>"+esc(p.w)+"</b>: не заходил на сайт "+stfAgo(p.last)])});
-if(v==="c")Z.cm.forEach(function(p){if(p.r!=="content")return;if(p.dead)S.push(["wa","<b>"+esc(p.w)+"</b>: добавленных позиций без заказов клиентов дольше 14 дней — "+p.dead]);if(p.px>=10)S.push(["wa","<b>"+esc(p.w)+"</b>: много изменений цен и скидок — "+p.px]);if(p.min>=60&&p.add+p.ed===0)S.push(["wa","<b>"+esc(p.w)+"</b>: "+stfHm(p.min)+" на сайте без добавлений и правок"])});
+if(v==="c")Z.cm.forEach(function(p){if(p.r!=="content")return;if(p.dead)S.push(["wa","<b>"+esc(p.w)+"</b>: добавленных позиций без заказов клиентов дольше 14 дней — "+p.dead]);if(p.px>=10)S.push(["wa","<b>"+esc(p.w)+"</b>: много изменений цен и скидок — "+p.px]);if(p.min>=60&&p.add+p.ed===0)S.push(["wa","<b>"+esc(p.w)+"</b>: "+stfHm(p.min)+" на сайте без добавлений и правок"]);if(p.qn&&p.qsum/p.qn<70)S.push([p.qsum/p.qn<50?"er":"wa","<b>"+esc(p.w)+"</b>: качество заполнения карточек "+Math.round(p.qsum/p.qn)+"% — не заполнено полей: "+Object.keys(p.qmf||{}).map(function(k){return k.toLowerCase()+" ("+p.qmf[k]+")"}).join(", ")])});
 return S}
 
 function admStf(){if(!A.stfLd){A.stfLd=1;catLogLoad().then(function(){if(A.tab==="e")admRender()})}
@@ -1625,18 +1659,27 @@ h+='<h3>Активность по дням</h3>'+stfDays(Z.actS);return h}
 
 function stfCmHtml(Z){var C=Z.cm,T={add:0,ed:0,min:0,sold:0,ord:0,rev:0};C.forEach(function(p){["add","ed","min","sold","ord","rev"].forEach(function(x){T[x]+=p[x]||0})});
 if(!C.length)return'<div class="emp">За период нет изменений каталога и активности контент-менеджеров.</div>'+(A.clog&&A.clog.length?"":'<p class="note">Если изменения были, нажмите «Обновить»: журнал каталога загружается отдельно.</p>');
-var h=stfKp([["Время на сайте",stfHm(T.min)],["Добавлено позиций",String(T.add)],["Правок позиций",String(T.ed)],["Добавленные с заказами",T.sold+" из "+T.add,T.add?Math.round(T.sold/T.add*100)+"% позиций продаются":""],["Заказов клиентов",String(T.ord),"по добавленным позициям"],["Выручка с добавленных",f(T.rev)]]);
+var QN=0,QS=0,QFu=0;C.forEach(function(p){QN+=p.qn||0;QS+=p.qsum||0;QFu+=p.qfull||0});var h=stfKp([["Качество карточек",QN?Math.round(QS/QN)+"%":"—",QN?QFu+" из "+QN+" заполнены полностью":""],["Время на сайте",stfHm(T.min)],["Добавлено позиций",String(T.add)],["Правок позиций",String(T.ed)],["Добавленные с заказами",T.sold+" из "+T.add,T.add?Math.round(T.sold/T.add*100)+"% позиций продаются":""],["Заказов клиентов",String(T.ord),"по добавленным позициям"],["Выручка с добавленных",f(T.rev)]]);
 h+='<h3>Сводка по сотрудникам</h3><p class="note">Учитываются только заказы, которые оформили клиенты. Заказы, созданные сотрудниками вручную (и торговыми представителями), не считаются.</p><div class="tw"><table class="tb stft"><tr><th>Сотрудник</th><th>Время</th><th>Добавил</th><th>Правок (позиций)</th><th>Цены/скидки</th><th>Скрыл</th><th>Действий/ч</th><th>Добавленные с заказами</th><th>Заказов</th><th>Выручка</th><th>Был на сайте</th></tr>'+
 C.map(function(p){var cv=p.add?Math.round(p.sold/p.add*100):0;return'<tr><td><b>'+esc(p.w)+'</b>'+(p.r&&p.r!=="content"?'<br><small>'+esc(RL[p.r]||p.r)+'</small>':'')+'</td><td>'+stfHm(p.min)+'<br><small>дней: '+p.days+'</small></td><td>'+p.add+'</td><td>'+p.ed+' ('+p.edu+')</td><td>'+p.px+'</td><td>'+p.hid+'</td><td>'+(p.hr?Math.round(p.hr*10)/10:"—")+'</td><td>'+(p.add?p.sold+' из '+p.add+'<div class="sbar" style="margin-top:4px"><i style="width:'+cv+'%;background:var(--ok)"></i></div><small>'+cv+'%</small>':'—')+'</td><td>'+p.ord+'</td><td>'+f(p.rev)+'</td><td><small>'+stfAgo(p.last)+'</small></td></tr>'}).join("")+'</table></div>';
-var A2=Z.adds;h+='<h3>Добавленные позиции и заказы клиентов</h3><p class="note">Позиции, добавленные за период. Заказы считаются с момента добавления до конца периода. Красным — нет ни одного заказа 14 дней и дольше.</p>'+
+h+=stfQHtml(Z);var A2=Z.adds;h+='<h3>Добавленные позиции и заказы клиентов</h3><p class="note">Позиции, добавленные за период. Заказы считаются с момента добавления до конца периода. Красным — нет ни одного заказа 14 дней и дольше.</p>'+
 (A2.length?'<div class="tw"><table class="tb stft"><tr><th>Позиция</th><th>Добавил</th><th>Дата</th><th>Заказов</th><th>Кол-во</th><th>Выручка</th><th>Последний заказ</th></tr>'+A2.map(function(x){var dead=!x.ord&&x.age>=14;return'<tr'+(dead?' class="stfdd"':'')+'><td>'+esc(x.n||"—")+(x.c?'<br><small>'+esc(x.c)+'</small>':'')+(x.gone?' <small>(удалена)</small>':x.hide?' <small>(скрыта)</small>':'')+'</td><td>'+esc(x.w)+'</td><td>'+dshow(dkey(x.ts))+'</td><td>'+(x.ord||(dead?'<b class="stfr">0</b>':"0"))+'</td><td>'+(x.q||"—")+'</td><td>'+(x.s?f(x.s):"—")+'</td><td><small>'+(x.lastO?dshow(dkey(x.lastO)):(x.age+" дн. без заказов"))+'</small></td></tr>'}).join("")+'</table></div>':'<div class="emp">За период позиции не добавлялись</div>');
 h+='<h3>Активность по дням</h3>'+stfDays(Z.actC);return h}
 
+function stfQHtml(Z){var C=Z.cm.filter(function(p){return p.qn}),h='<h3>Качество заполнения карточек</h3><p class="note">Проверяются поля, которые можно пропустить при добавлении: фото, характеристика (не короче 20 знаков), дополнительные фото, вес и пачка или коробка. 100% — все поля заполнены. Оценка по текущему состоянию карточки: если поле дозаполнили позже, оценка вырастет.</p>';
+if(!C.length)h+='<div class="emp">За период позиции не добавлялись</div>';else{
+h+='<div class="tw"><table class="tb stft"><tr><th>Сотрудник</th><th>Качество</th><th>Добавил</th><th>Заполнены полностью</th>'+QF.map(function(q){return'<th>Без: '+q.toLowerCase()+'</th>'}).join("")+'</tr>'+C.map(function(p){var v=Math.round(p.qsum/p.qn);return'<tr><td><b>'+esc(p.w)+'</b></td><td><b style="color:'+qcol(v)+'">'+v+'%</b><div class="sbar" style="margin-top:4px"><i style="width:'+v+'%;background:'+qcol(v)+'"></i></div></td><td>'+p.qn+'</td><td>'+(p.qfull||0)+'</td>'+QF.map(function(q){var n=(p.qmf||{})[q]||0;return'<td>'+(n?'<b class="stfr">'+n+'</b>':'—')+'</td>'}).join("")+'</tr>'}).join("")+'</table></div>';
+var bad=Z.adds.filter(function(x){return!x.gone&&x.qm&&x.qm.length}).sort(function(a,b){return a.qs-b.qs||b.ts-a.ts});
+h+='<h4>Карточки, которые нужно дозаполнить</h4>'+(bad.length?'<div class="tw"><table class="tb stft"><tr><th>Позиция</th><th>Добавил</th><th>Качество</th><th>Не заполнено</th></tr>'+bad.map(function(x){return'<tr><td>'+esc(x.n||"—")+(x.c?'<br><small>'+esc(x.c)+'</small>':'')+'</td><td>'+esc(x.w)+'<br><small>'+dshow(dkey(x.ts))+'</small></td><td><b style="color:'+qcol(x.qs)+'">'+x.qs+'%</b></td><td>'+esc(x.qm.join(", "))+'</td></tr>'}).join("")+'</table></div>':'<div class="pr">Все добавленные за период карточки заполнены полностью.</div>')}
+var all=D.filter(function(p){return!p.hide}),cnt={},full=0;all.forEach(function(p){var Q=qlt(p);if(!Q.m.length)full++;Q.m.forEach(function(q){cnt[q]=(cnt[q]||0)+1})});
+if(all.length)h+='<h4>Весь каталог на сайте</h4><p class="note">Все видимые товары, независимо от того, кто и когда их добавил.</p>'+stfKp([["Заполнены полностью",full+" из "+all.length,Math.round(full/all.length*100)+"%"]].concat(QF.map(function(q){return["Без: "+q.toLowerCase(),String(cnt[q]||0)]})));
+return h}
 function stfXlsx(){var Z=stfData(),pl=perLabel(),sh=[];
 sh.push({name:"Торговые представители",rows:[["Период: "+pl],["Место","Представитель","Заявок","Отменено","Сумма заявок","Оплачено","Долг","Оплачено, %","Оплачены полностью","Частично","Не оплачены","Разница оплачено − долг","Долг до 7 дн.","Долг 8–30 дн.","Долг >30 дн.","Средний чек","Клиентов","Новых клиентов","Время на сайте, мин","Активных дней","Заявок в час"]].concat(Z.rp.map(function(p,i){return[i+1,p.w,p.n,p.cn,r2(p.s),r2(p.pd),r2(p.db),Math.round(p.pp),p.np,p.npart,p.nun,r2(p.pd-p.db),r2(p.ag[0]),r2(p.ag[1]),r2(p.ag[2]),r2(p.avg),p.nc,p.nw,Math.round(p.min),p.days,Math.round(p.ph*10)/10]})),wd:[7,24,9,10,14,14,14,11,12,10,11,16,12,12,12,13,10,12,14,11,11]});
 var U=[["Представитель","Заявка","Дата","Клиент","Телефон","Сумма","Оплачено","Остаток","Дней"]];Z.rp.forEach(function(p){p.unp.forEach(function(u){U.push([p.w,u.r.no,u.r.o.date||"",u.r.o.cust.nm||"",u.r.o.cust.ph||"",r2(u.r.sum),r2(u.pd),r2(u.d),u.age])})});sh.push({name:"Неоплаченные заявки ТП",rows:U,wd:[22,12,12,26,16,13,13,13,8]});
 sh.push({name:"Контент-менеджеры",rows:[["Период: "+pl],["Сотрудник","Время на сайте, мин","Активных дней","Добавлено","Правок","Позиций изменено","Изменений цен/скидок","Скрыто","Действий в час","Добавленные с заказами","Заказов клиентов","Выручка с добавленных"]].concat(Z.cm.map(function(p){return[p.w,Math.round(p.min),p.days,p.add,p.ed,p.edu,p.px,p.hid,Math.round(p.hr*10)/10,p.sold,p.ord,r2(p.rev)]})),wd:[24,14,11,11,9,12,14,9,11,14,12,14]});
-sh.push({name:"Добавленные позиции",rows:[["Позиция","Категория","Добавил","Дата","Заказов клиентов","Кол-во","Выручка","Последний заказ"]].concat(Z.adds.map(function(x){return[x.n,x.c||"",x.w,dshow(dkey(x.ts)),x.ord,x.q,r2(x.s),x.lastO?dshow(dkey(x.lastO)):"нет"]})),wd:[40,18,20,12,12,10,13,14]});
+sh.push({name:"Добавленные позиции",rows:[["Позиция","Категория","Добавил","Дата","Заказов клиентов","Кол-во","Выручка","Последний заказ","Качество карточки, %","Не заполнено"]].concat(Z.adds.map(function(x){return[x.n,x.c||"",x.w,dshow(dkey(x.ts)),x.ord,x.q,r2(x.s),x.lastO?dshow(dkey(x.lastO)):"нет",x.gone?"":x.qs,x.gone?"удалена":(x.qm||[]).join(", ")]})),wd:[40,18,20,12,12,10,13,14,12,40]});
+sh.push({name:"Качество карточек",rows:[["Период: "+pl],["Сотрудник","Качество, %","Добавил","Заполнены полностью"].concat(QF.map(function(q){return"Без: "+q.toLowerCase()}))].concat(Z.cm.filter(function(p){return p.qn}).map(function(p){return[p.w,Math.round(p.qsum/p.qn),p.qn,p.qfull||0].concat(QF.map(function(q){return(p.qmf||{})[q]||0}))})),wd:[24,12,10,14,12,16,14,10,16]});
 saveAny("Сотрудники_Умари_Хайём_"+dkey(Date.now())+".xlsx",xlsxBytes(sh),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
 (function(){$("adm").addEventListener("click",function(e){var t=e.target.closest("[data-ad=stfv],[data-ad=stfx]");if(!t)return;e.preventDefault();if(t.dataset.ad==="stfv"){A.stfv=t.dataset.v;admRender()}else stfXlsx()})})();
 
@@ -1717,6 +1760,35 @@ if(a==="i")pwaInstall();else if(a==="x"){if(t.closest("#pwan")){try{localStorage
 document.addEventListener("click",function(e){if(e.target.id==="pwam")pwaClose()});
 if("serviceWorker" in navigator&&/^https:/.test(location.protocol)&&!(window.claude&&window.claude.use)){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
 pwaUi();setTimeout(pwaUi,1500);
+
+/* ===== Погода в Душанбе и оформление по времени суток ===== */
+var WX={ph:"",k:"",d:null},WX_LAT=38.5598,WX_LON=68.787;
+function wxNowTJ(){var p=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Dushanbe",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date()),h=0,m=0;p.forEach(function(x){if(x.type==="hour")h=+x.value%24;if(x.type==="minute")m=+x.value});return h*60+m}
+function wxHm(s){var m=String(s||"").match(/T(\d\d):(\d\d)/);return m?+m[1]*60+ +m[2]:null}
+function wxPhase(){var t=wxNowTJ(),d=WX.d,sr=d&&wxHm(d.sr),ss=d&&wxHm(d.ss);if(sr==null)sr=6*60+30;if(ss==null)ss=18*60+30;
+if(t<sr-40||t>=ss+70)return"night";if(t<sr+180)return"morning";if(t>=ss-90)return"evening";return"day"}
+function wxKind(c){c=+c;if(c>=95)return"storm";if((c>=71&&c<=77)||c===85||c===86)return"snow";if((c>=51&&c<=67)||(c>=80&&c<=82))return"rain";if(c===45||c===48)return"fog";if(c===3)return"cloud";if(c===1||c===2)return"part";return"clear"}
+var WXT={clear:["Ясно","☀️","🌙"],part:["Переменная облачность","⛅","☁️"],cloud:["Пасмурно","☁️","☁️"],fog:["Туман","🌫️","🌫️"],rain:["Дождь","🌧️","🌧️"],snow:["Снег","❄️","❄️"],storm:["Гроза","⛈️","⛈️"]};
+var WXP={morning:"Утро",day:"День",evening:"Вечер",night:"Ночь"};
+function wxTheme(){var r=document.documentElement,s=ld("uh_th",null),dark=WX.ph==="night";
+if(s&&s.t&&s.ph===WX.ph){r.setAttribute("data-theme",s.t);return}
+r.setAttribute("data-theme",dark?"dark":"light")}
+function wxLayer(){var L=$("wx");if(!L){L=document.createElement("div");L.id="wx";L.setAttribute("aria-hidden","true");document.body.insertBefore(L,document.body.firstChild)}
+var k=WX.k||"clear",n=k==="rain"||k==="storm"?70:k==="snow"?45:0,h='<i class="wxp"></i><i class="wxg"></i>';
+if(WX.ph==="night"&&(k==="clear"||k==="part")){for(var i=0;i<40;i++)h+='<b class="wxs" style="left:'+(Math.random()*100).toFixed(1)+'%;top:'+(Math.random()*55).toFixed(1)+'%;animation-delay:'+(Math.random()*4).toFixed(2)+'s"></b>'}
+if(k==="part"||k==="cloud"||k==="fog"||k==="rain"||k==="storm"||k==="snow"){var nc=k==="part"?2:4;for(var c=0;c<nc;c++)h+='<b class="wxc" style="top:'+(4+c*13)+'%;animation-duration:'+(70+c*25)+'s;animation-delay:-'+(c*22)+'s"></b>'}
+for(var j=0;j<n;j++){var dl=(Math.random()*(k==="snow"?10:1.2)).toFixed(2),du=k==="snow"?(7+Math.random()*7).toFixed(1):(.55+Math.random()*.45).toFixed(2);h+='<b class="'+(k==="snow"?"wxf":"wxr")+'" style="left:'+(Math.random()*100).toFixed(1)+'%;animation-delay:-'+dl+'s;animation-duration:'+du+'s"></b>'}
+if(k==="storm")h+='<i class="wxl"></i>';
+L.innerHTML=h;var r=document.documentElement;r.setAttribute("data-ph",WX.ph);r.setAttribute("data-wx",k)}
+function wxChip(){var b=$("wxb");if(!b)return;var d=WX.d;if(!d){b.hidden=true;return}var T=WXT[WX.k]||WXT.clear,ic=WX.ph==="night"?T[2]:T[1];b.hidden=false;b.innerHTML='<span class="wxi">'+ic+'</span><span class="wxt"><b>'+(d.t>0?"+":"")+Math.round(d.t)+'°</b> <span>Душанбе · '+WXP[WX.ph].toLowerCase()+', '+T[0].toLowerCase()+'</span></span>';b.title="Душанбе: "+T[0].toLowerCase()+", "+(d.t>0?"+":"")+Math.round(d.t)+"°"}
+function wxApply(){WX.ph=wxPhase();WX.k=WX.d?wxKind(WX.d.c):"clear";wxTheme();wxLayer();wxChip()}
+function wxLoad(){var c=ld("uh_wx",null);if(c&&Date.now()-c.at<25*6e4){WX.d=c;wxApply();return}
+fetch("https://api.open-meteo.com/v1/forecast?latitude="+WX_LAT+"&longitude="+WX_LON+"&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min&forecast_days=1&wind_speed_unit=ms&timezone=Asia%2FDushanbe").then(function(r){return r.json()}).then(function(j){var cu=j.current||{},dy=j.daily||{};
+WX.d={at:Date.now(),t:+cu.temperature_2m,fl:+cu.apparent_temperature,c:+cu.weather_code,w:+cu.wind_speed_10m,hu:+cu.relative_humidity_2m,sr:(dy.sunrise||[])[0],ss:(dy.sunset||[])[0],mx:(dy.temperature_2m_max||[])[0],mn:(dy.temperature_2m_min||[])[0]};sv("uh_wx",WX.d);wxApply()}).catch(function(){if(c)WX.d=c;wxApply()})}
+function wxInfo(){var d=WX.d;if(!d){toast("Погода пока не загрузилась");return}var T=WXT[WX.k]||WXT.clear,sg=function(v){v=Math.round(v);return(v>0?"+":"")+v+"°"};
+toast("Душанбе · "+WXP[WX.ph]+": "+T[0].toLowerCase()+", "+sg(d.t)+" (ощущается "+sg(d.fl)+"), днём "+sg(d.mx)+", ночью "+sg(d.mn)+". Ветер "+Math.round(d.w)+" м/с, влажность "+Math.round(d.hu)+"%")}
+document.addEventListener("click",function(e){if(e.target.closest("#wxb")){e.preventDefault();wxInfo()}});
+wxApply();wxLoad();setInterval(function(){var p=WX.ph;WX.ph=wxPhase();if(p!==WX.ph)wxApply();if(!WX.d||Date.now()-WX.d.at>30*6e4)wxLoad()},6e4);
 
 })();
 </script>

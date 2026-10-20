@@ -1082,7 +1082,7 @@ function cdInfo(r){if(r.st!=="new"&&r.st!=="pick")return null;var n=normOf(r.o),
 if(r.st==="new"){lim=takeSla(n);el=wminX(r.ts,now);lb="Взять в работу"}else{var pe=pickEv(r);lim=asmSla(n);el=wminX(pe?pe.ts:r.ts,now,pe&&pe.w);lb="Сборка"}
 var rem=lim-el,over=rem<0,e=el/lim,paused=wmin(now-2000,now)===0||(S.users.length>0&&S.active===0);
 return{t:(paused?"⏸ ":"⏱ ")+lb+": "+(over?"просрочено ":"осталось ")+fmtC(rem),c:over?"#b91c1c":heat(e),ul:n.ul,paused:paused}}
-function cdHtml(r){var c=cdInfo(r);if(!c)return"";return'<div class="cdw"><span class="cd" data-cd="'+esc(r.no)+'" style="background:'+c.c+'">'+esc(c.t)+'</span>'+(c.ul?'<small>'+esc(c.ul)+'</small>':'')+(c.paused?'<small> · время приостановлено</small>':'')+'</div>'}
+function cdHtml(r){var c=cdInfo(r);if(!c)return"";return'<div class="cdw"><span class="cd" data-cd="'+esc(r.no)+'" style="background:'+c.c+'">'+esc(c.t)+'</span>'+(c.ul?'<small>'+esc(c.ul)+'</small>':'')+'<small class="cdp">'+(c.paused?' · '+cdWhy(c):'')+'</small>'+'</div>'}
 function ringSvg(p,sz,col){var R0=sz/2-4,C=2*Math.PI*R0,v=Math.min(100,p)/100*C;return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'"><circle cx="'+sz/2+'" cy="'+sz/2+'" r="'+R0+'" fill="none" stroke="#e5e7eb" stroke-width="5"/><circle cx="'+sz/2+'" cy="'+sz/2+'" r="'+R0+'" fill="none" stroke="'+col+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+v+' '+C+'" transform="rotate(-90 '+sz/2+' '+sz/2+')"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-size="'+Math.round(sz*0.3)+'" font-weight="700" fill="'+col+'">'+Math.round(p)+'</text></svg>'}
 function gaugeSvg(p){var cx=110,cy=105,r=85,W=22;function pt(v,rr){var a=Math.PI*(1-v);return[cx+rr*Math.cos(a),cy-rr*Math.sin(a)]}
 function arc(v1,v2,col){var a=pt(v1,r),b=pt(v2,r);return'<path d="M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+' A'+r+' '+r+' 0 0 1 '+b[0].toFixed(1)+' '+b[1].toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="'+W+'"/>'}
@@ -1119,7 +1119,7 @@ setInterval(function(){if($("adm").hidden||!A.ok)return;document.querySelectorAl
 var PK={base:4,pos:1.5,pcs:0.03,take:10,takeK:0.2,asmK:1.3,asmAdd:5,wh:[8,19]},BON={fast:0.5,sup:1,topN:5,top:50},WLP=ld("uh_wlp",2);
 var LBK={"Обрабатывается":"new","На сборке":"pick","Готов к отгрузке":"ready","Готов к выдаче":"ready","Передан курьеру":"courier","Доставлен":"done","Выдан":"done","Получен":"recv","Отменён":"cancel"};
 function tlOf(r){if(r.tl&&r.tl.length)return r.tl;var o=[];(r.log||[]).forEach(function(l){var m=/Изменил статус: «(.+?)» → «(.+?)»/.exec(l.t||"");if(m&&LBK[m[2]])o.push({k:LBK[m[2]],ts:l.ts,w:l.w,r:l.r})});return o}
-function wmin(a,b){if(b<=a)return 0;var tot=0,d=new Date(a),t;d.setHours(0,0,0,0);for(t=d.getTime();t<b;t+=864e5){if(new Date(t).getDay()===0)continue;var lo=Math.max(a,t+PK.wh[0]*36e5),hi=Math.min(b,t+PK.wh[1]*36e5);if(hi>lo)tot+=(hi-lo)/6e4}return tot}
+function wmin(a,b){if(b<=a)return 0;var tot=0,d=new Date(a),t;d.setHours(0,0,0,0);for(t=d.getTime();t<b;t+=864e5){if(new Date(t).getDay()===0&&!PK.sun)continue;var lo=Math.max(a,t+PK.wh[0]*36e5),hi=Math.min(b,t+PK.wh[1]*36e5);if(hi>lo)tot+=(hi-lo)/6e4}return tot}
 function normOf(o){var its=o.items.filter(function(i){return i.q>0}),pcs=0;its.forEach(function(i){pcs+=i.q*(i.m||1)});var u=urg(o);return{pos:its.length,pcs:pcs,k:u.k,ul:u.l,norm:Math.max(5,Math.round((PK.base+PK.pos*its.length+PK.pcs*Math.min(pcs,2000))*10)/10)}}
 function urg(o){var t=String((o.cust&&o.cust.tm)||"");if(/Завтра утром/.test(t))return{k:8,l:"Не срочно: завтра утром"};if(/Завтра днём/.test(t))return{k:10,l:"Не срочно: завтра днём"};if(/второй половине/.test(t))return{k:2.5,l:"Сегодня во второй половине дня"};return{k:1,l:""}}
 function takeSla(n){return Math.round((PK.take+PK.takeK*n.norm)*(n.k||1)*10)/10}
@@ -1157,7 +1157,7 @@ function wb(l,v,mx,c,t){return'<div class="wb"><span>'+esc(l)+'</span><div><i st
 function wlLvl(e,ratio){return[ratio>=1?"Нарушение":e>=1?"Критично":e>=0.7?"Срочно":e>=0.4?"Повышенный":"Обычный",heat(e)]}
 function admWL(rows){var R=wlCalc(rows),SS0=shGet(),p=Math.round(R.load*100),col=p>=100?"#dc2626":p>=60?"#ca8a04":"#16a34a",now=Date.now(),inWh=wmin(now-6e4,now)>0,eta=R.qn/Math.max(1,PICKERS()),bad=R.vi+R.ov;
 var h='<div class="wlg"><div class="wlh"><div><small>Нагрузка на ближайший час</small><div class="wln" style="color:'+col+'">'+p+'%</div></div><div style="text-align:right"><small>Сборщиков '+(SS0.users.length?'на смене (авто)':'на смене')+'</small><br>'+(SS0.users.length?'<b style="font-size:22px">'+SS0.active+'</b>'+(SS0.onbrk?' <small>+'+SS0.onbrk+' на перерыве</small>':''):'<select class="pin" id="wlp" style="width:auto">'+[1,2,3,4,5,6,8,10].map(function(n){return'<option'+(n===WLP?" selected":"")+'>'+n+'</option>'}).join("")+'</select>')+'</div></div>'+
-''+wlDash(R,p,SS0)+'<p class="note" style="margin:8px 0 0">'+(p>=100?'<b style="color:#dc2626">Перегрузка.</b> Приоритет всех заказов повышен. ':p>=60?'<b style="color:#ca8a04">Высокая нагрузка.</b> ':'Нагрузка в норме. ')+'Ждут взятия: <b>'+R.q.length+'</b> · на сборке: <b>'+R.pk.length+'</b> · объём работы <b>'+mm(R.qn)+'</b> · на всё уйдёт около <b>'+mm(eta)+'</b>'+(inWh?'':' · сейчас нерабочее время ('+PK.wh[0]+':00–'+PK.wh[1]+':00, вс — выходной), ожидание не считается')+'. Нарушений сейчас: <b style="color:'+(bad?'#dc2626':'inherit')+'">'+bad+'</b>.</p></div>';
+''+wlDash(R,p,SS0)+'<p class="note" style="margin:8px 0 0">'+(p>=100?'<b style="color:#dc2626">Перегрузка.</b> Приоритет всех заказов повышен. ':p>=60?'<b style="color:#ca8a04">Высокая нагрузка.</b> ':'Нагрузка в норме. ')+'Ждут взятия: <b>'+R.q.length+'</b> · на сборке: <b>'+R.pk.length+'</b> · объём работы <b>'+mm(R.qn)+'</b> · на всё уйдёт около <b>'+mm(eta)+'</b>'+(inWh?'':' · сейчас нерабочее время ('+whTxt()+'), ожидание не считается')+'. Нарушений сейчас: <b style="color:'+(bad?'#dc2626':'inherit')+'">'+bad+'</b>.</p>'+whUi()+'</div>';
 h+=shBoard();h+='<h3>Ждут взятия в работу (по приоритету)</h3><p class="note" style="margin-top:-6px">Чем дольше ждёт, чем больше заказов в очереди и чем крупнее заказ — тем выше приоритет и краснее цвет.</p>';
 if(!R.q.length)h+='<div class="emp">Заказов в ожидании нет</div>';
 R.q.forEach(function(x,i){var lv=wlLvl(x.eff,x.ratio),o=x.r.o;h+='<div class="wq" style="border-left:6px solid '+lv[1]+';background:linear-gradient(90deg,'+heatBg(x.eff)+',var(--plate) 75%)"><div class="oh"><div><b>'+(i+1)+'. '+esc(x.r.no)+'</b><span>'+esc(o.cust.nm)+' · '+x.n.pos+' поз. · '+x.n.pcs+' шт. · норма сборки '+mm(x.n.norm)+'</span></div><span class="chip" style="background:'+lv[1]+';color:#fff">'+lv[0]+'</span></div>'+
@@ -1665,6 +1665,29 @@ pages.forEach(function(pg,i){var g=pg.getContext("2d");g.textBaseline="top";g.fo
 return pages}
 function orderPdf(o,pk){return pickPages(o,pk).catch(function(){return[]}).then(function(pp){try{return pagesPdf(pp.concat(drawInvoice(o,null)),842,595)}catch(e){return makePdf(o,null)}})}
 function savePick(r){toast("Готовим лист сборки…");pickPages(r.o,null).then(function(pp){return saveAny("Sborka-"+fnm(r.no)+".pdf",pagesPdf(pp,595,842),"application/pdf")}).catch(function(){toast("Не удалось сформировать лист сборки")})}
+
+
+/* ===== Живой таймер и настраиваемые рабочие часы ===== */
+function whOk(w){return Array.isArray(w)&&w.length>=2&&isFinite(+w[0])&&isFinite(+w[1])&&+w[0]>=0&&+w[1]<=24&&+w[1]>+w[0]}
+function whLoad(){var w=ld("uh_wh",null),pw=PERM.operator&&PERM.operator.wh;if(whOk(pw))w=pw;if(whOk(w)){PK.wh=[+w[0],+w[1]];PK.sun=!!+w[2]}}
+var _apW=applyPerms;applyPerms=function(m){_apW(m);whLoad()};whLoad();
+function h2(h){return(h<10?"0":"")+h+":00"}
+function whTxt(){if(PK.wh[0]===0&&PK.wh[1]===24&&PK.sun)return"круглосуточно";return h2(PK.wh[0])+"–"+(PK.wh[1]===24?"24:00":h2(PK.wh[1]))+(PK.sun?", без выходных":", вс — выходной")}
+function whNext(now){var d=new Date(now);d.setHours(0,0,0,0);for(var i=0;i<8;i++){var t=d.getTime()+i*864e5;if(new Date(t).getDay()===0&&!PK.sun)continue;var s=t+PK.wh[0]*36e5,e=t+PK.wh[1]*36e5;if(now<e)return Math.max(s,now)}return 0}
+function cdWhy(c){if(c.why==="b")return"пауза: все сборщики на перерыве";var n=whNext(Date.now());if(!n)return"пауза: нерабочее время";var nd=new Date(n),td=new Date(),dd=Math.round((new Date(nd).setHours(0,0,0,0)-new Date(td).setHours(0,0,0,0))/864e5),hm=pad(nd.getHours())+":"+pad(nd.getMinutes());
+return"пауза: нерабочее время, отсчёт продолжится "+(dd===0?"сегодня":dd===1?"завтра":["в вс","в пн","во вт","в ср","в чт","в пт","в сб"][nd.getDay()])+" в "+hm}
+var _cdW=cdInfo;cdInfo=function(r){var c=_cdW(r);if(c&&c.paused){var n=Date.now();c.why=wmin(n-2000,n)===0?"h":"b"}return c};
+function cdTick(){var L=document.querySelectorAll("[data-cd]");if(!L.length||!A.rows)return;var M={};A.rows.forEach(function(r){M[r.no]=r});
+L.forEach(function(el){var r=M[el.getAttribute("data-cd")];if(!r)return;var c;try{c=cdInfo(r)}catch(x){return}if(!c)return;if(el.textContent!==c.t)el.textContent=c.t;if(el.style.background!==c.c)el.style.background=c.c;var p=el.parentNode&&el.parentNode.querySelector(".cdp");if(p){var t=c.paused?" · "+cdWhy(c):"";if(p.textContent!==t)p.textContent=t}})}
+setInterval(cdTick,1000);
+function whUi(){if(!(A.role==="director"||A.role==="admin"||can("wst")))return"";var s=PK.wh[0],e=PK.wh[1],all=s===0&&e===24&&PK.sun,o=function(a,b,v){var r="";for(var i=a;i<=b;i++)r+='<option value="'+i+'"'+(i===v?" selected":"")+'>'+(i===24?"24:00":h2(i))+'</option>';return r};
+return'<details class="apm" style="margin-top:10px"><summary><b>Рабочие часы для таймеров:</b> '+esc(whTxt())+'</summary><p class="note">Вне рабочих часов таймеры «Взять в работу» и «Сборка» стоят на паузе, и нарушения не начисляются. Чтобы таймеры шли всегда, включите «Круглосуточно».</p>'+
+'<label class="rem"><input type="checkbox" id="wh-all"'+(all?" checked":"")+'> Круглосуточно, без выходных</label><div class="row" style="gap:8px;align-items:center;margin:8px 0"><span>с</span><select class="pin" id="wh-s" style="width:auto"'+(all?" disabled":"")+'>'+o(0,23,s)+'</select><span>до</span><select class="pin" id="wh-e" style="width:auto"'+(all?" disabled":"")+'>'+o(1,24,e)+'</select></div><label class="rem"><input type="checkbox" id="wh-sun"'+(PK.sun?" checked":"")+(all?" disabled":"")+'> Воскресенье — рабочий день</label><button class="btn sm" data-ad="whs" style="margin-top:8px">Сохранить рабочие часы</button></details>'}
+function whSave(){var all=$("wh-all").checked,s=all?0:+$("wh-s").value,e=all?24:+$("wh-e").value,sun=all||$("wh-sun").checked;if(e<=s){toast("Конец рабочего дня должен быть позже начала");return}
+PK.wh=[s,e];PK.sun=sun;var w=[s,e,sun?1:0];sv("uh_wh",w);SHC.t=0;admRender();cdTick();toast("Рабочие часы: "+whTxt());
+if(API_URL&&(A.role==="director"||A.role==="admin")){var o=Object.assign({},PERM.operator,{wh:w});api({a:"admin_perm_save",key:A.key,role:A.role,who:A.who,target:"operator",perms:o}).then(function(){PERM.operator.wh=w}).catch(function(){})}}
+(function(){$("adm").addEventListener("click",function(e){var t=e.target.closest("[data-ad=whs]");if(!t)return;e.preventDefault();e.stopPropagation();whSave()},true);
+$("adm").addEventListener("change",function(e){if(e.target.id==="wh-all"){var d=e.target.checked;["wh-s","wh-e","wh-sun"].forEach(function(id){var x=$(id);if(x)x.disabled=d})}},true)})();
 
 })();
 </script>

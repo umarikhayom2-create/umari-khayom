@@ -428,6 +428,56 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 .gpsv{animation:pulse2 1.6s ease-in-out infinite}
 .gpbar{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;margin:8px 0;border-radius:14px;background:color-mix(in srgb,var(--ac) 14%,var(--sf));border:1px solid color-mix(in srgb,var(--ac) 40%,var(--bd))}
 
+/* ===== Виджеты панели поставщика ===== */
+.wgrid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-flow:dense;gap:10px;margin:4px 0 16px}
+.wg{position:relative;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:8px;min-height:92px;padding:12px;border:0;border-radius:22px;color:#fff;text-align:left;cursor:pointer;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.18);transition:transform .25s cubic-bezier(.2,1.4,.35,1),box-shadow .25s,filter .25s}
+.wg::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.28),transparent 45%);pointer-events:none}
+.wg[hidden]{display:none}
+.wg .wgi{font-style:normal;font-size:26px;line-height:1;width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.22);backdrop-filter:blur(4px)}
+.wg .wgt b{display:block;font:800 15px/1.15 var(--fb)}.wg .wgt small{display:block;font:500 11.5px/1.25 var(--fb);opacity:.9;margin-top:3px}
+.wg-xl{grid-column:span 2;grid-row:span 2;min-height:194px;padding:16px}.wg-xl .wgi{width:64px;height:64px;font-size:38px;border-radius:20px}.wg-xl .wgt b{font-size:24px}.wg-xl .wgt small{font-size:14px}
+.wg-w{grid-column:span 2;flex-direction:row;align-items:center;justify-content:flex-start}
+.wg-o{background:linear-gradient(135deg,#ff9a3d,#e8430f 55%,#c2185b)}
+.wg.wg-w[data-t="w"]{background:linear-gradient(135deg,#ffb703,#fb8500)}.wg.wg-e{background:linear-gradient(135deg,#00c9a7,#0b8f8a)}.wg.wg-u{background:linear-gradient(135deg,#6a85b6,#3d4f86)}
+.wg-s{background:linear-gradient(135deg,#4facfe,#2f6bff)}
+.wg-r{background:linear-gradient(135deg,#43e97b,#1aa179)}
+.wg-a{background:linear-gradient(135deg,#a18cd1,#7b4fe0)}
+.wg-e{background:linear-gradient(135deg,#00c9a7,#0b8f8a)}
+.wg-c{background:linear-gradient(135deg,#ff6a88,#e0336c)}
+.wg-j{background:linear-gradient(135deg,#8e9eab,#4b5a6a)}
+.wg-k{background:linear-gradient(135deg,#f7971e,#e8590c)}
+.wg-u{background:linear-gradient(135deg,#6a85b6,#3d4f86)}
+.wg-x{background:linear-gradient(135deg,#434343,#1d1d1f)}
+.wg.wg-s{background:linear-gradient(135deg,#4facfe,#2f6bff)}.wg.wg-k{background:linear-gradient(135deg,#f7971e,#e8590c)}
+.wg.on{box-shadow:0 0 0 3px var(--bg),0 0 0 6px color-mix(in srgb,var(--tx) 70%,transparent),0 12px 26px rgba(0,0,0,.25);transform:translateY(-2px)}
+.wg:active{transform:scale(.95)}
+@media (hover:hover){.wg:hover{transform:translateY(-3px);filter:saturate(1.15)}}
+.wg-o.hot .wgi{animation:wghot 1.4s ease-in-out infinite}
+@keyframes wghot{0%,100%{transform:scale(1)}50%{transform:scale(1.12) rotate(-6deg)}}
+.wg-o.hot::before{content:"";position:absolute;top:14px;right:14px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.35);animation:pulse2 1.2s ease-in-out infinite}
+@media (min-width:760px){.wgrid{grid-template-columns:repeat(6,1fr)}}
+.ahb{gap:8px}
+.ahi{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:16px;padding:9px 13px 9px 9px;font:700 14px var(--fb);color:#fff;cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,.15);transition:transform .2s cubic-bezier(.2,1.4,.35,1)}
+.ahi i{font-style:normal;width:26px;height:26px;display:grid;place-items:center;border-radius:9px;background:rgba(255,255,255,.25);font-size:14px}
+.ahi:active{transform:scale(.93)}
+.ahi-r{background:linear-gradient(135deg,#4facfe,#2f6bff)}.ahi-o{background:linear-gradient(135deg,#8e9eab,#4b5a6a)}.ahi-c{background:linear-gradient(135deg,#ff8a3d,#e8430f)}
+#per1{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:16px;background:var(--sf2);border:1px solid var(--bd)}
+#per1 .btn{border:0;border-radius:12px;background:transparent;padding:8px 12px}
+#per1 .btn.on,#per1 .btn:not(.o){background:var(--sf);box-shadow:0 2px 8px rgba(0,0,0,.12);color:var(--tx)}
+/* значки в шапке сайта */
+.hd .ib{border:0;color:#fff;box-shadow:0 6px 14px rgba(0,0,0,.14);position:relative;overflow:visible}
+.hd .ib::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(160deg,rgba(255,255,255,.3),transparent 50%);pointer-events:none}
+.hd .ib[data-a="prof"]{background:linear-gradient(135deg,#4facfe,#2f6bff)}
+.hd .ib[data-a="theme"]{background:linear-gradient(135deg,#8e54e9,#4776e6)}
+.hd .ib[data-a="favnav"]{background:linear-gradient(135deg,#ff6a88,#e0336c)}
+.hd .ib[data-a="opencart"]{background:linear-gradient(135deg,#ff9a3d,#e8430f)}
+.hd .ib#pwab{background:linear-gradient(135deg,#43e97b,#1aa179)}
+.ah .ahb{flex:1 1 100%;display:flex}.ah .ahb .ahi{flex:1;justify-content:center;min-width:0}
+.wg:not(.wg-xl):not(.wg-w){padding:10px}.wg:not(.wg-xl):not(.wg-w) .wgi{width:38px;height:38px;font-size:22px;border-radius:12px}
+.wg:not(.wg-xl):not(.wg-w) .wgt b{font-size:13px;overflow-wrap:anywhere;hyphens:auto}.wg .wgt{min-width:0;max-width:100%}
+.vbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;max-width:1168px;margin:10px auto 0;width:calc(100% - 0px);padding:10px 12px;border-radius:16px;background:linear-gradient(100deg,color-mix(in srgb,#2f6bff 14%,var(--sf)),color-mix(in srgb,#8e54e9 12%,var(--sf)));border:1px solid color-mix(in srgb,#2f6bff 35%,var(--bd));font-size:14px;font-weight:600}
+.vbar[hidden]{display:none}
+
 </style>
 
 <header class="hd"><div class="hdi">
@@ -542,11 +592,11 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 
 <div class="md" id="md" hidden data-a="mclose"><div class="mdc" id="mdc" role="dialog" aria-modal="true"></div></div>
 <div class="rib" id="rib" hidden></div>
-<div class="adm" id="adm" hidden><div class="ah"><b>Панель поставщика</b><span id="wlc" class="wlc" data-ad="wlgo" hidden></span><button class="btn sm o" id="brk" data-ad="brk" hidden></button><div class="row"><button class="btn sm o" data-ad="ref">Обновить</button><button class="btn sm o" data-ad="out">Выйти</button><button class="btn sm" data-ad="close">Закрыть</button></div></div>
+<div class="adm" id="adm" hidden><div class="ah"><b>Панель поставщика</b><span id="wlc" class="wlc" data-ad="wlgo" hidden></span><button class="btn sm o" id="brk" data-ad="brk" hidden></button><div class="row ahb"><button class="ahi ahi-r" data-ad="ref" title="Обновить"><i>🔄</i><span>Обновить</span></button><button class="ahi ahi-o" data-ad="out" title="Выйти"><i>🚪</i><span>Выйти</span></button><button class="ahi ahi-c" data-ad="close" title="Закрыть"><i>✕</i><span>Закрыть</span></button></div></div>
 <div class="aw"><form id="alg"><h3>Вход для поставщика</h3><div id="alerr" role="alert" hidden style="margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#fee2e2;color:#991b1b;font-weight:600"></div><p class="note" id="alh" style="margin:0 0 12px"></p><div class="fl"><label for="arole">Роль</label><select class="pin" id="arole"><option value="operator">Оператор</option><option value="admin">Администратор</option><option value="accountant">Бухгалтер</option><option value="director">Руководитель</option><option value="content">Контент-менеджер</option><option value="partner">Партнёр (логин)</option><option value="sales">Торговый представитель</option></select></div><div class="fl"><label for="anm">Ваше имя</label><input class="pin" id="anm" autocomplete="name" placeholder="Для истории изменений"></div><div class="fl"><label for="apw">Пароль роли</label><input id="apw" type="password" autocomplete="current-password"></div><button class="btn w100" type="submit">Войти</button></form>
 <div id="amain" hidden><p class="note" id="awho" style="margin:0 0 10px"></p><div class="row" id="per1" style="margin-bottom:8px"><button class="btn sm o" data-ad="per" data-p="today">Сегодня</button><button class="btn sm o" data-ad="per" data-p="week">7 дней</button><button class="btn sm o" data-ad="per" data-p="month">Месяц</button><button class="btn sm o" data-ad="per" data-p="all">Всё время</button></div>
 <div class="row" id="per2" style="margin-bottom:12px;align-items:center"><span class="note" style="margin:0">с</span><input class="pin" type="date" id="adf"><span class="note" style="margin:0">по</span><input class="pin" type="date" id="adt"></div>
-<div class="row atabs"><button class="btn sm o" data-ad="tab" data-t="o">Заказы</button><button class="btn sm o" data-ad="tab" data-t="w">Нагрузка</button><button class="btn sm o" data-ad="tab" data-t="s">Статистика</button><button class="btn sm o" data-ad="tab" data-t="r">Отчёт</button><button class="btn sm o" data-ad="tab" data-t="a">ABC-XYZ</button><button class="btn sm o" data-ad="tab" data-t="e">Сотрудники</button><button class="btn sm o" data-ad="tab" data-t="c">Клиенты</button><button class="btn sm o" data-ad="tab" data-t="j">Журнал</button><button class="btn sm o" data-ad="tab" data-t="k">Каталог</button><button class="btn sm o" data-ad="tab" data-t="u">Партнёры</button><button class="btn sm o" data-ad="tab" data-t="x">Доступы</button></div>
+<div class="atabs wgrid"><button class="wg wg-o wg-xl" data-ad="tab" data-t="o"><i class="wgi">📦</i><span class="wgt"><b>Заказы</b><small class="wgs" data-ws="o"></small></span></button><button class="wg wg-w wg-w" data-ad="tab" data-t="w"><i class="wgi">⚡</i><span class="wgt"><b>Нагрузка</b><small class="wgs" data-ws="w"></small></span></button><button class="wg wg-s wg-w" data-ad="tab" data-t="s"><i class="wgi">📊</i><span class="wgt"><b>Статистика</b><small class="wgs" data-ws="s"></small></span></button><button class="wg wg-r " data-ad="tab" data-t="r"><i class="wgi">🧾</i><span class="wgt"><b>Отчёт</b><small class="wgs" data-ws="r"></small></span></button><button class="wg wg-a " data-ad="tab" data-t="a"><i class="wgi">🎯</i><span class="wgt"><b>ABC-XYZ</b><small class="wgs" data-ws="a"></small></span></button><button class="wg wg-e wg-w" data-ad="tab" data-t="e"><i class="wgi">👥</i><span class="wgt"><b>Сотрудники</b><small class="wgs" data-ws="e"></small></span></button><button class="wg wg-c " data-ad="tab" data-t="c"><i class="wgi">🤝</i><span class="wgt"><b>Клиенты</b><small class="wgs" data-ws="c"></small></span></button><button class="wg wg-j " data-ad="tab" data-t="j"><i class="wgi">📜</i><span class="wgt"><b>Журнал</b><small class="wgs" data-ws="j"></small></span></button><button class="wg wg-k wg-w" data-ad="tab" data-t="k"><i class="wgi">🗂️</i><span class="wgt"><b>Каталог</b><small class="wgs" data-ws="k"></small></span></button><button class="wg wg-u wg-w" data-ad="tab" data-t="u"><i class="wgi">🏭</i><span class="wgt"><b>Партнёры</b><small class="wgs" data-ws="u"></small></span></button><button class="wg wg-x " data-ad="tab" data-t="x"><i class="wgi">🔐</i><span class="wgt"><b>Доступы</b><small class="wgs" data-ws="x"></small></span></button></div>
 <div id="admC"></div></div></div>
 <div class="ced" id="ced" hidden></div>
 <div class="ced" id="aed" hidden></div>
@@ -936,9 +986,10 @@ var PSL={unpaid:"Не оплачен",part:"Частично",paid:"Оплаче
 function pts(ds){var m=/(\d+)\.(\d+)\.(\d+)/.exec(ds||"");return m?new Date(+m[3],+m[2]-1,+m[1]).getTime():0}
 function dkey(ts){var d=new Date(ts);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
 function dshow(k){var p=k.split("-");return p[2]+"."+p[1]+"."+p[0]}
-function normRow(o,st,ps,pd,pr,lg,pa){var r={log:lg||o.log||[],pays:pa||o.pays||[],o:o,no:o.no,ts:o.ts||pts(o.date),sum:(isFinite(Number(o.sum))&&o.sum!==null?+o.sum:0),st:ST[st]?st:"new",ps:PSL[ps]?ps:"unpaid",paid:+pd||0};if(r.pays.length)recalc(r);return r}
+function itFix(o){if(!o)return o;if(typeof o.items==="string"){try{o.items=JSON.parse(o.items)}catch(e){o.items=[]}}if(!Array.isArray(o.items))o.items=[];o.items=o.items.filter(function(it){return it&&typeof it==="object"});o.items.forEach(function(it){it.n=String(it.n==null?"":it.n);it.q=+String(it.q==null?0:it.q).replace(",",".")||0;it.m=+it.m||1;it.pr=+String(it.pr==null?0:it.pr).replace(",",".")||0;var sm=+String(it.sum==null?"":it.sum).replace(",",".");it.sum=isFinite(sm)&&String(it.sum)!==""&&it.sum!=null?sm:Math.round(it.pr*it.q*100)/100;if(!it.lbl)it.lbl=it.u==="p"?"пачка":it.u==="b"?"короб.":"шт."});if(o.sum!=null)o.sum=+String(o.sum).replace(",",".")||0;o.cust=o.cust||{};return o}
+function normRow(o,st,ps,pd,pr,lg,pa){itFix(o);var r={log:lg||o.log||[],pays:pa||o.pays||[],o:o,no:o.no,ts:o.ts||pts(o.date),sum:(isFinite(Number(o.sum))&&o.sum!==null?+o.sum:0),st:ST[st]?st:"new",ps:PSL[ps]?ps:"unpaid",paid:+pd||0};if(r.pays.length)recalc(r);return r}
 function admLoad(){A.clogOk=0;if(A.role==="content"||A.role==="partner"){A.rows=[];if(!API_URL){applyPerms(ld("uh_perm",{}));if(A.role==="partner")partDemo();return Promise.resolve()}return api({a:"admin_cat",key:A.key,role:A.role,who:A.who}).then(function(j){A.clog=j.log||[];A.clogOk=1;A.mine=j.mine||[];applyPerms(j.perms)})}if(!API_URL){A.rows=hist.filter(function(o){return o.cust}).map(function(o){return normRow(o,o.st,o.ps,o.paid,null,o.log,o.pays)});A.rows.sort(function(a,b){return b.ts-a.ts});A.grp=ld("uh_grpmap",{});applyPerms(ld("uh_perm",{}));return Promise.resolve()}
-return api({a:"admin_list",key:A.key,role:A.role,who:A.who}).then(function(j){if(j.shifts)A.sh=j.shifts;A.rows=(j.rows||[]).filter(function(r){return r&&r.o}).map(function(r){return normRow(r.o,r.st,r.ps,r.paid,r.proof,r.log,r.pays)});A.rows.sort(function(a,b){return b.ts-a.ts});A.grp=j.grp||{};applyPerms(j.perms)})}
+return api({a:"admin_list",key:A.key,role:A.role,who:A.who}).then(function(j){if(j.shifts)A.sh=j.shifts;A.rows=(j.rows||[]).filter(function(r){return r&&r.o}).map(function(r){return normRow(r.o,r.st,r.ps,r.paid,r.proof,r.log,r.pays)});A.rows.sort(function(a,b){return b.ts-a.ts});A.grp=grpNorm(j.grp);applyPerms(j.perms)})}
 function admSet(r,pt){var oS=r.st;
 if(pt.st&&pt.st!==r.st){var tx="Изменил статус: «"+stN(r,r.st)+"» → «"+stN(r,pt.st)+"»";r.st=pt.st}
 if(!API_URL){r.o.st=r.st;if(tx)pushLog(r,tx);sv("uh_hist",hist);return Promise.resolve({wa:"off"})}
@@ -1126,6 +1177,7 @@ function catRefreshList(){var l=$("clist");if(l)l.innerHTML=catList()}
 
 
 /* ===== Бонусы, цены клиентов, партнёры ===== */
+function grpNorm(g){var o={};if(Array.isArray(g))g.forEach(function(x){if(x&&x.ph!=null)o[String(x.ph)==="*"?"*":p9(x.ph)]=+(x.pct!=null?x.pct:x.g)});else if(g&&typeof g==="object")Object.keys(g).forEach(function(k){var v=g[k];if(v&&typeof v==="object")v=v.pct!=null?v.pct:v.g;if(v===""||v==null||!isFinite(+v))return;o[k==="*"?"*":p9(k)]=+v});return o}
 function grpOf(ph){var k=ph?p9(ph):"",m=A.grp||ld("uh_grpmap",{});return(k&&m[k]!=null)?m[k]:(m["*"]!=null?m["*"]:DG)}
 function gsel(ph,v){var k=ph==="*"?"*":String(ph),pd=(A.gpend||{})[k],cur=pd!=null?pd:v;return'<div class="gpw"><select class="pin'+(pd!=null?' gpch':'')+'" data-gp="'+esc(ph)+'" aria-label="Наценка цен">'+[100,50,30,10,0,-5].map(function(g){return'<option value="'+g+'"'+(g===cur?" selected":"")+'>'+(g>0?"+":"")+g+'%</option>'}).join("")+'</select>'+(pd!=null?'<button type="button" class="btn sm gpsv" data-ad="gpsave" data-k="'+esc(k)+'">Сохранить</button><button type="button" class="btn sm o" data-ad="gpundo" data-k="'+esc(k)+'" aria-label="Отменить">↺</button>':'')+'</div>'}
 function gpSave(keys){keys=keys.filter(function(k){return(A.gpend||{})[k]!=null});if(!keys.length)return;var ok=0,bad=[];
@@ -1152,8 +1204,8 @@ function loadMy(){var p=ld("uh_prof",{});
 if(!API_URL){var m=ld("uh_grpmap",{}),k=p.ph?p9(p.ph):"",g=(k&&m[k]!=null)?m[k]:(m["*"]!=null?m["*"]:100);DG=m["*"]!=null?m["*"]:100;applyMy(g,localOl());return}
 if(!p.ph){GRP=isN(DG)?DG:100;LOYI=null;LP=0;render();buildBanner();return}
 fetch(API_URL+"?a=my&ph="+encodeURIComponent(p.ph)+"&tk="+encodeURIComponent(ld("uh_ver",{}).tk||"")).then(function(r){return r.json()}).then(function(j){
-if(!j||!j.ok){if(j&&j.error==="otp")otpHint();applyMy(GRP,localOl());return}
-if(isN(j.dg)){DG=j.dg;sv("uh_dg",DG)}if(isN(j.g))sv("uh_grp",{p:p9(p.ph),g:j.g});applyMy(j.g,j.ol||[])}).catch(function(){applyMy(GRP,localOl())})}
+if(!j||!j.ok){if(j&&j.error==="otp"){otpHint();verBar(true)}applyMy(GRP,localOl());return}verBar(false);var g0=GRP;
+if(isN(j.dg)){DG=j.dg;sv("uh_dg",DG)}if(isN(j.g))sv("uh_grp",{p:p9(p.ph),g:j.g});applyMy(j.g,j.ol||[]);if(isN(j.g)&&isN(g0)&&j.g!==g0)toast("Ваши цены обновлены")}).catch(function(){applyMy(GRP,localOl())})}
 function dtx(ts){var d=new Date(ts);return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()}
 function profBonus(){var el=$("pbn");if(!el)return;var p=ld("uh_prof",{});
 if(!p.ph){el.innerHTML='<div class="lyb"><h3>Бонусы постоянным клиентам</h3><p>Зарегистрируйтесь и получайте скидки: 10 заказов — −'+LOYC.p1+'%, заказ от '+LOYC.sum+' сом. — −'+LOYC.p2+'%, покупки 3 месяца подряд на '+(LOYC.s3||1000)+' сом. — −'+LOYC.p3+'%.</p></div>';return}
@@ -1624,7 +1676,7 @@ if(!rows.length)return res;
 st=A.from?new Date(A.from+"T00:00:00").getTime():Math.min.apply(null,rows.map(function(r){return r.ts}));en=A.to?new Date(A.to+"T00:00:00").getTime():now;if(en<st)en=st;
 if(g==="auto")g=(en-st)/864e5<=120?"w":"m";res.g=g;
 for(t=st;t<=en+864e5-1;t+=864e5){var k=abcKey(t,g);if(!seen[k]){seen[k]=1;keys.push(k)}}
-var P={};rows.forEach(function(r){var k=abcKey(r.ts,g);r.o.items.forEach(function(it){var p=P[it.n]||(P[it.n]={n:it.n,s:0,q:0,by:{}});p.s+=it.sum;p.q+=it.q*(it.m||1);p.by[k]=(p.by[k]||0)+it.q*(it.m||1)})});
+var P={};rows.forEach(function(r){var k=abcKey(r.ts,g);(r.o.items||[]).forEach(function(it){if(!(it.q>0)||!it.n)return;var p=P[it.n]||(P[it.n]={n:it.n,s:0,q:0,by:{}});p.s+=it.sum;p.q+=it.q*(it.m||1);p.by[k]=(p.by[k]||0)+it.q*(it.m||1)})});
 var L=Object.keys(P).map(function(k){return P[k]}).sort(function(a,b){return b.s-a.s}),tot=0,cum=0;L.forEach(function(p){tot+=p.s});res.tot=tot;res.n=keys.length;
 L.forEach(function(p){var prev=cum,xs,mean,sd=0,i;cum+=p.s;p.sh=tot?p.s/tot*100:0;p.cum=tot?cum/tot*100:0;p.abc=(tot&&prev/tot*100>=95)?"C":(tot&&prev/tot*100>=80)?"B":"A";
 xs=keys.map(function(k){return p.by[k]||0});mean=p.q/keys.length;xs.forEach(function(v){sd+=(v-mean)*(v-mean)});sd=Math.sqrt(sd/keys.length);p.cv=mean?sd/mean*100:0;
@@ -1981,7 +2033,20 @@ WX.d={at:Date.now(),t:+cu.temperature_2m,fl:+cu.apparent_temperature,c:+cu.weath
 function wxInfo(){var d=WX.d;if(!d){toast("Погода пока не загрузилась");return}var T=WXT[WX.k]||WXT.clear,sg=function(v){v=Math.round(v);return(v>0?"+":"")+v+"°"};
 toast("Душанбе · "+WXP[WX.ph]+": "+T[0].toLowerCase()+", "+sg(d.t)+" (ощущается "+sg(d.fl)+"), днём "+sg(d.mx)+", ночью "+sg(d.mn)+". Ветер "+Math.round(d.w)+" м/с, влажность "+Math.round(d.hu)+"%")}
 document.addEventListener("click",function(e){if(e.target.closest("#wxb")){e.preventDefault();wxInfo()}});
-/*ANIMS*/var C128="212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112".split(" ");
+/*ANIMS*/
+/* ===== Подтверждение номера, чтобы клиент получил свои цены ===== */
+function verBar(on){var b=$("vbar"),p=ld("uh_prof",{});if(!on||!p.ph){if(b)b.hidden=true;return}if(!b){b=document.createElement("div");b.id="vbar";b.className="vbar";b.innerHTML='<span>🔒 Подтвердите номер телефона — и сайт покажет ваши персональные цены и скидки</span><button type="button" class="btn sm" id="vbgo">Подтвердить</button>';var hd=document.querySelector(".hd");hd.parentNode.insertBefore(b,hd.nextSibling);
+$("vbgo").addEventListener("click",function(){var pp=ld("uh_prof",{});if(!pp.ph){fillProfForm();openD("vp");return}otpAsk(pp.ph).then(function(){b.hidden=true;loadMy()}).catch(function(){})})}b.hidden=false}
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&API_URL)loadMy()});
+setInterval(function(){if(!document.hidden&&API_URL)loadMy()},5*60e3);
+
+/* ===== Виджеты панели: живые подписи ===== */
+function wgUpd(){var R=A.rows||[],S={};try{var nw=R.filter(function(r){return r.st==="new"}).length,pk=R.filter(function(r){return r.st==="pick"}).length,act=R.filter(function(r){return["new","pick","ready","courier"].indexOf(r.st)>-1}).length;
+var ph={};R.forEach(function(r){var c=r.o&&r.o.cust;if(c&&c.ph)ph[p9(c.ph)]=1});var today=new Date();today.setHours(0,0,0,0);var td=R.filter(function(r){return r.ts>=today.getTime()&&r.st!=="cancel"}),ts=0;td.forEach(function(r){ts+=r.sum});
+S.o=nw?"ждут: "+nw+" · в работе: "+(act-nw):act?"в работе: "+act:"всё обработано ✓";S.w=pk?"на сборке: "+pk:"очередь: "+nw;S.s="сегодня: "+f(ts);S.r="PDF и Excel";S.a="что продаётся";S.e="команда и смены";S.c="клиентов: "+Object.keys(ph).length;S.j="история действий";S.k="товаров: "+D.length;S.u="поставки";S.x="права ролей"}catch(e){}
+document.querySelectorAll("#adm .wgs").forEach(function(el){var k=el.dataset.ws;el.textContent=S[k]||""});var o=document.querySelector("#adm .wg-o");if(o)o.classList.toggle("hot",R.some(function(r){return r.st==="new"}))}
+(function(){var c=$("admC");if(c)new MutationObserver(function(){wgUpd()}).observe(c,{childList:true})})();
+var C128="212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112".split(" ");
 var EL=["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"],EP=["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
 function eanR(d){return EL[d].replace(/./g,function(c){return c==="0"?"1":"0"})}
 function eanG(d){return eanR(d).split("").reverse().join("")}

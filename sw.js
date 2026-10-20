@@ -1,6 +1,6 @@
 // Умари Хайём — сервис-воркер: приложение открывается быстро и без интернета показывает последнюю версию.
-var CACHE = "uh-app-v1";
-var CORE = ["./", "manifest.json", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
+var CACHE = "uh-app-v2";
+var CORE = ["./", "manifest.json", "favicon.ico", "icon-32.png", "icon-16.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(CORE); }).catch(function () {}).then(function () { return self.skipWaiting(); }));
 });

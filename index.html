@@ -360,7 +360,7 @@ function applyCat(list){var nd=DB.map(function(p){return Object.assign({},p)});(
 function vis(p){return !p.hide}
 var $=function(i){return document.getElementById(i)};
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
-function f(n){return n.toFixed(2).replace(".",",")+" сом."}
+function f(n){n=Number(n);if(!isFinite(n))n=0;return n.toFixed(2).replace(".",",")+" сом."}
 function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var PF0=ld("uh_prof",{}),DG=ld("uh_dg",100),GR0=ld("uh_grp",null),GRP=(GR0&&PF0.ph&&GR0.p===String(PF0.ph).replace(/\D/g,"").slice(-9))?GR0.g:DG,LP=0,LE=0,LOYI=null,LOYC={d:90,n:10,p1:3,sum:500,p2:5,p3:10};
@@ -724,7 +724,7 @@ var PSL={unpaid:"Не оплачен",part:"Частично",paid:"Оплаче
 function pts(ds){var m=/(\d+)\.(\d+)\.(\d+)/.exec(ds||"");return m?new Date(+m[3],+m[2]-1,+m[1]).getTime():0}
 function dkey(ts){var d=new Date(ts);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
 function dshow(k){var p=k.split("-");return p[2]+"."+p[1]+"."+p[0]}
-function normRow(o,st,ps,pd,pr,lg,pa){var r={log:lg||o.log||[],pays:pa||o.pays||[],o:o,no:o.no,ts:o.ts||pts(o.date),sum:o.sum,st:ST[st]?st:"new",ps:PSL[ps]?ps:"unpaid",paid:+pd||0};if(r.pays.length)recalc(r);return r}
+function normRow(o,st,ps,pd,pr,lg,pa){var r={log:lg||o.log||[],pays:pa||o.pays||[],o:o,no:o.no,ts:o.ts||pts(o.date),sum:(isFinite(Number(o.sum))&&o.sum!==null?+o.sum:0),st:ST[st]?st:"new",ps:PSL[ps]?ps:"unpaid",paid:+pd||0};if(r.pays.length)recalc(r);return r}
 function admLoad(){A.clogOk=0;if(A.role==="content"||A.role==="partner"){A.rows=[];if(!API_URL){applyPerms(ld("uh_perm",{}));if(A.role==="partner")partDemo();return Promise.resolve()}return api({a:"admin_cat",key:A.key,role:A.role,who:A.who}).then(function(j){A.clog=j.log||[];A.clogOk=1;A.mine=j.mine||[];applyPerms(j.perms)})}if(!API_URL){A.rows=hist.filter(function(o){return o.cust}).map(function(o){return normRow(o,o.st,o.ps,o.paid,null,o.log,o.pays)});A.rows.sort(function(a,b){return b.ts-a.ts});A.grp=ld("uh_grpmap",{});applyPerms(ld("uh_perm",{}));return Promise.resolve()}
 return api({a:"admin_list",key:A.key,role:A.role,who:A.who}).then(function(j){if(j.shifts)A.sh=j.shifts;A.rows=(j.rows||[]).filter(function(r){return r&&r.o}).map(function(r){return normRow(r.o,r.st,r.ps,r.paid,r.proof,r.log,r.pays)});A.rows.sort(function(a,b){return b.ts-a.ts});A.grp=j.grp||{};applyPerms(j.perms)})}
 function admSet(r,pt){var oS=r.st;

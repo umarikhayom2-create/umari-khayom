@@ -1,6 +1,24 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>[hidden]{display:none!important}.pwan{position:relative;display:flex;align-items:center;gap:10px;margin:10px auto 0;max-width:1168px;width:calc(100% - 32px);padding:10px 12px;background:var(--plate,#fff);border:1px solid var(--bd,#e7e2d9);border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.06)}.pwan img{border-radius:10px;border:1px solid var(--bd,#e7e2d9);background:#fff;flex:0 0 auto}.pwan div{flex:1;min-width:0;line-height:1.25}.pwan b{display:block;font-size:14px}.pwan small{font-size:12.5px;color:var(--mut,#666)}.pwx{border:0;background:none;font-size:24px;line-height:1;color:var(--mut,#666);cursor:pointer;padding:4px 6px}.pwam{position:fixed;inset:0;z-index:9999;background:rgba(20,16,10,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px}.pwab{position:relative;width:100%;max-width:440px;background:var(--plate,#fff);color:var(--tx,#111);border-radius:20px;padding:18px 18px 16px;box-shadow:0 10px 40px rgba(0,0,0,.3)}.pwab .pwx{position:absolute;top:8px;right:8px}.pwh{display:flex;gap:12px;align-items:center;margin-bottom:6px}.pwh img{border-radius:14px;border:1px solid var(--bd,#e7e2d9);background:#fff}.pwh small{display:block;color:var(--mut,#666);font-size:13px}.pwab ol{margin:10px 0 16px;padding-left:22px;line-height:1.5}.pwab li{margin:6px 0}@media(min-width:700px){.pwam{align-items:center}}</style>
+<style>[hidden]{display:none!important}.pwan{position:relative;display:flex;align-items:center;gap:10px;margin:10px auto 0;max-width:1168px;width:calc(100% - 32px);padding:10px 12px;background:var(--plate,#fff);border:1px solid var(--bd,#e7e2d9);border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.06)}.pwan img{border-radius:10px;border:1px solid var(--bd,#e7e2d9);background:#fff;flex:0 0 auto}.pwan div{flex:1;min-width:0;line-height:1.25}.pwan b{display:block;font-size:14px}.pwan small{font-size:12.5px;color:var(--mut,#666)}.pwx{border:0;background:none;font-size:24px;line-height:1;color:var(--mut,#666);cursor:pointer;padding:4px 6px}.pwam{position:fixed;inset:0;z-index:9999;background:rgba(20,16,10,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px}.pwab{position:relative;width:100%;max-width:440px;background:var(--plate,#fff);color:var(--tx,#111);border-radius:20px;padding:18px 18px 16px;box-shadow:0 10px 40px rgba(0,0,0,.3)}.pwab .pwx{position:absolute;top:8px;right:8px}.pwh{display:flex;gap:12px;align-items:center;margin-bottom:6px}.pwh img{border-radius:14px;border:1px solid var(--bd,#e7e2d9);background:#fff}.pwh small{display:block;color:var(--mut,#666);font-size:13px}.pwab ol{margin:10px 0 16px;padding-left:22px;line-height:1.5}.pwab li{margin:6px 0}@media(min-width:700px){.pwam{align-items:center}}#scv{position:fixed;inset:0;z-index:99999;background:rgba(10,10,14,.94);display:flex;flex-direction:column;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;color:#fff}
+#scv *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.scvon,.scvon body{overflow:hidden}
+.scvh{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
+.scvl{font:600 14px/1.2 system-ui,sans-serif;display:flex;align-items:center;gap:8px}.scvl b{font-variant-numeric:tabular-nums;font-size:16px;color:#ffd08a}
+.scvl i{width:10px;height:10px;border-radius:50%;background:#2ecc71;box-shadow:0 0 0 0 rgba(46,204,113,.7);animation:scvp 1.2s infinite}
+@keyframes scvp{70%{box-shadow:0 0 0 10px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+.scvx{width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:26px;line-height:1;cursor:pointer}
+.scvs{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:0 16px}
+.scvw{position:relative;max-width:460px;margin:0 auto;border-radius:22px;overflow:hidden;background:#222}
+.scvc,.scvm{display:block;width:100%;height:auto;pointer-events:none}.scvm{position:absolute;inset:0;height:100%}
+.scvsh{position:absolute;top:0;bottom:0;width:40%;left:-50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);animation:scvs 3.2s linear infinite;pointer-events:none}
+@keyframes scvs{to{left:120%}}
+.scvld{padding:80px 20px;text-align:center;color:#ccc}
+.scvf{padding:10px 18px calc(12px + env(safe-area-inset-bottom));font:13px/1.4 system-ui,sans-serif;color:#bbb;text-align:center}
+.scvhid{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;font:700 20px/1.5 system-ui,sans-serif;background:#0b0b10}
+#scv.off .scvhid{display:flex}#scv.off .scvs{filter:blur(30px)}
+@media print{#scv{display:none!important}}
+</style>
 <title>Умари Хайём — канцелярские товары</title>
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#faf8f4"><link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/png" sizes="32x32" href="icon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="icon-16.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Умари Хайём"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -956,7 +974,7 @@ else if(a==="checkout"){if(Object.keys(cart).length){if(REP)repCheckout();else v
 else if(a==="back")view("vc");
 else if(a==="hist"){view("vh");syncSt()}
 else if(a==="adm")admOpen();
-else if(a==="ocard"){var oq=hist[parseInt(t.dataset.h,10)];if(oq)cardGo(oq,orderNth(oq,hist),LOYI||loyOf(oq,hist))}
+else if(a==="mycard"){var lo=myLastO();if(lo)cardShow(lo,orderNth(lo,hist),LOYI||loyOf(lo,hist));else toast("Пока нет заказов")} else if(a==="ocard"){var oq=hist[parseInt(t.dataset.h,10)];if(oq)cardGo(oq,orderNth(oq,hist),LOYI||loyOf(oq,hist))}
 else if(a==="repeat"){var o=hist[parseInt(t.dataset.h,10)],n=0;if(o){o.items.forEach(function(it){var x=-1;D.forEach(function(d,j){if(d.n===it.n)x=j});if(x>-1&&it.q>0&&okU(D[x],it.u)){var key=x+"|"+it.u;cart[key]=(cart[key]||0)+it.q;n++}});sv("uh_cart2",cart);render();toast(n?"Товары добавлены в корзину":"Товары не найдены в каталоге");if(n)view("vc")}}
 else if(a==="again"){cart={};sv("uh_cart2",cart);closeD();render()}
 else if(a==="send"){if(!sent){if(window.claude&&window.claude.use){e.preventDefault();sendOrder()}else{try{navigator.clipboard.writeText($("ot").value)}catch(x){}if(ctOf(LAST)!=="r")dlBlob(LAST,null);$("fb").hidden=false}}}
@@ -1229,13 +1247,15 @@ fetch(API_URL+"?a=my&ph="+encodeURIComponent(p.ph)+"&tk="+encodeURIComponent(ld(
 if(!j||!j.ok){if(j&&j.error==="otp"){otpHint();verBar(true)}applyMy(GRP,localOl());return}verBar(false);var g0=GRP;
 if(isN(j.dg)){DG=j.dg;sv("uh_dg",DG)}if(isN(j.g))sv("uh_grp",{p:p9(p.ph),g:j.g});applyMy(j.g,j.ol||[]);if(isN(j.g)&&isN(g0)&&j.g!==g0)toast("Ваши цены обновлены")}).catch(function(){applyMy(GRP,localOl())})}
 function dtx(ts){var d=new Date(ts);return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()}
+function myLastO(){var p=ld("uh_prof",{}),k=p.ph?p9(p.ph):"",b=null;hist.forEach(function(o){if(o&&o.cust&&o.st!=="cancel"&&(!k||p9(o.cust.ph||"")===k)&&(!b||(o.ts||0)>(b.ts||0)))b=o});return b}
 function profBonus(){var el=$("pbn");if(!el)return;var p=ld("uh_prof",{});
 if(!p.ph){el.innerHTML='<div class="lyb"><h3>Бонусы постоянным клиентам</h3><p>Зарегистрируйтесь и получайте скидки: 10 заказов — −'+LOYC.p1+'%, заказ от '+LOYC.sum+' сом. — −'+LOYC.p2+'%, покупки 3 месяца подряд на '+(LOYC.s3||1000)+' сом. — −'+LOYC.p3+'%.</p></div>';return}
 var L=LOYI||loyalty(localOl()),h='<div class="lyb"><div class="big2">'+(L.pct?'−'+L.pct+'%':'Скидки пока нет')+'</div><p style="margin:2px 0 10px"><b>'+(L.pct?'Ваша скидка действует на все заказы':'Заказывайте чаще: скидка появится автоматически')+'</b></p>';
 h+='<p><b>Заказов подряд: '+Math.min(L.cnt,LOYC.n)+' из '+LOYC.n+'</b> → скидка '+LOYC.p1+'% на 3 месяца'+(L.a3?'<br>Действует до '+dtx(L.u3)+'. Продлевается с каждым заказом.':'')+'</p><div class="bar2"><i style="width:'+Math.min(100,L.cnt/LOYC.n*100)+'%"></i></div>';
 h+='<p><b>Заказ от '+LOYC.sum+' сом.</b> → скидка '+LOYC.p2+'% (сразу на этот заказ и на 3 месяца)'+(L.a5?'<br>Действует до '+dtx(L.u5)+'. Продлевается с каждым заказом.':'')+'</p>';
 var S3=LOYC.s3||1000;h+='<p><b>Лучший клиент → −'+LOYC.p3+'%</b><br>Покупки без перерыва 3 месяца подряд, и сумма успешных заказов за эти 3 месяца — от '+S3+' сом. Месяцев с покупками: '+L.mc+' из 3, сумма: '+f(L.s3||0)+' из '+f(S3)+(L.t3?' <b>Вы получаете максимальную скидку!</b>':'')+'</p><div class="bar2"><i style="width:'+Math.min(100,(Math.min(1,L.mc/3)+Math.min(1,(L.s3||0)/S3))/2*100)+'%"></i></div>';
-el.innerHTML=h+'<p class="note" style="margin:0">Скидки не суммируются: действует наибольшая. Они применяются вместе с оптовой скидкой на товар.</p></div>'}
+var lo=myLastO(),mc='';if(API_URL&&!LOYI)mc='<p class="note" style="margin:10px 0 0;color:var(--tx)">🔒 Подтвердите номер телефона, чтобы открыть свою карточку скидки.</p>';else if(lo)mc='<button type="button" class="btn w100" data-a="mycard" style="margin:10px 0 12px">🎫 '+(L.pct?'Моя карточка скидки −'+L.pct+'%':'Моя карточка заказа')+'</button><p class="note" style="margin:0 0 10px">Открывается только здесь, на экране. Скачать или переслать её нельзя.</p>';
+el.innerHTML=h+mc+'<p class="note" style="margin:0">Скидки не суммируются: действует наибольшая. Они применяются вместе с оптовой скидкой на товар.</p></div>'}
 function loyNote(){var t=tot();if(LE)return'<p class="note" style="margin:6px 0 8px;color:var(--tx)"><b>Ваша бонусная скидка −'+LE+'%</b> уже учтена в ценах.</p>';var need=LOYC.sum-t.s0;return'<p class="note" style="margin:6px 0 8px">'+(need>0&&t.s0>0?'Добавьте товаров ещё на <b>'+f(need)+'</b> и получите скидку '+LOYC.p2+'%.':'Заказ от '+LOYC.sum+' сом. — скидка '+LOYC.p2+'%.')+'</p>'}
 var bnI=0,bnT=null,bnH="";
 function startBn(){clearInterval(bnT);var el=$("bnt");if(!el)return;bnT=setInterval(function(){var c=el.children.length;if(c<2)return;bnI=(bnI+1)%c;el.scrollTo({left:bnI*(el.clientWidth+12),behavior:"smooth"})},4500)}
@@ -2204,8 +2224,27 @@ var qc=tier===1?"#fff":tier===2?T.ink:T.ink,qm=tier===1?"rgba(255,255,255,.8)":t
 x.fillStyle=qm;x.fillRect(W/2-60,y,120,3);y+=34;x.font="italic 500 36px Georgia, serif";var ql=wrapT(x,Z.q,CW-80);ql.forEach(function(l,j){tx(l,W/2,y+j*50,"italic 500 36px Georgia, serif",qc)});y+=ql.length*50+28;x.fillStyle=qm;x.fillRect(W/2-60,y,120,3);
 tx("umari_khayom.tj · +992 98 686 86 62",W/2,H-96,"600 28px sans-serif",tier===1?"rgba(255,255,255,.85)":T.mut);return cv})}
 function orderNth(o,list){var ph=(o.cust||{}).ph,n=0;(list||[]).forEach(function(x){var q=x.o||x;if((q.cust||{}).ph===ph&&(x.st||q.st)!=="cancel"&&(x.ts||q.ts||0)<=(o.ts||0))n++});return Math.max(1,n)}
-function cardGo(o,nth,L){toast("Готовим карточку…");drawCard(o,nth,L).then(function(cv){cv.toBlob(function(b){var name="Zakaz-"+fnm(o.no)+".png";var fl=null;try{fl=new File([b],name,{type:"image/png"})}catch(e){}
-if(fl&&navigator.canShare&&navigator.canShare({files:[fl]})){navigator.share({files:[fl],title:"Заказ "+o.no}).catch(function(){})}else b.arrayBuffer().then(function(ab){saveAny(name,new Uint8Array(ab),"image/png")})},"image/png")}).catch(function(){toast("Не удалось создать карточку")})}
+function cardGo(o,nth,L){cardShow(o,nth,L)}
+/* ===== Защищённый просмотр карточки: без скачивания и пересылки ===== */
+var SCV=null;
+function p4(ph){var d=String(ph||"").replace(/\D/g,"");return d?"+992 ••• •• "+d.slice(-4,-2)+" "+d.slice(-2):""}
+function scvClose(){if(!SCV)return;clearInterval(SCV.t);document.removeEventListener("visibilitychange",SCV.v);window.removeEventListener("blur",SCV.b);window.removeEventListener("focus",SCV.f);window.removeEventListener("pagehide",SCV.b);document.removeEventListener("keydown",SCV.k);SCV.el.remove();document.documentElement.classList.remove("scvon");SCV=null}
+function cardShow(o,nth,L){if(SCV)scvClose();var cu=o.cust||{},who=(String(cu.nm||"").trim()||"Клиент")+" · "+p4(cu.ph);
+var el=document.createElement("div");el.id="scv";el.setAttribute("role","dialog");el.setAttribute("aria-label","Карточка заказа");
+el.innerHTML='<div class="scvh"><span class="scvl"><i></i>Живая карточка · <b id="scvt">--:--:--</b></span><button class="scvx" aria-label="Закрыть">×</button></div><div class="scvs"><div class="scvw" id="scvw"><div class="scvld">Готовим карточку…</div></div></div><div class="scvf">Карточку нельзя скачать или переслать. На кассе покажите её с экрана: часы вверху должны идти, а по карточке — двигаться ваше имя.</div><div class="scvhid">🔒 Карточка скрыта<br><small>Вернитесь на сайт, чтобы снова её увидеть</small></div>';
+document.body.appendChild(el);document.documentElement.classList.add("scvon");
+var stop=function(e){e.preventDefault();return false};["contextmenu","dragstart","selectstart","copy","cut"].forEach(function(n){el.addEventListener(n,stop)});
+el.querySelector(".scvx").addEventListener("click",scvClose);
+var hide=function(){el.classList.add("off")},show=function(){if(!document.hidden)el.classList.remove("off")};
+SCV={el:el,v:function(){document.hidden?hide():show()},b:hide,f:show,k:function(e){if(e.key==="Escape")scvClose();else if(e.key==="PrintScreen"||(e.metaKey&&e.shiftKey)){hide();setTimeout(show,1500)}}};
+document.addEventListener("visibilitychange",SCV.v);window.addEventListener("blur",SCV.b);window.addEventListener("focus",SCV.f);window.addEventListener("pagehide",SCV.b);document.addEventListener("keydown",SCV.k);
+drawCard(o,nth,L).then(function(cv){if(!SCV||SCV.el!==el)return;var w=$("scvw");w.innerHTML="";cv.className="scvc";w.appendChild(cv);
+var wm=document.createElement("canvas");wm.className="scvm";var WW=540,HH=Math.round(cv.height*WW/cv.width);wm.width=WW;wm.height=HH;w.appendChild(wm);var sh=document.createElement("i");sh.className="scvsh";w.appendChild(sh);
+var x=wm.getContext("2d"),t0=Date.now();
+function tick(){var d=new Date(),z=function(n){return(n<10?"0":"")+n},tm=z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds()),dt=z(d.getDate())+"."+z(d.getMonth()+1)+"."+d.getFullYear();var te=$("scvt");if(te)te.textContent=tm;
+x.clearRect(0,0,WW,HH);x.save();x.translate(WW/2,HH/2);x.rotate(-0.42);x.font="700 15px sans-serif";x.textAlign="center";x.textBaseline="middle";var line=who+" · "+dt+" "+tm,step=86,off=((Date.now()-t0)/45)%step,D=Math.sqrt(WW*WW+HH*HH);
+for(var yy=-D/2-step;yy<D/2+step;yy+=step){var k=Math.round(yy/step);x.fillStyle=k%2?"rgba(232,89,12,.16)":"rgba(80,80,90,.14)";for(var xx=-D/2;xx<D/2;xx+=360)x.fillText(line,xx+(k%2?off*2:-off*2),yy+off)}x.restore()}
+tick();SCV.t=setInterval(tick,250)}).catch(function(){var w=$("scvw");if(w)w.innerHTML='<div class="scvld">Не удалось показать карточку</div>'})}
 function edBc(){var e=$("cbc");if(!e)return;e.innerHTML=E.bcs.map(function(v,i){return'<div class="bcr"><input class="pin" data-bci="'+i+'" value="'+esc(v)+'" inputmode="numeric" placeholder="Например, 4600702084047"><button type="button" class="px2" data-ad="cbcx" data-i="'+i+'" aria-label="Убрать">×</button></div>'}).join("")||'<span class="note" style="margin:0">Штрихкодов нет</span>'}
 document.addEventListener("input",function(e){var t=e.target;if(t&&t.dataset&&t.dataset.bci!=null&&E&&E.bcs)E.bcs[+t.dataset.bci]=t.value});
 /* ===== Типы покупателей, вес товаров и оптовая накладная ===== */

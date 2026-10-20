@@ -424,6 +424,9 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 .ctsel{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px;padding:10px;border-radius:14px;background:var(--sf2)}.ctsel b{margin-right:4px;font-size:14px}
 .chip.ct-x{background:#fde8e8;color:#c92a2a;border-color:#f5c2c2}
 .bcr{display:flex;gap:6px;align-items:center;margin-bottom:6px}.bcr input{flex:1;min-width:0;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.gpw{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.gpw select.gpch{border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 25%,transparent)}
+.gpsv{animation:pulse2 1.6s ease-in-out infinite}
+.gpbar{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;margin:8px 0;border-radius:14px;background:color-mix(in srgb,var(--ac) 14%,var(--sf));border:1px solid color-mix(in srgb,var(--ac) 40%,var(--bd))}
 
 </style>
 
@@ -1034,7 +1037,7 @@ var cl=Object.keys(s.cli).map(function(k){return s.cli[k]}).sort(function(a,b){r
 h+='<h3>Лучшие клиенты</h3>'+(cl.length?'<div class="tw"><table class="tb"><tr><th>Клиент</th><th>Заказов</th><th>Сумма</th></tr>'+cl.map(function(p){return'<tr><td>'+esc(p.nm)+'<br><small>'+esc(p.ph)+'</small></td><td>'+p.n+'</td><td>'+f(p.s)+'</td></tr>'}).join("")+'</table></div>':'<div class="emp">Нет данных</div>');return h}
 function admReport(rows){var s=calc(rows),h='<div class="pr">Период: <b>'+esc(perLabel())+'</b>. Заказов: <b>'+s.act+'</b>, выручка: <b>'+f(s.rev)+'</b>, оплачено: <b>'+f(s.paid)+'</b>, к оплате: <b>'+f(s.debt)+'</b></div><div class="row" style="margin:10px 0"><button class="btn sm" data-ad="csv">Скачать Excel (CSV)</button><button class="btn sm o" data-ad="pdf">Скачать PDF</button></div>';
 h+='<div class="tw"><table class="tb"><tr><th>Заказ</th><th>Дата</th><th>Клиент</th><th>Сумма</th><th>Оплата</th><th>Долг</th></tr>'+rows.map(function(r){var d=r.st==="cancel"?0:r.sum-paidOf(r);return'<tr><td>'+esc(r.no)+'</td><td>'+esc(r.o.date||"")+'</td><td>'+esc(r.o.cust.nm)+(r.st==="cancel"?' <small>(отменён)</small>':'')+'</td><td>'+f(r.sum)+'</td><td>'+PSL[r.ps]+'</td><td>'+f(d)+'</td></tr>'}).join("")+'</table></div>';return rows.length?h:'<div class="emp">За выбранный период заказов нет</div>'}
-function admClients(rows){var s=calc(rows),cl=Object.keys(s.cli).map(function(k){return s.cli[k]}).sort(function(a,b){return b.s-a.s});var top=can("grp")?'<div class="pr"><b>Цены для новых клиентов</b> (после регистрации) '+gsel("*",grpOf(""))+'</div>':'';if(!cl.length)return top+'<div class="emp">Клиентов за период нет</div>';
+function admClients(rows){var s=calc(rows),cl=Object.keys(s.cli).map(function(k){return s.cli[k]}).sort(function(a,b){return b.s-a.s});var npd=Object.keys(A.gpend||{}).length,top=can("grp")?'<div class="pr"><b>Цены для новых клиентов</b> (после регистрации) '+gsel("*",grpOf(""))+'</div>'+(npd?'<div class="gpbar"><span>Не сохранено изменений: <b>'+npd+'</b></span><button type="button" class="btn sm" data-ad="gpall">Сохранить все</button></div>':''):'';if(!cl.length)return top+'<div class="emp">Клиентов за период нет</div>';
 return top+'<div class="tw"><table class="tb"><tr><th>Клиент</th><th>Заказов</th><th>Сумма</th><th>Долг</th>'+(can("grp")?'<th>Цены</th>':'')+'</tr>'+cl.map(function(p){return'<tr data-ad="cli" data-ph="'+esc(p.ph)+'" style="cursor:pointer"><td><b>'+esc(p.nm)+'</b><br><small>'+esc(p.ph)+'</small></td><td>'+p.n+'</td><td>'+f(p.s)+'</td><td>'+f(p.debt)+'</td>'+(can("grp")?'<td data-ad="gpx">'+gsel(p9(p.ph),grpOf(p.ph))+'</td>':'')+'</tr>'}).join("")+'</table></div><p class="note">Нажмите на клиента, чтобы увидеть его заказы.'+(can("grp")?' В колонке «Цены» выберите наценку: клиент увидит на сайте все цены с этой наценкой. 0% — прайс-лист, 100% — розница.':'')+'</p>'}
 var E={id:"",isNew:false,img:undefined,disc:[],base:null};
 function catGroups(){var g={},ord=[];D.forEach(function(p,i){if(!vis(p))return;if(!g[p.c]){g[p.c]=[];ord.push(p.c)}g[p.c].push(i)});return ord.map(function(c){return{c:c,items:g[c]}})}
@@ -1124,7 +1127,14 @@ function catRefreshList(){var l=$("clist");if(l)l.innerHTML=catList()}
 
 /* ===== Бонусы, цены клиентов, партнёры ===== */
 function grpOf(ph){var k=ph?p9(ph):"",m=A.grp||ld("uh_grpmap",{});return(k&&m[k]!=null)?m[k]:(m["*"]!=null?m["*"]:DG)}
-function gsel(ph,v){return'<select class="pin" data-gp="'+esc(ph)+'" aria-label="Наценка цен">'+[100,50,30,10,0,-5].map(function(g){return'<option value="'+g+'"'+(g===v?" selected":"")+'>'+(g>0?"+":"")+g+'%</option>'}).join("")+'</select>'}
+function gsel(ph,v){var k=ph==="*"?"*":String(ph),pd=(A.gpend||{})[k],cur=pd!=null?pd:v;return'<div class="gpw"><select class="pin'+(pd!=null?' gpch':'')+'" data-gp="'+esc(ph)+'" aria-label="Наценка цен">'+[100,50,30,10,0,-5].map(function(g){return'<option value="'+g+'"'+(g===cur?" selected":"")+'>'+(g>0?"+":"")+g+'%</option>'}).join("")+'</select>'+(pd!=null?'<button type="button" class="btn sm gpsv" data-ad="gpsave" data-k="'+esc(k)+'">Сохранить</button><button type="button" class="btn sm o" data-ad="gpundo" data-k="'+esc(k)+'" aria-label="Отменить">↺</button>':'')+'</div>'}
+function gpSave(keys){keys=keys.filter(function(k){return(A.gpend||{})[k]!=null});if(!keys.length)return;var ok=0,bad=[];
+(function nx(i){if(i>=keys.length){var fin=function(){keys.forEach(function(k){var want=A.gpend[k];if(A.grp&&A.grp[k]!=null&&+A.grp[k]!==+want)bad.push(k);else delete A.gpend[k]});admRender();if(bad.length)toast("Сервер не подтвердил сохранение ("+bad.length+"). Проверьте связь и права и нажмите «Сохранить» ещё раз");else toast(keys.length>1?"Сохранено: "+keys.length+" клиентов ✓":"Сохранено ✓ Клиент увидит новые цены при следующем открытии сайта")};
+if(API_URL)admLoad().then(fin).catch(fin);else fin();return}
+var k=keys[i];setGrpQ(k==="*"?"*":k,A.gpend[k]).then(function(){ok++;nx(i+1)}).catch(function(){bad.push(k);nx(i+1)})})(0)}
+function setGrpQ(ph,pct){return new Promise(function(res,rej){var k=ph==="*"?"*":p9(ph),rr=A.rows.filter(function(r){return p9(r.o.cust.ph)===k})[0],nm=ph==="*"?"Для новых клиентов":(rr?rr.o.cust.nm:"");
+function done(){A.grp=A.grp||{};A.grp[k]=pct;if(k==="*"){DG=pct;sv("uh_dg",DG)}if(!API_URL){var m=ld("uh_grpmap",{});m[k]=pct;sv("uh_grpmap",m)}res()}
+if(!API_URL){done();return}api({a:"admin_group",key:A.key,role:A.role,who:A.who,ph:k,nm:nm,pct:pct}).then(done).catch(rej)})}
 function setGrp(ph,pct){var k=ph==="*"?"*":p9(ph),rr=A.rows.filter(function(r){return p9(r.o.cust.ph)===k})[0],nm=ph==="*"?"Для новых клиентов":(rr?rr.o.cust.nm:"");
 function done(){A.grp=A.grp||{};A.grp[k]=pct;if(k==="*"){DG=pct;sv("uh_dg",DG)}if(!API_URL){var m=ld("uh_grpmap",{});m[k]=pct;sv("uh_grpmap",m)}toast("Цены "+(k==="*"?"для новых клиентов":"клиента")+": "+(pct>0?"+":"")+pct+"%");loadMy();admRender()}
 if(!API_URL){done();return}
@@ -1204,6 +1214,9 @@ api({a:"admin_cat_approve",key:A.key,role:A.role,who:A.who,ids:ids,ok:ok}).then(
 (function(){var ad=$("adm");
 ad.addEventListener("click",function(e){var t=e.target.closest("[data-ad]");if(!t)return;var a=t.dataset.ad,g=function(i){var x=$(i);return x?x.value.trim():""};
 if(a==="gpx"){e.stopPropagation();return}
+if(a==="gpsave"){e.stopPropagation();gpSave([t.dataset.k]);return}
+if(a==="gpall"){e.stopPropagation();gpSave(Object.keys(A.gpend||{}));return}
+if(a==="gpundo"){e.stopPropagation();delete(A.gpend||{})[t.dataset.k];admRender();return}
 if(a==="cimx"){E.ims.splice(+t.dataset.i,1);edIms()}
 else if(a==="pedit"){var o=(A.mine||[])[+t.dataset.i];if(o)catEdit(null,o)}
 else if(a==="pap"||a==="prj")partApprove(t.dataset.ids,a==="pap")
@@ -1217,7 +1230,7 @@ api({a:"admin_user_pass",key:A.key,role:A.role,who:A.who,login:t.dataset.l,pass:
 else return;e.preventDefault();e.stopPropagation()},true);
 ad.addEventListener("change",function(e){var t=e.target;
 if(t.dataset&&t.dataset.cfx!=null){var fl=Array.prototype.slice.call(t.files||[]).slice(0,8);Promise.all(fl.map(imgPrep)).then(function(r){r.forEach(function(d){if(d&&E.ims.length<8)E.ims.push({d:d})});edIms()});t.value="";e.stopPropagation();return}
-if(t.dataset&&t.dataset.gp!=null){setGrp(t.dataset.gp,+t.value);e.stopPropagation()}},true)})();
+if(t.dataset&&t.dataset.gp!=null){var gk=t.dataset.gp==="*"?"*":String(t.dataset.gp),gv=+t.value;A.gpend=A.gpend||{};if(gv===+grpOf(gk==="*"?"":gk))delete A.gpend[gk];else A.gpend[gk]=gv;admRender();e.stopPropagation()}},true)})();
 
 
 function admAccess(){var RS=EDR.filter(function(r){return A.role==="director"||r!=="director"}),h='<p class="note">Выберите, что разрешено каждой роли. Изменения вступают в силу сразу после следующего входа сотрудника или обновления страницы. Руководитель всегда имеет полный доступ.</p>';
@@ -2131,7 +2144,7 @@ var WT={n:0,u:0,t0:0,ui:0,tm:null,tip:0,iv:null,act:"",hide:false},WT_F=window.f
 ["pointerdown","keydown","submit"].forEach(function(ev){document.addEventListener(ev,function(){WT.ui=Date.now()},true)});
 var WT_ACT={order:"Отправляем ваш заказ",reg:"Регистрируем вас",recv:"Подтверждаем получение",signed:"Сохраняем подпись",cancel:"Отменяем заказ",
 admin_list:"Загружаем заказы",admin_set:"Меняем статус заказа",admin_pay:"Сохраняем оплату",admin_adjust:"Сохраняем корректировку",admin_note:"Сохраняем комментарий",admin_order:"Оформляем заказ",
-admin_cat:"Загружаем каталог",admin_cat_save:"Сохраняем товар",admin_cat_approve:"Сохраняем решение",admin_perm_save:"Сохраняем права",admin_group:"Сохраняем группу клиента",
+admin_cat:"Загружаем каталог",admin_cat_save:"Сохраняем товар",admin_cat_approve:"Сохраняем решение",admin_perm_save:"Сохраняем права",admin_group:"Сохраняем цены клиента",
 admin_user_add:"Добавляем сотрудника",admin_user_list:"Загружаем сотрудников",admin_user_pass:"Меняем пароль",admin_user_toggle:"Сохраняем доступ",my:"Загружаем ваши заказы",catalog:"Обновляем каталог"};
 var WT_IC=["✏️","📎","📒","📐","🖍️","📌","✂️","📦"];
 function wtTips(){var adm=$("adm")&&!$("adm").hidden;return adm?["Пока ждём: заказы «Обрабатывается» лучше брать в сборку сразу ⏱️","Отмечайте «Готов к отгрузке» сразу после сборки — время посчитается точно 📦","Заполненные карточки товаров продаются лучше ⭐","Тестовые заказы помечайте, чтобы не портить статистику 🧪"]:

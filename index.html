@@ -1,3 +1,6 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
 <title>Умари Хайём — канцелярские товары</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -366,9 +369,9 @@ function ulabel(p,u){return u==="p"?"Пачка · "+p.k+" "+ub(p)+".":u==="b"?"
 function ushort(p,u){return u==="p"?"пачка ("+p.k+" "+ub(p)+".)":u==="b"?"короб. ("+p.b+" "+ub(p)+".)":ub(p)+"."}
 function uopts(p){var o=["u"];if(p.k>1)o.push("p");if(p.b>1)o.push("b");return o}
 function dpct(p,u,qty){var pcs=qty*mult(p,u),best=0;(p.disc||[]).forEach(function(d){var m=mult(p,d.u);if(m>0&&pcs/m>=d.q&&d.pct>best)best=d.pct});return best}
-function upr(p,u,qty,g){return Math.round(p.p*(1+(g==null?GRP:g)/100)*mult(p,u)*(1-dpct(p,u,qty)/100)*100)/100}
+function upr(p,u,qty,g){return Math.round(p.p*(1+(typeof g==="number"&&isFinite(g)?g:(typeof GRP==="number"&&isFinite(GRP)?GRP:100))/100)*mult(p,u)*(1-dpct(p,u,qty)/100)*100)/100}
 function upc(p,u,qty){return Math.round(upr(p,u,qty)*(1-LE/100)*100)/100}
-function bp(p,g){return Math.round(p.p*(1+(g==null?GRP:g)/100)*100)/100}
+function bp(p,g){return Math.round(p.p*(1+(typeof g==="number"&&isFinite(g)?g:(typeof GRP==="number"&&isFinite(GRP)?GRP:100))/100)*100)/100}
 function oldP(p,nw){return p.sd>0&&p.sd<95?Math.round(nw/(1-p.sd/100)*100)/100:0}
 function priceHtml(p,u){var nw=upr(p,u,0),o=oldP(p,nw);return(o?'<span class="pl"><s class="op">'+f(o)+'</s><i class="sdb">−'+p.sd+'%</i></span>':'')+'<span>'+f(nw)+'</span>'}
 function imgs(p){var a=[];if(p.i)a.push(p.i);(p.ims||[]).forEach(function(x){if(x)a.push(x)});return a}
@@ -864,13 +867,14 @@ if(prev&&now-prev>W)cnt=0;
 var a3=u3>now,a5=u5>now,b=[0,0,0],cc=0;L.forEach(function(o){var ag=now-o.ts;if(ag<0||ag>W)return;if(o.st==="cancel"){cc++;return}b[Math.min(2,Math.floor(ag/(30*DAY)))]=1});
 var mc=b[0]+b[1]+b[2],t3=mc===3&&cc===0&&(a3||a5);
 return{pct:t3?LOYC.p3:a5?LOYC.p2:a3?LOYC.p1:0,cnt:cnt,a3:a3,a5:a5,u3:u3,u5:u5,mc:mc,cc:cc,t3:t3}}
-function applyMy(g,ol){GRP=g;LOYI=loyalty(ol);LP=LOYI.pct;render();if(dopen&&!$("vc").hidden)cartView();if(!$("vp").hidden)profBonus();buildBanner()}
+function isN(x){return typeof x==="number"&&isFinite(x)}
+function applyMy(g,ol){GRP=isN(g)?g:(isN(GRP)?GRP:100);if(!isN(DG))DG=100;LOYI=loyalty(ol);LP=LOYI.pct;render();if(dopen&&!$("vc").hidden)cartView();if(!$("vp").hidden)profBonus();buildBanner()}
 function loadMy(){var p=ld("uh_prof",{});
 if(!API_URL){var m=ld("uh_grpmap",{}),k=p.ph?p9(p.ph):"",g=(k&&m[k]!=null)?m[k]:(m["*"]!=null?m["*"]:100);DG=m["*"]!=null?m["*"]:100;applyMy(g,localOl());return}
-if(!p.ph){GRP=DG;LOYI=null;LP=0;render();buildBanner();return}
+if(!p.ph){GRP=isN(DG)?DG:100;LOYI=null;LP=0;render();buildBanner();return}
 fetch(API_URL+"?a=my&ph="+encodeURIComponent(p.ph)+"&tk="+encodeURIComponent(ld("uh_ver",{}).tk||"")).then(function(r){return r.json()}).then(function(j){
 if(!j||!j.ok){if(j&&j.error==="otp")otpHint();applyMy(GRP,localOl());return}
-if(j.dg!=null){DG=j.dg;sv("uh_dg",DG)}sv("uh_grp",{p:p9(p.ph),g:j.g});applyMy(j.g,j.ol||[])}).catch(function(){applyMy(GRP,localOl())})}
+if(isN(j.dg)){DG=j.dg;sv("uh_dg",DG)}if(isN(j.g))sv("uh_grp",{p:p9(p.ph),g:j.g});applyMy(j.g,j.ol||[])}).catch(function(){applyMy(GRP,localOl())})}
 function dtx(ts){var d=new Date(ts);return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()}
 function profBonus(){var el=$("pbn");if(!el)return;var p=ld("uh_prof",{});
 if(!p.ph){el.innerHTML='<div class="lyb"><h3>Бонусы постоянным клиентам</h3><p>Зарегистрируйтесь и получайте скидки: 10 заказов — −'+LOYC.p1+'%, заказ от '+LOYC.sum+' сом. — −'+LOYC.p2+'%, лучший клиент — −'+LOYC.p3+'%.</p></div>';return}
@@ -1242,3 +1246,4 @@ loadMy();buildBanner();
 render();syncSt();setInterval(function(){if(!document.hidden)syncSt()},30000);
 })();
 </script>
+</body></html>

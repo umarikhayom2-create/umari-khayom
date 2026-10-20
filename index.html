@@ -497,12 +497,12 @@ else{tx("Дата: «___» ____________ 20__ г.",bx[3],y2+44,"400 20px sans-ser
 pages.forEach(function(p,i){var g=p.getContext("2d");g.textBaseline="top";g.font="400 18px sans-serif";g.fillStyle="#666";g.textAlign="center";g.fillText("Накладная М-15 № "+o.no+" · Умари Хайём · Стр. "+(i+1)+" из "+pages.length,W/2,H-40)});
 return pages}
 function makePdf(o,sig){return pagesPdf(drawInvoice(o,sig),842,595)}
-function pagesPdf(pgs,PW,PH){var n=pgs.length,enc=new TextEncoder(),parts=[],off={},len=0,i,kids=[];
+function pagesPdf(pgs,PW0,PH0){var PW=PW0,PH=PH0;var n=pgs.length,enc=new TextEncoder(),parts=[],off={},len=0,i,kids=[];
 function add(v){var b=typeof v==="string"?enc.encode(v):v;parts.push(b);len+=b.length}
 add("%PDF-1.4\n");off[1]=len;add("1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n");
 for(i=0;i<n;i++)kids.push((3+3*i)+" 0 R");
 off[2]=len;add("2 0 obj<</Type/Pages/Kids["+kids.join(" ")+"]/Count "+n+">>endobj\n");
-for(i=0;i<n;i++){var pid=3+3*i,cid=pid+1,iid=pid+2,raw=atob(pgs[i].toDataURL("image/jpeg",0.9).split(",")[1]),jpg=new Uint8Array(raw.length),k,cs="q "+PW+" 0 0 "+PH+" 0 0 cm /Im0 Do Q";for(k=0;k<raw.length;k++)jpg[k]=raw.charCodeAt(k);
+for(i=0;i<n;i++){PW=pgs[i].pw||PW0;PH=pgs[i].ph||PH0;var pid=3+3*i,cid=pid+1,iid=pid+2,raw=atob(pgs[i].toDataURL("image/jpeg",0.9).split(",")[1]),jpg=new Uint8Array(raw.length),k,cs="q "+PW+" 0 0 "+PH+" 0 0 cm /Im0 Do Q";for(k=0;k<raw.length;k++)jpg[k]=raw.charCodeAt(k);
 off[pid]=len;add(pid+" 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 "+PW+" "+PH+"]/Resources<</XObject<</Im0 "+iid+" 0 R>>>>/Contents "+cid+" 0 R>>endobj\n");
 off[cid]=len;add(cid+" 0 obj<</Length "+cs.length+">>stream\n"+cs+"\nendstream endobj\n");
 off[iid]=len;add(iid+" 0 obj<</Type/XObject/Subtype/Image/Width "+pgs[i].width+"/Height "+pgs[i].height+"/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length "+jpg.length+">>stream\n");add(jpg);add("\nendstream endobj\n")}
@@ -525,7 +525,10 @@ function tgApi(m,fd){return fetch("https://api.telegram.org/bot"+TG_TOKEN+"/"+m,
 function tgText(text){return tgApi("sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:TG_CHAT,text:text})}).then(function(r){if(!r.ok)throw 0})}
 function tgDoc(o,sig,cap){var fd=new FormData();fd.append("chat_id",TG_CHAT);fd.append("caption",cap);fd.append("document",new Blob([makePdf(o,sig)],{type:"application/pdf"}),"M15-"+fnm(o.no)+(sig?"-podpis":"")+".pdf");return tgApi("sendDocument",{method:"POST",body:fd}).then(function(r){if(!r.ok)throw 0})}
 function anyOk(tasks){return Promise.all(tasks.map(function(p){return p.then(function(){return true},function(){return false})})).then(function(r){if(!r.some(Boolean))throw 0})}
-function sendNew(o,msg){var tk=[];if(API_URL)tk.push(api({a:"order",order:slim(o),text:msg,pdf:b64(makePdf(o,null))}));if(TG_TOKEN&&TG_CHAT)tk.push(tgText(msg).then(function(){return tgDoc(o,null,"Накладная М-15 "+o.no).catch(function(){})}));return tk.length?anyOk(tk):null}
+function thumb(src){return new Promise(function(res){if(!src){res({});return}var done=false,im=new Image();function fin(v){if(!done){done=true;res(v)}}setTimeout(function(){fin(/^https:/.test(src)?{iu:src}:{})},4000);if(/^https:/.test(src))im.crossOrigin="anonymous";im.onload=function(){try{var k=Math.min(1,240/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));var g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);fin({img:c.toDataURL("image/jpeg",.72).split(",")[1]})}catch(e){fin(/^https:/.test(src)?{iu:src}:{})}};im.onerror=function(){fin(/^https:/.test(src)?{iu:src}:{})};im.src=src})}
+function pickData(o){return Promise.all(o.items.filter(function(it){return it.q>0}).map(function(it){var p=D.filter(function(x){return x.n===it.n})[0];return thumb(p&&p.i)})).catch(function(){return[]})}
+function sendNew(o,msg){if(!(API_URL||(TG_TOKEN&&TG_CHAT)))return null;return pickData(o).then(function(pk){return sendNew2(o,msg,pk)})}
+function sendNew2(o,msg,pk){var tk=[];if(API_URL)tk.push(api({a:"order",order:slim(o),text:msg,pick:pk}));if(TG_TOKEN&&TG_CHAT)tk.push(tgText(msg).then(function(){return tgDoc(o,null,"Накладная М-15 "+o.no).catch(function(){})}));return tk.length?anyOk(tk):null}
 function sendSigned(o,sig){var tk=[];if(API_URL)tk.push(api({a:"signed",no:o.no,name:sig.name,time:sig.time,order:slim(o),pdf:b64(makePdf(o,sig))}));if(TG_TOKEN&&TG_CHAT)tk.push(tgDoc(o,sig,"Подписанная накладная М-15 "+o.no+" — получил: "+sig.name+", "+sig.time));if(!tk.length){toast("Накладная сохранена. Отправка на почту включится после подключения сервера");return}anyOk(tk).then(function(){toast("Подписанная накладная отправлена на почту магазина")},function(){toast("Не удалось отправить на почту. Накладная сохранена у вас")})}
 function notifyReg(p){var t="Новый клиент\nКод: "+p.id+"\nИмя: "+p.nm+"\nТелефон: "+p.ph+(p.org?"\nОрганизация: "+p.org:"")+(p.cty||p.ad?"\nАдрес: "+(p.cty?p.cty+", ":"")+p.ad:"");if(API_URL)api({a:"reg",client:p}).catch(function(){});if(TG_TOKEN&&TG_CHAT)tgText(t).catch(function(){})}
 function syncSt(){if(!API_URL)return;var nos=hist.filter(function(o){return o.cust}).map(function(o){return o.no});if(!nos.length)return;
@@ -993,15 +996,26 @@ var COMPANIES=[
 {id:"tj",name:"ООО «Тоҷири Ҷавон»",inn:"",addr:ADDR_CO,phone:"+992171717160",dir:"",acc:"",banks:[{bank:"Алиф",acc:"",corr:""},{bank:"Хумо",acc:"",corr:""},{bank:"Ориенбанк",acc:"",corr:""},{bank:"Амонатбанк",acc:"",corr:""}]}];
 var SF={r:null};
 function sfOpen(r){SF.r=r;var d=new Date(),co="";COMPANIES.forEach(function(c){co+='<option value="'+c.id+'">'+esc(c.name)+'</option>'});
-$("sfs").innerHTML='<div class="kew"><h3 style="margin:0 0 4px">Счёт-фактура</h3><p class="note" style="margin:0 0 12px">К накладной '+esc(r.no)+' на сумму <b>'+f(r.sum)+'</b>. Документ составляется на таджикском и русском языках.</p>'+
+$("sfs").innerHTML='<div class="kew"><h3 style="margin:0 0 4px">Счёт-фактура</h3><p class="note" style="margin:0 0 12px">К заказу '+esc(r.no)+' на сумму <b>'+f(r.sum)+'</b>. Счёт-фактура и накладная приёма-передачи составляются вместе, с реквизитами выбранной компании и счёта, на таджикском и русском языках.</p>'+
 '<div class="fl"><label>Компания (поставщик)</label><select class="pin" id="sfc">'+co+'</select></div><div class="fl"><label>Счёт для оплаты (банк)</label><select class="pin" id="sfb"></select></div>'+
 '<div class="grid2"><div class="fl"><label>Номер</label><input class="pin" id="sfn" value="'+esc(r.no)+'"></div><div class="fl"><label>Дата</label><input class="pin" type="date" id="sfd" value="'+dkey(d.getTime())+'"></div></div>'+
-'<div class="row" style="margin-top:10px"><button class="btn" data-ad="sfmk" style="flex:1">Составить PDF</button><button class="btn o" data-ad="sfx">Закрыть</button></div></div>';sfBanks();$("sfs").hidden=false}
+'<div class="row" style="margin-top:10px"><div class="fl" style="flex-basis:100%"><label>Формат</label><select class="pin" id="sff"><option value="pdf">PDF (для печати и отправки)</option><option value="xlsx">Excel (для редактирования)</option><option value="both">PDF и Excel</option></select></div><button class="btn" data-ad="sfmk" style="flex:1">Скачать документы</button><button class="btn o" data-ad="sfx">Закрыть</button></div></div>';sfBanks();$("sfs").hidden=false}
 function sfBanks(){var c=COMPANIES.filter(function(x){return x.id===$("sfc").value})[0],h="";(c.banks||[]).forEach(function(b,i){h+='<option value="'+i+'">'+esc(b.bank)+'</option>'});$("sfb").innerHTML=h||'<option value="-1">Без банковских реквизитов</option>'}
 function sfMake(){var r=SF.r,c=COMPANIES.filter(function(x){return x.id===$("sfc").value})[0],bi=parseInt($("sfb").value,10),bk=(c.banks||[])[bi]||null,no=$("sfn").value.trim()||r.no,dt=$("sfd").value||dkey(Date.now()),pg=drawSF(r,c,bk,no,dt);
-saveAny("Schet-faktura-"+fnm(no)+".pdf",pagesPdf(pg,595,842),"application/pdf");
-var tx="Составил счёт-фактуру № "+no+" от "+dshow(dt)+" ("+c.name+(bk?", счёт: "+bk.bank:"")+") к накладной "+r.no+" на сумму "+fn(r.sum)+" сом.";
+var fmt=($("sff")||{}).value||"pdf",pp=drawPP(r.o,c,bk);pg.forEach(function(p){p.pw=595;p.ph=842});pp.forEach(function(p){p.pw=842;p.ph=595});
+if(fmt!=="xlsx")saveAny("Schet-faktura-i-nakladnaya-"+fnm(no)+".pdf",pagesPdf(pg.concat(pp),595,842),"application/pdf");
+if(fmt!=="pdf")setTimeout(function(){saveAny("Schet-faktura-i-nakladnaya-"+fnm(no)+".xlsx",xlsxBytes(sfSheets(r,c,bk,no,dt)),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},fmt==="both"?900:0);
+var tx="Составил счёт-фактуру № "+no+" от "+dshow(dt)+" ("+c.name+(bk?", счёт: "+bk.bank:"")+") и накладную приёма-передачи к заказу "+r.no+" на сумму "+fn(r.sum)+" сом. Формат: "+(fmt==="pdf"?"PDF":fmt==="xlsx"?"Excel":"PDF и Excel");
 if(!API_URL){pushLog(r,tx);sv("uh_hist",hist)}else api({a:"admin_note",key:A.key,role:A.role,who:A.who,no:r.no,text:tx}).then(function(j){if(j.log)r.log=j.log}).catch(function(){});$("sfs").hidden=true;admRender()}
+function sfSheets(r,co,bk,no,dt){var o=r.o,cu=o.cust,its=invItems(o),tn=0,tv=0,tt=0,acc=(bk&&bk.acc)||co.acc||"",hdr=["№","Наименование","Ед.","Кол-во","Цена без НДС","Сумма без НДС","НДС, %","Сумма НДС","Всего с НДС"],R=[],i;
+R.push(["ҲИСОБНОМА-ФАКТУРА / СЧЁТ-ФАКТУРА № "+no+" от "+dshow(dt)]);R.push(["К заказу № "+o.no+" от "+(o.date||"")+", на сумму "+fm2(o.sum)+" сомони"]);R.push([]);
+R.push(["Поставщик / Таъминкунанда"]);R.push(["Наименование",co.name]);R.push(["ИНН / РМА",co.inn||""]);R.push(["Адрес",co.addr||""]);R.push(["Телефон",co.phone||""]);R.push(["Банк",bk?bk.bank:""]);R.push(["Расчётный счёт",acc]);R.push(["Корр. счёт",(bk&&bk.corr)||""]);R.push([]);
+R.push(["Покупатель / Харидор"]);R.push(["Наименование",cu.org?cu.org+" ("+cu.nm+")":cu.nm]);R.push(["Адрес",cu.dm==="d"?((cu.cty?cu.cty+", ":"")+cu.ad):"Самовывоз"]);R.push(["Телефон",cu.ph]);R.push([]);R.push(hdr);
+its.forEach(function(it,k){var vv=1+(it.v||0)/100,ns=it.sum/vv,vat=it.sum-ns;tn+=ns;tv+=vat;tt+=it.sum;R.push([k+1,it.n+(it.d?" (скидка "+it.d+"%)":""),it.lbl,it.q,r2(it.pr/vv),r2(ns),it.v||0,r2(vat),r2(it.sum)])});
+R.push(["","Итого / Ҳамагӣ","","","",r2(tn),"",r2(tv),r2(tt)]);R.push([]);R.push(["Всего на сумму: "+fm2(o.sum)+" сомони. "+sumWords(o.sum)]);R.push(["В том числе НДС: "+fm2(tv)+" сомони"]);R.push([]);R.push(["Руководитель / Роҳбар",co.dir||"","","Главный бухгалтер / Муҳосиби калон",""]);R.push(["М.П."]);
+var P=[["НАКЛАДНАЯ ПРИЁМА-ПЕРЕДАЧИ ТОВАРОВ № "+o.no],["Дата: "+(o.date||"")],[],["Передал (поставщик)",co.name+(co.inn?", ИНН "+co.inn:"")+(co.addr?", "+co.addr:"")+(co.phone?", тел. "+co.phone:"")],["Банк / счёт",(bk?bk.bank:"")+(acc?", р/с "+acc:"")],["Принял (получатель)",cu.nm+(cu.org?" ("+cu.org+")":"")+", тел. "+cu.ph],["Получение",cu.dm==="d"?"Доставка: "+(cu.cty?cu.cty+", ":"")+cu.ad:"Самовывоз"],["Основание","Заказ покупателя "+o.no+" от "+(o.date||"")],[],["№","Наименование","Ед. изм.","Отпущено","Получено","Примечание"]];
+its.forEach(function(it,k){P.push([k+1,it.n,it.lbl,it.q,"",it.man?"добавлено вручную":(it.q0!=null&&it.q0!==it.q?"заказано "+it.q0+" "+it.lbl:"")])});P.push([]);P.push(["Всего наименований: "+its.length]);P.push([]);P.push(["Передал: ______________","","","Принял: ______________"]);
+return[{name:"Счёт-фактура",rows:R,wd:[6,46,10,10,16,16,10,14,16]},{name:"Накладная",rows:P,wd:[6,46,12,12,12,30]}]}
 function drawSF(r,co,bk,no,dt){var o=r.o,W=1240,H=1754,M=60,CW=W-2*M,pages=[],cv,x,y,its=invItems(o),CN=[44,290,70,80,115,135,80,125,181];
 function np(){cv=document.createElement("canvas");cv.width=W;cv.height=H;x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,W,H);x.textBaseline="top";pages.push(cv);y=M}
 function tx(s,px,py,font,col,al){x.font=font;x.fillStyle=col||"#000";x.textAlign=al||"left";x.fillText(s,px,py)}
@@ -1046,7 +1060,7 @@ if(!API_URL)return Promise.resolve(loc(""));
 var c=new AbortController(),tm=setTimeout(function(){c.abort()},7000);
 return fetch(API_URL+"?a=nextno",{signal:c.signal}).then(function(r){return r.json()}).then(function(j){clearTimeout(tm);if(!j||!j.no)throw 0;return j.no}).catch(function(){clearTimeout(tm);return loc("Л")})}
 /* ===== Накладная приёма-передачи (без цен) ===== */
-function drawPP(o){var W=1754,H=1240,M=60,CW=W-2*M,pages=[],cv,x,y,cu=o.cust,CN=[60,640,120,170,170,474],its=invItems(o);
+function drawPP(o,co,bk){var W=1754,H=1240,M=60,CW=W-2*M,pages=[],cv,x,y,cu=o.cust,CN=[60,640,120,170,170,474],its=invItems(o);
 function np(){cv=document.createElement("canvas");cv.width=W;cv.height=H;x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,W,H);x.textBaseline="top";pages.push(cv);y=M}
 function tx(s,px,py,font,col,al){x.font=font;x.fillStyle=col||"#000";x.textAlign=al||"left";x.fillText(s,px,py)}
 function cx(i){var a=M,k;for(k=0;k<i;k++)a+=CN[k];return a}
@@ -1057,7 +1071,7 @@ np();
 tx("БОРНОМАИ ҚАБУЛ ВА СУПОРИДАНИ МОЛ № "+o.no,W/2,y,"700 32px sans-serif","#000","center");y+=44;
 tx("НАКЛАДНАЯ ПРИЁМА-ПЕРЕДАЧИ ТОВАРОВ № "+o.no,W/2,y,"700 28px sans-serif","#000","center");y+=40;
 tx("Сана / Дата составления: "+(o.date||""),W/2,y,"400 22px sans-serif","#333","center");y+=44;
-kv("Передал (поставщик):","Магазин «Умари Хайём» (склад), тел. +992 98 686 86 62");
+kv("Передал (поставщик):",co?co.name+(co.inn?", ИНН "+co.inn:"")+(co.addr?", "+co.addr:"")+(co.phone?", тел. "+co.phone:"")+(bk?", банк "+bk.bank+((bk.acc||co.acc)?", р/с "+(bk.acc||co.acc):""):""):"Магазин «Умари Хайём» (склад), тел. +992 98 686 86 62");
 kv("Принял (получатель):",cu.nm+(cu.org?" ("+cu.org+")":"")+", тел. "+cu.ph);
 kv("Получение:",cu.dm==="d"?"Доставка: "+(cu.cty?cu.cty+", ":"")+cu.ad:"Самовывоз");
 kv("Основание:","Заказ покупателя "+o.no+" от "+(o.date||""));y+=12;
@@ -1103,7 +1117,7 @@ ord={no:no,date:ds,ts:d.getTime(),sum:sum,pc:pc,cust:{id:cid,nm:c.nm,ph:c.ph,org
 var txt="Заказ "+no+" (оформлен сотрудником)\nКлиент: "+c.nm+", тел. "+c.ph+"\nИтого: "+f(sum),lt="Оформил заказ за клиента (вручную): "+items.length+" поз. на "+fn(sum)+" сом.";
 function fin(){$("nod").hidden=true;admLoad().then(function(){admRender();toast("Заказ "+no+" оформлен");var r=A.rows.filter(function(x){return x.no===no})[0];if(r)offerWa(r,"new")})}
 if(!API_URL){ord.log=[{ts:Date.now(),r:A.role,w:A.who,t:lt}];hist.unshift(ord);sv("uh_hist",hist);fin();return}
-api({a:"admin_order",key:A.key,role:A.role,who:A.who,order:slim(ord),text:txt,pdf:b64(makePdf(ord,null))}).then(fin).catch(function(){if(btn)btn.disabled=false;toast("Не удалось оформить заказ: нет прав или нет связи с сервером")})})}
+pickData(ord).then(function(pk){return api({a:"admin_order",key:A.key,role:A.role,who:A.who,order:slim(ord),text:txt,pick:pk})}).then(fin).catch(function(){if(btn)btn.disabled=false;toast("Не удалось оформить заказ: нет прав или нет связи с сервером")})})}
 
 function admRender(){var rows=viewRows(),h="";
 $("amain").hidden=!A.ok;$("alg").hidden=A.ok;if(!A.ok)return;

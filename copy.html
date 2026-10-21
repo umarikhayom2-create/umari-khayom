@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Код сервера чата</title><meta name="robots" content="noindex">
+<style>
+:root{--bg:#faf8f4;--tx:#1d1d1f;--mut:#66666b;--card:#fff;--bd:#e7e2d9}
+@media (prefers-color-scheme:dark){:root{--bg:#121214;--tx:#f2f2f2;--mut:#a0a0a8;--card:#1d1d21;--bd:#2c2c33}}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:24px 16px 40px}
+h1{font-size:22px;margin:0 0 6px}p{color:var(--mut);margin:0 0 18px}
+button{width:100%;border:0;border-radius:18px;padding:20px;font:700 20px system-ui;color:#fff;background:linear-gradient(135deg,#ff8a3d,#e8430f);box-shadow:0 10px 24px rgba(232,67,15,.35);cursor:pointer}
+button:disabled{opacity:.6}button.ok{background:linear-gradient(135deg,#22c55e,#15803d)}
+#st{margin:14px 0 0;text-align:center;font-weight:600}
+ol{margin:22px 0 0;padding-left:22px;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px 16px 16px 36px}li{margin:6px 0}
+textarea{position:fixed;left:-9999px;top:0}
+</style></head><body><main>
+<h1>Код сервера чата</h1>
+<p>Нажмите кнопку — весь код скопируется сам, выделять ничего не нужно.</p>
+<button id="b" disabled>Загружаем код…</button>
+<div id="st"></div>
+<ol>
+<li>Нажмите кнопку выше — появится «Скопировано ✓».</li>
+<li>В Apps Script слева у файла <b>Код.gs</b> нажмите <b>⋮</b> → <b>Удалить</b>.</li>
+<li>Нажмите <b>+</b> рядом с «Файлы» → <b>Скрипт</b> → назовите <b>server</b>.</li>
+<li>В пустом окне подержите палец → <b>Вставить</b> → 💾.</li>
+<li><b>Начать развёртывание ▾ → Управление развёртываниями → ✏️ → Версия: Новая версия → Развернуть</b>.</li>
+</ol>
+<textarea id="t" readonly></textarea>
+</main>
+<script>
+var b=document.getElementById("b"),st=document.getElementById("st"),t=document.getElementById("t"),code="";
+fetch("chat-server.gs?v="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(x){code=x;t.value=x;b.disabled=false;b.textContent="📋 Скопировать код";st.textContent="Готово к копированию: "+x.split("\n").length+" строк"}).catch(function(){b.textContent="Не удалось загрузить";st.textContent="Проверьте интернет и обновите страницу"});
+function old(){t.focus();t.select();t.setSelectionRange(0,code.length);var ok=false;try{ok=document.execCommand("copy")}catch(e){}return ok}
+b.onclick=function(){if(!code)return;var done=function(){b.classList.add("ok");b.textContent="Скопировано ✓";st.textContent="Теперь откройте Apps Script и вставьте (шаги ниже)";if(navigator.vibrate)navigator.vibrate(40)};
+if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code).then(done,function(){old()?done():st.textContent="Браузер не дал скопировать. Попробуйте ещё раз"});else old()?done():st.textContent="Браузер не дал скопировать"};
+</script></body></html>

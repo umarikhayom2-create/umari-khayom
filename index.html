@@ -118,6 +118,23 @@ body.cho .chb{display:none}
 .vch{display:flex;align-items:flex-end;gap:4px;height:110px;margin:10px 0 2px;padding-top:16px}.vch i{flex:1;position:relative;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#0ea5e9,#8b5cf6);min-height:4px}.vch i b{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font:700 10px var(--fb);color:var(--mut)}.vcl{display:flex;justify-content:space-between;font-size:11px;color:var(--mut)}
 
 .chip.tst{background:#ede9fe;color:#6d28d9;border-color:#ddd6fe;font-weight:700}
+
+.nwb{display:inline-block;font:800 10.5px/1 var(--fb);letter-spacing:.02em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#22c55e,#0ea5e9);padding:4px 7px;border-radius:7px;margin-right:4px;vertical-align:1px}
+.whr{margin:20px 0 6px;padding:16px;border:1px solid var(--bd,#e7e2d9);border-radius:22px;background:var(--sf,#fff)}
+.whr h3{margin:0 0 4px;font:700 18px var(--fb,inherit);color:var(--tx,inherit)}.whrs{font-size:13.5px;color:var(--mut,#666);margin:0 0 12px!important}
+.whrl{display:grid;gap:8px}@media (min-width:760px){.whrl{grid-template-columns:repeat(3,1fr)}}
+.whc{display:flex;align-items:center;gap:12px;text-align:left;padding:12px;border-radius:16px;border:1px solid var(--bd,#e7e2d9);background:var(--sf2,#f3efe8);color:var(--tx,inherit);cursor:pointer;font:inherit}
+.whc>i{font-style:normal;font-size:22px;width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:14px;background:linear-gradient(135deg,#ff9a3d,#e8430f)}
+.whc span{flex:1;min-width:0}.whc b{display:block;font:700 15px var(--fb,inherit)}.whc small{display:block;font-size:12.5px;color:var(--mut,#666);line-height:1.3}.whc em{font-style:normal;font:700 13px var(--fb,inherit);color:#e8430f;white-space:nowrap}
+.whm{margin-top:10px;width:100%}#whmap[hidden]{display:none}#whmap iframe{display:block;width:100%;height:340px;border:0;border-radius:16px;margin-top:10px}
+.whlg{display:grid;gap:6px;margin-top:8px}.whlg button{text-align:left;border:0;background:var(--sf2,#f3efe8);color:var(--tx,inherit);border-radius:12px;padding:9px 12px;font:600 13px var(--fb,inherit);cursor:pointer}.whlg b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#e11d48;color:#fff;font-size:11px;margin-right:4px}
+.mps{position:fixed;inset:0;z-index:150;background:rgba(20,16,10,.5);display:flex;align-items:flex-end;justify-content:center;animation:fade .25s}.mps[hidden]{display:none}
+.mpc{width:min(480px,100%);max-height:90dvh;overflow:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));animation:barin .35s cubic-bezier(.2,1.2,.35,1)}
+@media (min-width:600px){.mps{align-items:center}.mpc{border-radius:24px}}
+.mph{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}.mph b{display:block;font:700 18px var(--fb)}.mph small{color:var(--mut);font-size:13px}.mph button{border:0;background:var(--sf2);color:var(--tx);width:36px;height:36px;border-radius:12px;font-size:16px;cursor:pointer;flex:none}
+.mpt{display:flex;gap:6px;padding:4px;border-radius:14px;background:var(--sf2);margin-bottom:10px}.mpt button{flex:1;border:0;border-radius:11px;padding:10px;font:700 13.5px var(--fb);background:transparent;color:var(--mut);cursor:pointer}.mpt button.on{background:var(--sf);color:var(--tx);box-shadow:var(--sh)}
+.mpl{display:grid;gap:6px}.mpl a{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--sf);border:1px solid var(--bd);color:var(--tx);text-decoration:none;font:600 15px var(--fb)}.mpl a i{font-style:normal;font-size:20px}.mpl a span{flex:1}.mpl a em{font-style:normal;color:var(--mut);font-size:20px}
+.mpcp{margin-top:10px}
 </style>
 <title>Умари Хайём — канцелярские товары</title>
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#faf8f4"><link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/png" sizes="32x32" href="icon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="icon-16.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Умари Хайём"><meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -654,7 +671,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <section class="bn" id="bn" aria-label="Акции"><div class="bnt" id="bnt"></div><div class="bnd" id="bnd"></div></section>
 <h2 class="sec" id="catalog">Каталог <span class="secb">скидки до −42%</span></h2>
 <div class="tb"><input id="q" type="search" placeholder="Поиск: например, руч гел 0,5" aria-label="Поиск по названию" autocomplete="off">
-<select id="so" aria-label="Сортировка"><option value="def">Как в прайсе</option><option value="pa">Сначала дешевле</option><option value="pd">Сначала дороже</option><option value="n">По названию</option></select>
+<select id="so" aria-label="Сортировка"><option value="rec">Рекомендуем: новинки и скидки</option><option value="def">Как в прайсе</option><option value="pa">Сначала дешевле</option><option value="pd">Сначала дороже</option><option value="n">По названию</option></select>
 <input id="pmin" type="number" min="0" inputmode="decimal" placeholder="Цена от" aria-label="Цена от" style="flex:0 1 110px"><input id="pmax" type="number" min="0" inputmode="decimal" placeholder="до" aria-label="Цена до" style="flex:0 1 110px"></div>
 <div class="chips" id="chips"></div>
 <p class="cnt" id="cnt"></p><p class="snote" id="sn" hidden></p>
@@ -681,6 +698,11 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <p>Тел.: <a href="https://wa.me/992986868662" style="color:inherit">+992 98 686 86 62</a> (WhatsApp)</p>
 <nav class="fl2"><a href="privacy.html">Политика конфиденциальности</a><a href="terms.html">Условия использования</a><a href="delivery.html">Доставка и оплата</a><a href="returns.html">Возврат и обмен</a><a href="#admin" data-a="adm" style="opacity:.6">Для поставщика</a></nav>
 <p class="fn">Все материалы сайта (фотографии, тексты, логотип, дизайн) являются собственностью магазина «Умари Хайём». Копирование без письменного разрешения запрещено. Цены указаны в сомони и не являются публичной офертой до подтверждения заказа менеджером.</p>
+<section class="whr" id="where" aria-labelledby="whrh"><h3 id="whrh">📍 Как нас найти</h3><p class="whrs">Нажмите на магазин — откроется карта или навигатор на вашем телефоне с маршрутом до нас.</p><div class="whrl">
+<button type="button" class="whc" data-a="map" data-m="0"><i>🏬</i><span><b>Омар Хайям</b><small>Душанбе, улица Ахмада Дониша</small></span><em>Маршрут →</em></button>
+<button type="button" class="whc" data-a="map" data-m="1"><i>🏪</i><span><b>Умари Хайём</b><small>Душанбе, улица Мирзо Мастонгулова, 16/1</small></span><em>Маршрут →</em></button>
+<button type="button" class="whc" data-a="map" data-m="2"><i>🏢</i><span><b>Умари Хайём</b><small>Душанбе, улица Ахмади Дониш, 5/1, цокольный этаж</small></span><em>Маршрут →</em></button>
+</div><button type="button" class="btn o whm" data-a="mapall">🗺️ Показать все магазины на карте</button><div id="whmap" hidden></div></section>
 <script>document.querySelectorAll('.js-year').forEach(function(e){e.textContent=new Date().getFullYear()})</script></footer>
 
 <div class="bar" id="bar" hidden><span><b id="bt"></b></span><button class="btn sm" data-a="opencart">Открыть корзину</button></div>
@@ -777,7 +799,7 @@ function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catc
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var PF0=ld("uh_prof",{}),DG=ld("uh_dg",100),GR0=ld("uh_grp",null),GRP=(GR0&&PF0.ph&&GR0.p===String(PF0.ph).replace(/\D/g,"").slice(-9))?GR0.g:DG,LP=0,LE=0,LOYI=null,LOYC={d:90,n:10,p1:3,sum:500,p2:5,p3:10,s3:1000};
 var REP=false,REPG=ld("uh_repg",100);
-var cart=ld("uh_cart2",{}),favs=ld("uh_fav",{}),hist=ld("uh_hist",[]),sel={},cat="Все",q="",sort="def",pmin=0,pmax=0,lim=7,favOnly=false,dopen=false,mid=null,tmr,clr=false;
+var cart=ld("uh_cart2",{}),favs=ld("uh_fav",{}),hist=ld("uh_hist",[]),sel={},cat="Все",q="",sort="rec",pmin=0,pmax=0,lim=7,favOnly=false,dopen=false,mid=null,tmr,clr=false;
 function pk(k){var s=String(k).split("|");return{i:s[0],u:s[1]||"u"}}
 function mult(p,u){return u==="p"?p.k:u==="b"?p.b:1}
 function okU(p,u){return u==="u"||(u==="p"&&p.k>1)||(u==="b"&&p.b>1)}
@@ -815,7 +837,7 @@ function metaTxt(i){var p=D[i],m=mult(p,cu(i));if(uopts(p).length>1)return m>1?f
 function card(i){var p=D[i],fv=!!favs[i],m=mult(p,cu(i));
 return '<article class="c"><button class="fv'+(fv?' on':'')+'" data-a="fav" data-i="'+i+'" aria-pressed="'+fv+'" aria-label="'+(fv?'Убрать из избранного':'В избранное')+'">'+HEART+'</button>'+
 '<button class="im'+(p.i?'':' no')+'" data-a="view" data-i="'+i+'" aria-label="Подробнее"'+(imgs(p).length>1?' data-n="'+imgs(p).length+'"':'')+'>'+imgHtml(p)+'</button>'+
-'<div class="ct">'+esc(p.c)+'</div><h3>'+esc(p.n)+'</h3><p class="m">'+esc(metaTxt(i))+'</p>'+(p.disc&&p.disc.length?'<p class="dsc">'+esc(discTxt(p))+'</p>':'')+usel(i)+
+'<div class="ct">'+(isNewP(p)?'<b class="nwb">Новинка</b> ':'')+esc(p.c)+'</div><h3>'+esc(p.n)+'</h3><p class="m">'+esc(metaTxt(i))+'</p>'+(p.disc&&p.disc.length?'<p class="dsc">'+esc(discTxt(p))+'</p>':'')+usel(i)+
 '<div class="b"><span class="p">'+priceHtml(p,cu(i),cart[i+"|"+cu(i)]||0)+'</span>'+ctl(i)+'</div></article>'}
 
 /* ===== Умный поиск ===== */
@@ -859,8 +881,16 @@ return{ids:pool.slice(0,12),kind:"any"}}
 return{search:search,tok:tok}})();
 var SK="exact";
 function skMsg(){if(SK==="exact")return"";var t=q?" «"+esc(q)+"»":"";return SK==="partial"?"По запросу"+t+" нашлись похожие товары (совпала часть слов):":SK==="close"?"Возможно, вы искали:":"Точного совпадения нет. Смотрите, что чаще всего заказывают:"}
+function isNewP(p){if(p.nw)return true;var m=/^N(\d{13})$/.exec(String(p.id||""));return!!(m&&Date.now()-(+m[1])<45*864e5)}
+function hasDisc(p){return!!(p.disc&&p.disc.length)}
+function recOrder(r){var day=Math.floor((Date.now()+5*36e5)/864e5),x=day*2654435761%4294967296||1,rnd=function(){x^=x<<13;x>>>=0;x^=x>>>17;x^=x<<5;x>>>=0;return x/4294967296};
+var tiers=[[],[],[]];r.forEach(function(i){var p=D[i];tiers[isNewP(p)?0:hasDisc(p)?1:2].push(i)});
+var out=[];tiers.forEach(function(T){var by={},cats=[];T.forEach(function(i){var c=D[i].c||"";if(!by[c]){by[c]=[];cats.push(c)}by[c].push(i)});
+cats.forEach(function(c){var L=by[c];for(var k=L.length-1;k>0;k--){var j=Math.floor(rnd()*(k+1)),t=L[k];L[k]=L[j];L[j]=t}});
+for(var k=cats.length-1;k>0;k--){var j=Math.floor(rnd()*(k+1)),t=cats[k];cats[k]=cats[j];cats[j]=t}
+var left=T.length;while(left>0)cats.forEach(function(c){if(by[c].length){out.push(by[c].shift());left--}})});return out}
 function ids(){var r=[];D.forEach(function(p,i){if(!vis(p))return;if(cat!=="Все"&&p.c!==cat)return;if(favOnly&&!favs[i])return;if(pmin&&bp(p)<pmin)return;if(pmax&&bp(p)>pmax)return;r.push(i)});SK="exact";if(q){var RS=SE.search(q,r);r=RS.ids;SK=RS.kind}
-if(sort==="pa")r.sort(function(a,b){return bp(D[a])-bp(D[b])});else if(sort==="pd")r.sort(function(a,b){return bp(D[b])-bp(D[a])});else if(sort==="n")r.sort(function(a,b){return D[a].n.localeCompare(D[b].n,"ru")});
+if(sort==="rec"&&!q)r=recOrder(r);else if(sort==="pa")r.sort(function(a,b){return bp(D[a])-bp(D[b])});else if(sort==="pd")r.sort(function(a,b){return bp(D[b])-bp(D[a])});else if(sort==="n")r.sort(function(a,b){return D[a].n.localeCompare(D[b].n,"ru")});
 return r}
 var NV=0;function chips(){var cnt={},h="";NV=0;D.forEach(function(p){if(!vis(p))return;NV++;cnt[p.c]=(cnt[p.c]||0)+1});
 ["Все"].concat(Object.keys(cnt)).forEach(function(c){h+='<button class="chip'+(cat===c&&!favOnly?' on':'')+'" data-a="cat" data-c="'+esc(c)+'">'+esc(c)+'<span>'+(c==="Все"?NV:cnt[c])+'</span></button>'});
@@ -2675,6 +2705,31 @@ accDraw();if(accOn())setTimeout(accLoad,1200);
 /* ===== Скорость: уведомление о новой версии и прогрев фото ===== */
 if("serviceWorker"in navigator)navigator.serviceWorker.addEventListener("message",function(e){if(e.data&&e.data.t==="upd"&&!window.__updShown){window.__updShown=1;var p0=pop("🔄","Сайт обновился","Нажмите, чтобы открыть новую версию","st",15000);p0.style.cursor="pointer";p0.onclick=function(ev){if(ev.target.tagName==="BUTTON")return;location.reload()}}});
 setTimeout(function(){try{var c=navigator.connection||{};if(c.saveData||/2g/.test(c.effectiveType||""))return;if(!navigator.serviceWorker||!navigator.serviceWorker.controller)return;var L=[];D.forEach(function(p){if(vis(p)&&p.i)L.push(TH(p.i))});navigator.serviceWorker.controller.postMessage({t:"warm",u:L})}catch(x){}},8000);
+
+/* ===== Как нас найти: карты и навигаторы ===== */
+var SHOPS=[{n:"Омар Хайям",a:"Душанбе, улица Ахмада Дониша",la:38.559112,lo:68.814685,ya:"https://yandex.ru/maps/org/89265166553",g2:""},
+{n:"Умари Хайём",a:"Душанбе, улица Мирзо Мастонгулова, 16/1",la:38.550147,lo:68.79991,ya:"https://yandex.ru/maps/org/144362973687",g2:""},
+{n:"Умари Хайём",a:"Душанбе, улица Ахмади Дониш, 5/1, цокольный этаж",la:38.554632,lo:68.814936,ya:"",g2:"https://2gis.tj/dushanbe/firm/70000001102220457"}];
+var IOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1),ANDR=/Android/i.test(navigator.userAgent);
+function mapLinks(S,route){var ll=S.la+","+S.lo,lo=S.lo+","+S.la,nm=encodeURIComponent(S.n+", "+S.a),L=[];
+L.push({k:"ya",t:"Яндекс Карты",ic:"🟡",u:route?"https://yandex.ru/maps/?rtext=~"+ll+"&rtt=auto":(S.ya||"https://yandex.ru/maps/?pt="+lo+"&z=17&l=map")});
+L.push({k:"yn",t:"Яндекс Навигатор",ic:"🧭",u:"yandexnavi://build_route_on_map?lat_to="+S.la+"&lon_to="+S.lo,app:1});
+L.push({k:"2g",t:"2ГИС",ic:"🟢",u:route?"https://2gis.tj/dushanbe/directions/points/%7C"+S.lo+"%2C"+S.la:(S.g2||"https://2gis.tj/dushanbe/geo/"+S.lo+"%2C"+S.la)});
+L.push({k:"gm",t:"Google Карты",ic:"🔵",u:route?"https://www.google.com/maps/dir/?api=1&destination="+ll:"https://www.google.com/maps/search/?api=1&query="+ll});
+if(IOS)L.push({k:"ap",t:"Apple Карты",ic:"🍎",u:route?"https://maps.apple.com/?daddr="+ll+"&q="+nm:"https://maps.apple.com/?ll="+ll+"&q="+nm});
+L.push({k:"wz",t:"Waze",ic:"🚗",u:"https://waze.com/ul?ll="+ll+"&navigate="+(route?"yes":"no")});
+if(ANDR)L.push({k:"geo",t:"Другое приложение на телефоне",ic:"📱",u:"geo:"+ll+"?q="+ll+"("+encodeURIComponent(S.n)+")",app:1});
+return L}
+var MAPR=1;
+function mapSheet(i){var S=SHOPS[i],el=$("mps");if(!el){el=document.createElement("div");el.id="mps";el.className="mps";document.body.appendChild(el);el.addEventListener("click",function(e){if(e.target===el||e.target.closest("[data-mx]"))el.hidden=true;var t=e.target.closest("[data-mr]");if(t){MAPR=+t.dataset.mr;mapSheet(+el.dataset.i)}})}
+el.dataset.i=i;el.hidden=false;
+el.innerHTML='<div class="mpc" role="dialog" aria-label="Открыть в картах"><div class="mph"><span><b>'+esc(S.n)+'</b><small>'+esc(S.a)+'</small></span><button type="button" data-mx aria-label="Закрыть">✕</button></div><div class="mpt"><button type="button" data-mr="1" class="'+(MAPR?"on":"")+'">🚗 Маршрут до нас</button><button type="button" data-mr="0" class="'+(MAPR?"":"on")+'">📍 Показать на карте</button></div><div class="mpl">'+mapLinks(S,!!MAPR).map(function(x){return'<a href="'+x.u+'"'+(x.app?'':' target="_blank" rel="noopener"')+'><i>'+x.ic+'</i><span>'+x.t+'</span><em>›</em></a>'}).join("")+'</div><button type="button" class="btn o w100 mpcp" data-mcp="'+i+'">📋 Скопировать адрес</button></div>';
+var cp=el.querySelector("[data-mcp]");cp.onclick=function(){var t=S.n+", "+S.a;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){toast("Адрес скопирован")},function(){toast(t)})}}
+document.addEventListener("click",function(e){var t=e.target.closest("[data-a=map],[data-a=mapall]");if(!t)return;e.preventDefault();
+if(t.dataset.a==="map"){mapSheet(+t.dataset.m);return}
+var w=$("whmap");if(!w.hidden){w.hidden=true;t.textContent="🗺️ Показать все магазины на карте";return}
+var pts=SHOPS.map(function(S,k){return S.lo+","+S.la+",pm2rdl"+(k+1)}).join("~");
+w.innerHTML='<iframe title="Магазины Умари Хайём на карте" loading="lazy" src="https://yandex.ru/map-widget/v1/?ll=68.8075%2C38.5546&z=14&pt='+pts+'" allowfullscreen></iframe><div class="whlg">'+SHOPS.map(function(S,k){return'<button type="button" data-a="map" data-m="'+k+'"><b>'+(k+1)+'</b> '+esc(S.n)+' · '+esc(S.a.replace("Душанбе, ",""))+'</button>'}).join("")+'</div>';w.hidden=false;t.textContent="Скрыть карту"},true);
 
 })();
 </script>

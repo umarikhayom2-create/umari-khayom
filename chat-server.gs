@@ -172,6 +172,7 @@ function staffAct(a, p, me) {
   if (a === "s_dlvst") { if (me.role === "partner" || me.role === "content") return { ok: false, error: "role" }; return { ok: true, list: jobsFor(p.nos) }; }
   if (a === "s_jobs") { if (me.role === "partner" || me.role === "content") return { ok: false, error: "role" }; return { ok: true, list: jobsRecent(+p.days || 3), cour: courList() }; }
   if (a === "s_cadd" || a === "s_ctog" || a === "s_cpw") { if (me.role !== "director" && me.role !== "admin") return { ok: false, error: "role" }; return locked(function () { return courAdmin(a, p); }); }
+  if (a === "s_fget" || a === "s_fset" || a === "s_fdel") { if (["director", "admin", "accountant"].indexOf(me.role) < 0) return { ok: false, error: "role" }; return a === "s_fget" ? { ok: true, d: finGet() } : locked(function () { return a === "s_fset" ? finSet(me, p) : finDel(p); }); }
   if (a === "s_promo") { if (me.role !== "director" && me.role !== "admin") return { ok: false, error: "role" }; return locked(function () { return promoAdd(me, p); }); }
   if (a === "s_bonus") return { ok: true, r: locked(function () { return bonusSync(p.list); }) };
   if (a === "s_acc") { var ao = accGet(k9(p.ph)); return { ok: true, acc: ao ? { nm: ao.nm, ph: ao.ph, bal: ao.bal || 0, reg: !!ao.h, led: (ao.led || []).slice(-20).reverse() } : null }; }
@@ -525,3 +526,22 @@ function courier(a, p) {
 // ---------- рассылка акций клиентам ----------
 function promos() { var v = PropertiesService.getScriptProperties().getProperty("promo"), L = v ? JSON.parse(v) : [], lim = Date.now() - 30 * 864e5; return L.filter(function (x) { return x.ts > lim; }).slice(-5); }
 function promoAdd(me, p) { var t = clean(p.t, 80), x = clean(p.x, 300); if (!t) return { ok: false, error: "empty" }; var v = PropertiesService.getScriptProperties().getProperty("promo"), L = v ? JSON.parse(v) : []; L.push({ id: rnd(8), ts: Date.now(), t: t, x: x, w: me.who }); L = L.slice(-20); PropertiesService.getScriptProperties().setProperty("promo", JSON.stringify(L)); return { ok: true, list: L }; }
+// ---------- финансы: компании (акт сверки), записи по ним, расходы ----------
+var FIN_KINDS = { co: 1, en: 1, ex: 1 };
+function finSh() { return sheet("fin", ["key", "kind", "json", "ts"]); }
+function finGet() {
+  var sh = finSh(), n = sh.getLastRow(), d = { co: [], en: [], ex: [] };
+  if (n >= 2) sh.getRange(2, 1, n - 1, 3).getValues().forEach(function (r) { if (!r[0] || !FIN_KINDS[r[1]]) return; try { d[r[1]].push(JSON.parse(r[2])); } catch (x) {} });
+  return d;
+}
+function finRow(sh, key) { var n = sh.getLastRow(); if (n < 2) return 0; var v = sh.getRange(2, 1, n - 1, 1).getValues(); for (var i = 0; i < v.length; i++) if (String(v[i][0]) === key) return i + 2; return 0; }
+function finSet(me, p) {
+  var k = String(p.kind || ""); if (!FIN_KINDS[k]) return { ok: false, error: "kind" };
+  var o = p.obj || {}; if (!o.id) o.id = k + rnd(10);
+  var js = JSON.stringify(o); if (js.length > 40000) return { ok: false, error: "big" };
+  o.w = me.who; o.r = me.role; o.ut = Date.now(); if (!o.ts) o.ts = Date.now();
+  var sh = finSh(), key = k + "|" + o.id, row = finRow(sh, key), v = [key, k, JSON.stringify(o), o.ts];
+  if (row) sh.getRange(row, 1, 1, 4).setValues([v]); else sh.appendRow(v);
+  return { ok: true, obj: o };
+}
+function finDel(p) { var k = String(p.kind || ""), sh = finSh(), row = finRow(sh, k + "|" + p.id); if (!row) return { ok: false, error: "none" }; sh.deleteRow(row); return { ok: true }; }

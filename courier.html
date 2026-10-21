@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Курьер · Умари Хайём</title><meta name="robots" content="noindex"><meta name="theme-color" content="#0ea5e9">
+<link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f4f6fa;--sf:#fff;--sf2:#eef2f7;--tx:#14161a;--mut:#667085;--bd:#e3e7ee;--ac:#0ea5e9}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--sf:#1a1d23;--sf2:#22262e;--tx:#f1f3f6;--mut:#9aa3b2;--bd:#2c313a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff}
+header b{font-size:18px}header small{display:block;opacity:.85;font-size:12.5px}header button{border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:12px;padding:9px 12px;font:600 14px system-ui}
+main{max-width:640px;margin:0 auto;padding:14px 14px 90px}
+.tabs{display:flex;gap:6px;padding:4px;border-radius:14px;background:var(--sf2);margin-bottom:12px}.tabs button{flex:1;border:0;border-radius:11px;padding:11px;font:700 14.5px system-ui;background:transparent;color:var(--mut)}.tabs button.on{background:var(--sf);color:var(--tx);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.tabs i{font-style:normal;display:inline-block;min-width:22px;padding:0 6px;border-radius:99px;background:#e11d48;color:#fff;font-size:12px;margin-left:4px}
+.card{background:var(--sf);border:1px solid var(--bd);border-left:6px solid var(--c,#f59e0b);border-radius:18px;padding:14px;margin-bottom:12px}
+.top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.top b{font-size:17px}.chip{font:700 12px system-ui;padding:6px 9px;border-radius:99px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);white-space:nowrap}
+.rt{margin:10px 0;display:grid;gap:8px}.rt div{display:flex;gap:10px}.rt i{font-style:normal;font-size:18px;width:26px;text-align:center}.rt small{display:block;color:var(--mut);font-size:12.5px}
+.cm{padding:9px 12px;border-radius:12px;background:#fef3c7;color:#78350f;font-size:14px;margin:8px 0}@media (prefers-color-scheme:dark){.cm{background:#3b2f0b;color:#fde68a}}
+.cod{font-size:15px;margin:6px 0}.cod b{font-size:18px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{border:0;border-radius:14px;padding:13px 16px;font:700 15px system-ui;background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;cursor:pointer;flex:1;text-align:center;text-decoration:none}.btn.o{background:var(--sf2);color:var(--tx)}.btn.g{background:linear-gradient(135deg,#22c55e,#15803d)}.btn.r{background:var(--sf2);color:#dc2626}.btn:disabled{opacity:.5}
+.maps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.maps a{flex:1;min-width:90px;text-align:center;padding:9px;border-radius:12px;background:var(--sf2);color:var(--tx);text-decoration:none;font:600 13.5px system-ui}
+.emp{text-align:center;color:var(--mut);padding:40px 10px}
+.lg{max-width:380px;margin:40px auto;background:var(--sf);border:1px solid var(--bd);border-radius:22px;padding:22px}.lg h1{margin:0 0 6px;font-size:22px}.lg p{color:var(--mut);margin:0 0 16px}
+input,textarea{width:100%;border:1px solid var(--bd);border-radius:12px;padding:12px;font:16px system-ui;background:var(--sf);color:var(--tx);margin:0 0 10px}
+label{display:block;font-weight:600;font-size:14px;margin:0 0 4px}.er{color:#dc2626;font-weight:600;min-height:20px;font-size:14px}
+#map iframe{width:100%;height:60vh;border:0;border-radius:16px}
+.its{font-size:13.5px;color:var(--mut);margin:4px 0 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111;color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;z-index:20}
+</style></head><body>
+<div id="app"></div>
+<script>
+var CHAT_URL="https://script.google.com/macros/s/AKfycbxH7G72oOTHvKqa3ooTjJbgRnJX97JLD4yEmaxRADl6EyBDPHSx6gpYqiVE4FRAUExY/exec";
+var S={tok:"",me:null,tab:"ready",ready:[],mine:[],seen:null,at:0};try{S.tok=localStorage.getItem("ku_tok")||""}catch(e){}
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function f(n){return(+n||0).toFixed(2).replace(".",",")+" сом."}
+function tm(ts){var d=new Date(ts);return("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
+function toast(t){var e=document.createElement("div");e.className="toast";e.textContent=t;document.body.appendChild(e);setTimeout(function(){e.remove()},2600)}
+function vib(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function api(pl){return fetch(CHAT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(pl)}).then(function(r){return r.json()})}
+var AU=null;function beep(n){try{AU=AU||new(window.AudioContext||window.webkitAudioContext)();var t=AU.currentTime;for(var i=0;i<n;i++){[988,1319,1568].forEach(function(fq,k){var o=AU.createOscillator(),g=AU.createGain();o.frequency.value=fq;g.gain.setValueAtTime(.0001,t+i*.9+k*.2);g.gain.exponentialRampToValueAtTime(.25,t+i*.9+k*.2+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*.9+k*.2+.18);o.connect(g);g.connect(AU.destination);o.start(t+i*.9+k*.2);o.stop(t+i*.9+k*.2+.2)})}}catch(e){}vib([200,100,200,100,200])}
+document.addEventListener("pointerdown",function(){try{AU=AU||new(window.AudioContext||window.webkitAudioContext)();AU.resume()}catch(e){}},{passive:true});
+function note(t,b){try{if("Notification"in window&&Notification.permission==="granted")new Notification(t,{body:b,icon:"icon-192.png"})}catch(e){}}
+function login(){$("app").innerHTML='<div class="lg"><h1>🚚 Курьер</h1><p>Умари Хайём — вход для курьеров. Логин и пароль выдаёт руководитель.</p><form id="lf"><label>Логин</label><input id="ll" autocapitalize="none" autocomplete="username"><label>Пароль</label><input id="lp" type="password" autocomplete="current-password"><div class="er" id="le"></div><button class="btn" style="width:100%">Войти</button></form></div>';
+$("lf").onsubmit=function(e){e.preventDefault();var b=e.target.querySelector("button");b.disabled=true;api({a:"k_login",login:$("ll").value.trim(),pw:$("lp").value}).then(function(j){b.disabled=false;if(!j.ok){$("le").textContent=j.error==="slow"?"Слишком много попыток, подождите 10 минут":j.error==="action"?"Сервер ещё не обновлён — сообщите руководителю":"Неверный логин или пароль";return}S.tok=j.tok;S.me=j.me;try{localStorage.setItem("ku_tok",j.tok)}catch(x){}if("Notification"in window&&Notification.permission==="default")Notification.requestPermission();load()}).catch(function(){b.disabled=false;$("le").textContent="Нет связи с сервером"})}}
+function load(){if(!S.tok)return login();return api({a:"k_list",tok:S.tok}).then(function(j){if(!j.ok){if(j.error==="tok"){S.tok="";try{localStorage.removeItem("ku_tok")}catch(x){}login()}return}S.me=j.me;S.ready=j.ready;S.mine=j.mine;S.at=Date.now();
+var fresh=[];if(S.seen){S.ready.forEach(function(o){if(!S.seen[o.key])fresh.push(o)})}S.seen={};S.ready.forEach(function(o){S.seen[o.key]=1});
+if(fresh.length){beep(3);note("🚚 Новый заказ к доставке",fresh.map(function(o){return(o.to||{}).ad||o.no}).join(", "));toast("Новых заказов: "+fresh.length)}render()}).catch(function(){})}
+function mapLinks(o){var t=o.to||{},q=encodeURIComponent((t.cty||"Душанбе")+", "+(t.ad||"")),g=t.geo;
+return'<div class="maps"><a target="_blank" href="'+(g?"https://yandex.ru/maps/?rtext=~"+g.la+","+g.lo+"&rtt=auto":"https://yandex.ru/maps/?text="+q)+'">Яндекс</a><a target="_blank" href="'+(g?"https://2gis.tj/dushanbe/directions/points/%7C"+g.lo+"%2C"+g.la:"https://2gis.tj/dushanbe/search/"+q)+'">2ГИС</a><a target="_blank" href="'+(g?"https://www.google.com/maps/dir/?api=1&destination="+g.la+","+g.lo:"https://www.google.com/maps/search/?api=1&query="+q)+'">Google</a></div>'}
+function card(o,mine){var t=o.to||{},fr=o.from||{},C={ready:"#f59e0b",taken:"#0ea5e9",done:"#16a34a",cancel:"#6b7280"}[o.st],L={ready:"Ждёт курьера",taken:"В пути",done:"Доставлен",cancel:"Отменён"}[o.st];
+var h='<div class="card" style="--c:'+C+'"><div class="top"><div><b>Заказ '+esc(o.no)+'</b><div class="its">'+(o.n||0)+' поз.'+(o.kind==="part"?' · товар партнёра':'')+'</div></div><span class="chip">'+L+'</span></div>';
+h+='<div class="rt"><div><i>🏬</i><span><b>Забрать: '+esc(fr.t||"")+'</b><small>'+esc(fr.addr||"")+(fr.ph?' · <a href="tel:'+esc(fr.ph)+'">'+esc(fr.ph)+'</a>':'')+'</small></span></div><div><i>📍</i><span><b>Отвезти: '+esc(t.nm||"Клиент")+'</b><small>'+esc((t.cty?t.cty+", ":"")+(t.ad||""))+(t.geo?' · точка на карте ✓':'')+'</small></span></div></div>';
+if(t.cm)h+='<div class="cm">💬 '+esc(t.cm)+'</div>';if(t.tm)h+='<div class="its">🕒 Удобное время: '+esc(t.tm)+'</div>';
+h+='<div class="cod">'+(o.cod>0?'💵 Взять с клиента: <b>'+f(o.cod)+'</b> ('+esc(t.pay||"")+')':'✅ Заказ оплачен — деньги брать не нужно')+'</div>';
+if(o.items&&o.items.length)h+='<details><summary class="its">Что везём ('+o.items.length+')</summary><div class="its">'+o.items.map(function(x){return esc(x.n)+' × '+x.q}).join("<br>")+'</div></details>';
+h+=mapLinks(o);
+if(o.st==="ready")h+='<div class="row"><button class="btn" data-k="take" data-key="'+esc(o.key)+'">🚚 Взять в работу</button></div>';
+else if(o.st==="taken"&&mine)h+='<div class="row">'+(t.ph?'<a class="btn o" href="tel:'+esc(t.ph)+'">📞 Позвонить</a>':'')+'<button class="btn g" data-k="done" data-key="'+esc(o.key)+'" data-cod="'+(o.cod||0)+'">✅ Доставлено</button></div><div class="row"><button class="btn r" data-k="fail" data-key="'+esc(o.key)+'">Не удалось вручить</button><button class="btn o" data-k="drop" data-key="'+esc(o.key)+'">Отказаться</button></div>';
+else if(o.st==="done"){var l=(o.log||[]).slice(-1)[0]||{};h+='<div class="its">Доставлен '+tm(l.ts)+(o.cash?' · получено '+f(o.cash):'')+'</div>'}
+return h+'</div>'}
+function render(){var mineAct=S.mine.filter(function(o){return o.st==="taken"});
+var h='<header><div><b>🚚 '+esc((S.me||{}).nm||"Курьер")+'</b><small>Умари Хайём · обновлено '+(S.at?tm(S.at).slice(6):"")+'</small></div><button id="out">Выйти</button></header><main><div class="tabs"><button data-t="ready" class="'+(S.tab==="ready"?"on":"")+'">Ждут'+(S.ready.length?'<i>'+S.ready.length+'</i>':'')+'</button><button data-t="mine" class="'+(S.tab==="mine"?"on":"")+'">Мои'+(mineAct.length?'<i>'+mineAct.length+'</i>':'')+'</button><button data-t="map" class="'+(S.tab==="map"?"on":"")+'">Карта</button></div>';
+if(S.tab==="ready")h+=S.ready.length?S.ready.map(function(o){return card(o,false)}).join(""):'<div class="emp">Нет заказов, готовых к отгрузке.<br>Когда появятся — прозвучит сигнал.</div>';
+else if(S.tab==="mine")h+=S.mine.length?S.mine.sort(function(a,b){return(a.st==="taken"?0:1)-(b.st==="taken"?0:1)}).map(function(o){return card(o,true)}).join(""):'<div class="emp">Вы пока не взяли ни одного заказа.</div>';
+else{var pts=S.ready.concat(mineAct).filter(function(o){return o.to&&o.to.geo}).map(function(o,k){return o.to.geo.lo+","+o.to.geo.la+",pm2"+(o.st==="taken"?"bl":"rd")+"l"+(k+1)});h+=pts.length?'<div id="map"><iframe title="Заказы на карте" src="https://yandex.ru/map-widget/v1/?ll=68.78%2C38.56&z=12&pt='+pts.join("~")+'"></iframe></div><p class="its">Красные — ждут курьера, синие — ваши в пути. На карте только заказы, где клиент отметил точку; остальные откройте по адресу из карточки.</p>':'<div class="emp">Нет заказов с отмеченной точкой на карте.</div>'}
+$("app").innerHTML=h+'</main>';
+$("out").onclick=function(){S.tok="";try{localStorage.removeItem("ku_tok")}catch(x){}login()}}
+document.addEventListener("click",function(e){var t=e.target.closest("[data-t]");if(t&&!e.target.closest(".card")){S.tab=t.dataset.t;render();return}
+var b=e.target.closest("[data-k]");if(!b)return;var k=b.dataset.k,key=b.dataset.key,pl={tok:S.tok,key:key};
+if(k==="done"){var cod=+b.dataset.cod||0;if(cod>0){var c=prompt("Сколько получили наличными? (сом.)",String(cod));if(c===null)return;pl.cash=parseFloat(String(c).replace(",","."))||0}pl.note=""}
+if(k==="fail"){var w=prompt("Почему не удалось вручить? (клиент не отвечает, нет дома…)");if(!w)return;pl.why=w}
+if(k==="drop"&&!confirm("Вернуть заказ в общий список?"))return;
+b.disabled=true;pl.a="k_"+k;api(pl).then(function(j){if(!j.ok){toast(j.error==="taken"?"Этот заказ уже взял другой курьер":"Не получилось, обновляем");load();return}vib([30,40,30]);toast({take:"Заказ ваш — в путь!",done:"Доставлено ✓",fail:"Отмечено: не вручено",drop:"Заказ возвращён"}[k]);if(k==="take")S.tab="mine";load()}).catch(function(){b.disabled=false;toast("Нет связи")})});
+setInterval(function(){if(S.tok&&!document.hidden)load()},20000);document.addEventListener("visibilitychange",function(){if(!document.hidden&&S.tok)load()});
+S.tok?load():login();
+</script></body></html>

@@ -1,4 +1,6 @@
-// Умари Хайём — сервер чата, «кто в сети», аккаунты клиентов, бонусы и счётчик посетителей.
+// Умари Хайём — сервер чата, «кто в сети», аккаунты клиентов, бонусы, курьеры, маркетплейс и счётчик посетителей.
+// ⚠ ВСТАВЛЯТЬ ТОЛЬКО в проект чата (идентификатор развёртывания начинается с AKfycbxH7G72).
+// ⚠ НЕ вставлять в основной сервер сайта (идентификатор AKfycbxGssdY) — иначе перестанет работать вход и заказы.
 // Отдельный проект Apps Script. Установка:
 // 1) script.google.com → «Новый проект» → удалите всё → вставьте этот файл целиком → Сохранить.
 // 2) «Начать развёртывание» → «Новое развёртывание» → тип «Веб-приложение»:
@@ -12,7 +14,7 @@ var ALL_ROLES = { operator: "Оператор", admin: "Администрато
 var ONLINE_MS = 75000, MAX_TXT = 1000, MAX_CELL = 45000;
 var BONUS_PCT = 2; // % от суммы товаров, начисляется после доставки
 
-function doGet(e) { return out({ ok: true, chat: 1 }); }
+function doGet(e) { return out({ ok: true, chat: 1, name: "umari-chat" }); }
 function doPost(e) {
   var p = {};
   try { p = JSON.parse(e.postData.contents || "{}"); } catch (x) { return out({ ok: false, error: "json" }); }
@@ -24,6 +26,8 @@ function route(p) {
   var a = String(p.a || "");
   if (a === "c_hit") return hit(p);
   if (a === "c_pst") return { ok: true, st: pstFor(p.nos) };
+  if (a === "c_promo") return { ok: true, list: promos() };
+  if (a.indexOf("k_") === 0) return courier(a, p);
   if (a.indexOf("c_") === 0) return client(a, p);
   if (a.indexOf("u_") === 0) return account(a, p);
   if (a.indexOf("s_") === 0) { var me = staff(p); if (!me) return { ok: false, error: "auth" }; return staffAct(a, p, me); }
@@ -163,6 +167,12 @@ function staffAct(a, p, me) {
   if (a === "s_pmine") { if (me.role !== "partner") return { ok: false, error: "role" }; return { ok: true, list: pordList(me.who) }; }
   if (a === "s_pall") { if (me.role === "partner" || me.role === "content") return { ok: false, error: "role" }; return { ok: true, list: pordList(null, p.nos) }; }
   if (a === "s_pset") return locked(function () { return pordSet(me, p); });
+  if (a === "s_pcfg") { if (me.role !== "partner" && !p.own) return { ok: false, error: "role" }; var own0 = me.role === "partner" ? me.who : p.own; if (p.set && me.role === "partner") return locked(function () { return { ok: true, cfg: pcfgSet(own0, p.set) }; }); return { ok: true, cfg: pcfgGet(own0) }; }
+  if (a === "s_dlv") { if (me.role === "partner" || me.role === "content") return { ok: false, error: "role" }; return { ok: true, r: locked(function () { return dlvSync(p.list); }) }; }
+  if (a === "s_dlvst") { if (me.role === "partner" || me.role === "content") return { ok: false, error: "role" }; return { ok: true, list: jobsFor(p.nos) }; }
+  if (a === "s_jobs") { if (me.role === "partner" || me.role === "content") return { ok: false, error: "role" }; return { ok: true, list: jobsRecent(+p.days || 3), cour: courList() }; }
+  if (a === "s_cadd" || a === "s_ctog" || a === "s_cpw") { if (me.role !== "director" && me.role !== "admin") return { ok: false, error: "role" }; return locked(function () { return courAdmin(a, p); }); }
+  if (a === "s_promo") { if (me.role !== "director" && me.role !== "admin") return { ok: false, error: "role" }; return locked(function () { return promoAdd(me, p); }); }
   if (a === "s_bonus") return { ok: true, r: locked(function () { return bonusSync(p.list); }) };
   if (a === "s_acc") { var ao = accGet(k9(p.ph)); return { ok: true, acc: ao ? { nm: ao.nm, ph: ao.ph, bal: ao.bal || 0, reg: !!ao.h, led: (ao.led || []).slice(-20).reverse() } : null }; }
   if (a === "s_pwreset") {
@@ -371,50 +381,57 @@ function bonusSync(list) {
 }
 
 // ---------- маркетплейс: заказы на товары партнёров ----------
-// Статусы части заказа у партнёра: new → acc (принят продавцом) → pack (собран) → ship (отгружен складом продавца) → sc (поступил в сортировочный центр)
-var PSTEPS = ["new", "acc", "pack", "ship", "sc"];
+// Шаги части заказа у партнёра: new → acc (принят) → pack (собран) → go (в пути: везёт курьер или сам продавец) → done (доставлен)
+var PSTEPS = ["new", "acc", "pack", "go", "done"], OLDST = { ship: "go", sc: "done" };
+var FEE_PCT = 1, FEE_MIN = 10, STORE = { t: "Склад «Умари Хайём»", addr: "г. Душанбе, ул. А. Дониш, 5/3", ph: "+992986868662" };
 function pordSh() { return sheet("pord", ["key", "no", "own", "json", "ts"]); }
 function pordAll() {
   var sh = pordSh(), n = sh.getLastRow(), L = [];
   if (n < 2) return { sh: sh, L: L };
-  sh.getRange(2, 1, n - 1, 4).getValues().forEach(function (r, i) { if (!r[0]) return; try { var o = JSON.parse(r[3]); o.row = i + 2; L.push(o); } catch (x) {} });
+  sh.getRange(2, 1, n - 1, 4).getValues().forEach(function (r, i) { if (!r[0]) return; try { var o = JSON.parse(r[3]); if (OLDST[o.pst]) o.pst = OLDST[o.pst]; o.row = i + 2; L.push(o); } catch (x) {} });
   return { sh: sh, L: L };
 }
 function pordPut(sh, o) {
   var row = o.row; delete o.row; var j = JSON.stringify(o), v = ["'" + o.no + "|" + o.own, "'" + o.no, "'" + o.own, j, o.ts || Date.now()];
-  if (row) sh.getRange(row, 1, 1, 5).setValues([v]); else sh.appendRow(v);
+  if (row) sh.getRange(row, 1, 1, 5).setValues([v]); else { sh.appendRow(v); }
   C().remove("pst:" + o.no);
 }
+function cleanTo(t) { t = t || {}; var g = t.geo && isFinite(+t.geo.la) && isFinite(+t.geo.lo) ? { la: +t.geo.la, lo: +t.geo.lo } : null; return { nm: clean(t.nm, 60), ph: clean(t.ph, 30), cty: clean(t.cty, 60), ad: clean(t.ad, 200), cm: clean(t.cm, 300), tm: clean(t.tm, 60), pay: clean(t.pay, 60), dm: t.dm === "p" ? "p" : "d", geo: g }; }
 function pordSync(list) {
   var A = pordAll(), by = {}, res = { add: 0, upd: 0 };
   A.L.forEach(function (o) { by[o.no + "|" + o.own] = o; });
   (list || []).slice(0, 300).forEach(function (x) {
     var no = String(x.no || ""), own = String(x.own || "").toLowerCase(); if (!no || !own) return;
     var o = by[no + "|" + own], items = (x.items || []).slice(0, 50).map(function (it) { return { n: String(it.n || "").slice(0, 160), q: +it.q || 0, l: String(it.l || "шт.").slice(0, 12), s: Math.round((+it.s || 0) * 100) / 100 }; });
-    if (!o) { o = { no: no, own: own, ts: +x.ts || Date.now(), items: items, ost: x.st || "new", pst: x.st === "cancel" ? "cancel" : "new", log: [{ ts: Date.now(), st: "new" }] }; pordPut(A.sh, o); by[no + "|" + own] = o; res.add++; return; }
+    var to = cleanTo(x.to), extra = { rest: Math.round((+x.rest || 0) * 100) / 100, shop: !!x.shop };
+    if (!o) { o = { no: no, own: own, ts: +x.ts || Date.now(), items: items, ost: x.st || "new", pst: x.st === "cancel" ? "cancel" : "new", log: [{ ts: Date.now(), st: "new" }], to: to, rest: extra.rest, shop: extra.shop }; pordPut(A.sh, o); by[no + "|" + own] = o; res.add++; return; }
     var ch = false;
-    if (x.st && o.ost !== x.st) { o.ost = x.st; ch = true; if (x.st === "cancel" && o.pst !== "cancel") { o.pst = "cancel"; o.log.push({ ts: Date.now(), st: "cancel" }); } }
-    if (JSON.stringify(items) !== JSON.stringify(o.items)) { o.items = items; ch = true; }
+    if (x.st && o.ost !== x.st) { o.ost = x.st; ch = true; if (x.st === "cancel" && o.pst !== "cancel") { o.pst = "cancel"; o.log.push({ ts: Date.now(), st: "cancel" }); jobCancel("P|" + no + "|" + own); } }
+    if (JSON.stringify(items) !== JSON.stringify(o.items) || JSON.stringify(to) !== JSON.stringify(o.to) || o.rest !== extra.rest || o.shop !== extra.shop) { o.items = items; o.to = to; o.rest = extra.rest; o.shop = extra.shop; ch = true; }
     if (ch) { pordPut(A.sh, o); res.upd++; }
   });
   return res;
 }
+function partSum(o) { var s = 0; (o.items || []).forEach(function (it) { s += +it.s || 0; }); return Math.round(s * 100) / 100; }
+function feeOf(o) { return Math.max(FEE_MIN, Math.round(partSum(o) * FEE_PCT) / 100); }
 function pordList(own, nos) {
-  var lim = Date.now() - 90 * 864e5, want = nos ? {} : null;
+  var lim = Date.now() - 90 * 864e5, want = nos ? {} : null, cfg = own ? pcfgGet(own) : null;
   if (nos) (nos || []).forEach(function (n) { want[String(n)] = 1; });
   return pordAll().L.filter(function (o) { if (want) return want[o.no]; return (!own || o.own === String(own).toLowerCase()) && o.ts > lim; })
-    .map(function (o) { delete o.row; return o; }).sort(function (a, b) { return b.ts - a.ts; }).slice(0, 300);
+    .map(function (o) { delete o.row; if (own && cfg && cfg.mode !== "self" && o.to) o.to = { dm: o.to.dm, cty: o.to.cty }; return o; }).sort(function (a, b) { return b.ts - a.ts; }).slice(0, 300);
 }
 function pordSet(me, p) {
   var no = String(p.no || ""), st = String(p.st || ""), own = me.role === "partner" ? me.who.toLowerCase() : String(p.own || "").toLowerCase();
   var A = pordAll(), o = A.L.filter(function (x) { return x.no === no && x.own === own; })[0];
   if (!o) return { ok: false, error: "none" };
   if (o.pst === "cancel") return { ok: false, error: "cancel" };
+  var cfg = pcfgGet(own), cour = cfg.mode !== "self" && o.to && o.to.dm === "d";
   var cur = PSTEPS.indexOf(o.pst), nx = PSTEPS.indexOf(st);
   if (nx < 0) return { ok: false, error: "st" };
-  if (me.role === "partner" && (st === "sc" || nx !== cur + 1)) return { ok: false, error: "order" };
-  if (me.role !== "partner" && st !== "sc" && nx < cur) return { ok: false, error: "order" };
-  o.pst = st; o.log.push({ ts: Date.now(), st: st, w: me.who, r: me.role });
+  if (me.role === "partner") { if (nx !== cur + 1) return { ok: false, error: "order" }; if (cour && nx > 2) return { ok: false, error: "courier" }; }
+  o.pst = st; o.mode = cour ? "cour" : "self"; o.log.push({ ts: Date.now(), st: st, w: me.who, r: me.role });
+  if (st === "pack" && cour) jobPut({ key: "P|" + no + "|" + own, no: no, kind: "part", own: own, from: { t: cfg.nm || ("Партнёр " + own), addr: cfg.addr || "", ph: cfg.ph || "" }, to: o.to, sum: partSum(o), cod: o.shop ? 0 : o.rest, n: o.items.length, items: o.items });
+  if (st === "done" && cour) o.fee = feeOf(o);
   pordPut(A.sh, o); delete o.row;
   return { ok: true, o: o };
 }
@@ -423,8 +440,88 @@ function pstFor(nos) {
   (nos || []).slice(0, 60).forEach(function (n) { n = String(n); var c = C().get("pst:" + n); if (c) out[n] = JSON.parse(c); else need.push(n); });
   if (need.length) {
     var w = {}; need.forEach(function (n) { w[n] = 1; out[n] = []; });
-    pordAll().L.forEach(function (o) { if (w[o.no]) { var t = {}; o.log.forEach(function (l) { t[l.st] = l.ts; }); out[o.no].push({ st: o.pst, t: t, n: o.items.length }); } });
+    pordAll().L.forEach(function (o) { if (w[o.no]) { var t = {}; o.log.forEach(function (l) { t[OLDST[l.st] || l.st] = l.ts; }); out[o.no].push({ st: o.pst, t: t, n: o.items.length, m: o.mode || "" }); } });
     need.forEach(function (n) { C().put("pst:" + n, JSON.stringify(out[n]), 120); });
   }
   return out;
 }
+// ---------- настройки партнёра ----------
+function pcfgGet(own) { own = String(own || "").toLowerCase(); var v = PropertiesService.getScriptProperties().getProperty("pc:" + own); var o = v ? JSON.parse(v) : {}; o.mode = o.mode === "self" ? "self" : "cour"; o.fee = { pct: FEE_PCT, min: FEE_MIN }; return o; }
+function pcfgSet(own, x) { own = String(own || "").toLowerCase(); var o = { mode: x.mode === "self" ? "self" : "cour", addr: clean(x.addr, 200), ph: clean(x.ph, 30), nm: clean(x.nm, 80) }; PropertiesService.getScriptProperties().setProperty("pc:" + own, JSON.stringify(o)); return pcfgGet(own); }
+// ---------- доставка: задания для курьеров ----------
+function jobSh() { return sheet("dlv", ["key", "no", "json", "ts"]); }
+function jobAll() {
+  var sh = jobSh(), n = sh.getLastRow(), L = [];
+  if (n >= 2) sh.getRange(2, 1, n - 1, 3).getValues().forEach(function (r, i) { if (!r[0]) return; try { var o = JSON.parse(r[2]); o.row = i + 2; L.push(o); } catch (x) {} });
+  return { sh: sh, L: L };
+}
+function jobSave(sh, o) { var row = o.row; delete o.row; var v = ["'" + o.key, "'" + o.no, JSON.stringify(o), o.ts || Date.now()]; if (row) sh.getRange(row, 1, 1, 4).setValues([v]); else sh.appendRow(v); C().put("jv", String(Date.now()), 21600); }
+function jobPut(x) {
+  var J = jobAll(), o = J.L.filter(function (j) { return j.key === x.key; })[0];
+  if (o) { if (o.st === "done" || o.st === "cancel") return o; ["from", "to", "sum", "cod", "n", "items"].forEach(function (k) { if (x[k] !== undefined) o[k] = x[k]; }); jobSave(J.sh, o); return o; }
+  o = { key: x.key, no: x.no, kind: x.kind, own: x.own || "", from: x.from, to: cleanTo(x.to), sum: x.sum || 0, cod: x.cod || 0, n: x.n || 0, items: (x.items || []).slice(0, 30), st: "ready", ts: Date.now(), log: [{ ts: Date.now(), st: "ready" }] };
+  jobSave(J.sh, o); return o;
+}
+function jobCancel(key) { var J = jobAll(), o = J.L.filter(function (j) { return j.key === key; })[0]; if (o && o.st !== "done" && o.st !== "cancel") { o.st = "cancel"; o.log.push({ ts: Date.now(), st: "cancel" }); jobSave(J.sh, o); } }
+function dlvSync(list) {
+  var J = jobAll(), by = {}, res = { add: 0, upd: 0 };
+  J.L.forEach(function (o) { by[o.key] = o; });
+  (list || []).slice(0, 200).forEach(function (x) {
+    var key = "S|" + x.no, o = by[key];
+    if (!o) { if (x.st !== "ready" && x.st !== "courier") return; jobPut({ key: key, no: x.no, kind: "shop", from: STORE, to: x.to, sum: +x.sum || 0, cod: +x.rest || 0, n: +x.n || 0, items: x.items }); res.add++; return; }
+    var ch = false;
+    if ((x.st === "cancel") && o.st !== "cancel" && o.st !== "done") { o.st = "cancel"; o.log.push({ ts: Date.now(), st: "cancel" }); ch = true; }
+    if ((x.st === "done" || x.st === "recv") && o.st !== "done" && o.st !== "cancel") { o.st = "done"; o.log.push({ ts: Date.now(), st: "done", w: "магазин" }); ch = true; }
+    if (o.st === "ready" || o.st === "taken") { var t2 = cleanTo(x.to); if (JSON.stringify(t2) !== JSON.stringify(o.to) || o.cod !== (+x.rest || 0)) { o.to = t2; o.cod = +x.rest || 0; ch = true; } }
+    if (ch) { jobSave(J.sh, o); res.upd++; }
+  });
+  return res;
+}
+function jobsFor(nos) { var w = {}; (nos || []).forEach(function (n) { w[String(n)] = 1; }); return jobAll().L.filter(function (o) { return w[o.no]; }).map(function (o) { delete o.row; return o; }); }
+function jobsRecent(days) { var lim = Date.now() - days * 864e5; return jobAll().L.filter(function (o) { return o.ts > lim || o.st === "ready" || o.st === "taken"; }).map(function (o) { delete o.row; return o; }).sort(function (a, b) { return b.ts - a.ts; }).slice(0, 300); }
+// ---------- курьеры ----------
+function courSh() { return sheet("cour", ["login", "json"]); }
+function courGet(login) { login = String(login || "").toLowerCase(); var sh = courSh(), n = sh.getLastRow(); if (n < 2) return null; var v = sh.getRange(2, 1, n - 1, 2).getValues(); for (var i = 0; i < v.length; i++) if (String(v[i][0]) === login) { var o = JSON.parse(v[i][1]); o.login = login; o.row = i + 2; return o; } return null; }
+function courPut(o) { var sh = courSh(), row = o.row; delete o.row; var v = [o.login, JSON.stringify(o)]; if (row) sh.getRange(row, 1, 1, 2).setValues([v]); else sh.appendRow(v); }
+function courList() { var sh = courSh(), n = sh.getLastRow(); if (n < 2) return []; return sh.getRange(2, 1, n - 1, 2).getValues().filter(function (r) { return r[0]; }).map(function (r) { var o = JSON.parse(r[1]); return { login: String(r[0]), nm: o.nm, ph: o.ph, on: o.on !== false }; }); }
+function courAdmin(a, p) {
+  var login = String(p.login || "").toLowerCase().replace(/[^a-z0-9_.-]/g, "");
+  if (!login) return { ok: false, error: "login" };
+  var o = courGet(login);
+  if (a === "s_cadd") { if (o) return { ok: false, error: "exists" }; if (String(p.pw || "").length < 6) return { ok: false, error: "pw" }; o = { login: login, nm: clean(p.nm, 60), ph: clean(p.ph, 30), s: rnd(16), on: true }; o.h = hashPw(String(p.pw), o.s); courPut(o); return { ok: true, list: courList() }; }
+  if (!o) return { ok: false, error: "none" };
+  if (a === "s_ctog") { o.on = !!p.on; if (!o.on) o.toks = []; courPut(o); return { ok: true, list: courList() }; }
+  if (a === "s_cpw") { if (String(p.pw || "").length < 6) return { ok: false, error: "pw" }; o.s = rnd(16); o.h = hashPw(String(p.pw), o.s); o.toks = []; courPut(o); return { ok: true }; }
+}
+function courTok(tok) { tok = String(tok || ""); if (tok.length < 20) return null; var login = C().get("kt:" + tok) || PropertiesService.getScriptProperties().getProperty("kt:" + tok); if (!login) return null; var o = courGet(login); if (!o || o.on === false || (o.toks || []).indexOf(tok) < 0) return null; return o; }
+function courier(a, p) {
+  if (a === "k_login") {
+    var login = String(p.login || "").toLowerCase(), tries = +(C().get("kl:" + login) || 0); if (tries >= 6) return { ok: false, error: "slow" };
+    var o = courGet(login);
+    if (!o || o.on === false || hashPw(String(p.pw || ""), o.s) !== o.h) { C().put("kl:" + login, String(tries + 1), 600); return { ok: false, error: "pw" }; }
+    return locked(function () { var o2 = courGet(login), t = rnd(40); o2.toks = (o2.toks || []).concat([t]).slice(-5); PropertiesService.getScriptProperties().setProperty("kt:" + t, login); C().put("kt:" + t, login, 21600); courPut(o2); return { ok: true, tok: t, me: { login: login, nm: o2.nm } }; });
+  }
+  var me = courTok(p.tok); if (!me) return { ok: false, error: "tok" };
+  if (a === "k_list") {
+    var L = jobAll().L, day = Date.now() - 864e5;
+    var ready = L.filter(function (o) { return o.st === "ready"; }), mine = L.filter(function (o) { return o.cour && o.cour.login === me.login && (o.st === "taken" || (o.st !== "ready" && o.ts > day) || (o.log[o.log.length - 1] || {}).ts > day); });
+    [ready, mine].forEach(function (X) { X.forEach(function (o) { delete o.row; }); });
+    return { ok: true, me: { login: me.login, nm: me.nm }, ready: ready, mine: mine, jv: C().get("jv") || "" };
+  }
+  return locked(function () {
+    var J = jobAll(), o = J.L.filter(function (x) { return x.key === p.key; })[0]; if (!o) return { ok: false, error: "none" };
+    if (a === "k_take") { if (o.st !== "ready") return { ok: false, error: "taken" }; o.st = "taken"; o.cour = { login: me.login, nm: me.nm, ph: me.ph }; o.log.push({ ts: Date.now(), st: "taken", w: me.nm }); }
+    else if (a === "k_done" || a === "k_fail" || a === "k_drop") {
+      if (o.st !== "taken" || !o.cour || o.cour.login !== me.login) return { ok: false, error: "notyours" };
+      if (a === "k_done") { o.st = "done"; o.cash = Math.round((+p.cash || 0) * 100) / 100; o.log.push({ ts: Date.now(), st: "done", w: me.nm, cash: o.cash, note: clean(p.note, 200) }); }
+      else if (a === "k_fail") { o.st = "ready"; o.log.push({ ts: Date.now(), st: "fail", w: me.nm, note: clean(p.why, 200) }); o.fails = (o.fails || 0) + 1; o.cour = null; }
+      else { o.st = "ready"; o.log.push({ ts: Date.now(), st: "drop", w: me.nm }); o.cour = null; }
+    } else return { ok: false, error: "action" };
+    jobSave(J.sh, o); delete o.row;
+    if (o.kind === "part") { var A = pordAll(), po = A.L.filter(function (x) { return x.no === o.no && x.own === o.own; })[0]; if (po && po.pst !== "cancel") { var st2 = o.st === "taken" ? "go" : o.st === "done" ? "done" : "pack"; if (po.pst !== st2) { po.pst = st2; po.log.push({ ts: Date.now(), st: st2, w: me.nm, r: "courier" }); if (st2 === "done") po.fee = feeOf(po); pordPut(A.sh, po); } } }
+    return { ok: true, job: o };
+  });
+}
+// ---------- рассылка акций клиентам ----------
+function promos() { var v = PropertiesService.getScriptProperties().getProperty("promo"), L = v ? JSON.parse(v) : [], lim = Date.now() - 30 * 864e5; return L.filter(function (x) { return x.ts > lim; }).slice(-5); }
+function promoAdd(me, p) { var t = clean(p.t, 80), x = clean(p.x, 300); if (!t) return { ok: false, error: "empty" }; var v = PropertiesService.getScriptProperties().getProperty("promo"), L = v ? JSON.parse(v) : []; L.push({ id: rnd(8), ts: Date.now(), t: t, x: x, w: me.who }); L = L.slice(-20); PropertiesService.getScriptProperties().setProperty("promo", JSON.stringify(L)); return { ok: true, list: L }; }

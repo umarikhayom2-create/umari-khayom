@@ -8,7 +8,7 @@
 //
 var MAIN_API = "https://script.google.com/macros/s/AKfycbxGssdYbn5tGiCuyyphhqVggnTh8htbdRkQBB-LB68DVWPCN54gveCYn5ysgWrSzNeM0g/exec";
 var CHAT_ROLES = { operator: "Оператор", admin: "Администратор", director: "Руководитель" };
-var ALL_ROLES = { operator: "Оператор", admin: "Администратор", accountant: "Бухгалтер", director: "Руководитель", content: "Контент-менеджер" };
+var ALL_ROLES = { operator: "Оператор", admin: "Администратор", accountant: "Бухгалтер", director: "Руководитель", content: "Контент-менеджер", partner: "Партнёр" };
 var ONLINE_MS = 75000, MAX_TXT = 1000, MAX_CELL = 45000;
 var BONUS_PCT = 2; // % от суммы товаров, начисляется после доставки
 
@@ -23,6 +23,7 @@ function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setM
 function route(p) {
   var a = String(p.a || "");
   if (a === "c_hit") return hit(p);
+  if (a === "c_pst") return { ok: true, st: pstFor(p.nos) };
   if (a.indexOf("c_") === 0) return client(a, p);
   if (a.indexOf("u_") === 0) return account(a, p);
   if (a.indexOf("s_") === 0) { var me = staff(p); if (!me) return { ok: false, error: "auth" }; return staffAct(a, p, me); }
@@ -118,7 +119,7 @@ function staff(p) {
   if (!ALL_ROLES[role] || !who || !key) return null;
   var h = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, key + "|" + role + "|" + who.toLowerCase()));
   if (C().get("au:" + h) === "1") return { role: role, who: who };
-  var act = role === "content" ? "admin_cat" : "admin_list", ok = false;
+  var act = role === "content" || role === "partner" ? "admin_cat" : "admin_list", ok = false;
   try {
     var r = UrlFetchApp.fetch(MAIN_API, { method: "post", contentType: "text/plain;charset=utf-8", payload: JSON.stringify({ a: act, key: key, role: role, who: who }), muteHttpExceptions: true, followRedirects: true });
     var j = JSON.parse(r.getContentText() || "{}"); ok = !!(j && j.ok);
@@ -158,6 +159,10 @@ function staffAct(a, p, me) {
     return res;
   }
   if (a === "s_stats") return { ok: true, st: stats(+p.days || 30) };
+  if (a === "s_pord") { if (me.role === "partner" || me.role === "content") return { ok: false, error: "role" }; return { ok: true, r: locked(function () { return pordSync(p.list); }) }; }
+  if (a === "s_pmine") { if (me.role !== "partner") return { ok: false, error: "role" }; return { ok: true, list: pordList(me.who) }; }
+  if (a === "s_pall") { if (me.role === "partner" || me.role === "content") return { ok: false, error: "role" }; return { ok: true, list: pordList(null, p.nos) }; }
+  if (a === "s_pset") return locked(function () { return pordSet(me, p); });
   if (a === "s_bonus") return { ok: true, r: locked(function () { return bonusSync(p.list); }) };
   if (a === "s_acc") { var ao = accGet(k9(p.ph)); return { ok: true, acc: ao ? { nm: ao.nm, ph: ao.ph, bal: ao.bal || 0, reg: !!ao.h, led: (ao.led || []).slice(-20).reverse() } : null }; }
   if (a === "s_pwreset") {
@@ -363,4 +368,63 @@ function bonusSync(list) {
   });
   Object.keys(accs).forEach(function (k) { accPut(accs[k]); });
   return res;
+}
+
+// ---------- маркетплейс: заказы на товары партнёров ----------
+// Статусы части заказа у партнёра: new → acc (принят продавцом) → pack (собран) → ship (отгружен складом продавца) → sc (поступил в сортировочный центр)
+var PSTEPS = ["new", "acc", "pack", "ship", "sc"];
+function pordSh() { return sheet("pord", ["key", "no", "own", "json", "ts"]); }
+function pordAll() {
+  var sh = pordSh(), n = sh.getLastRow(), L = [];
+  if (n < 2) return { sh: sh, L: L };
+  sh.getRange(2, 1, n - 1, 4).getValues().forEach(function (r, i) { if (!r[0]) return; try { var o = JSON.parse(r[3]); o.row = i + 2; L.push(o); } catch (x) {} });
+  return { sh: sh, L: L };
+}
+function pordPut(sh, o) {
+  var row = o.row; delete o.row; var j = JSON.stringify(o), v = ["'" + o.no + "|" + o.own, "'" + o.no, "'" + o.own, j, o.ts || Date.now()];
+  if (row) sh.getRange(row, 1, 1, 5).setValues([v]); else sh.appendRow(v);
+  C().remove("pst:" + o.no);
+}
+function pordSync(list) {
+  var A = pordAll(), by = {}, res = { add: 0, upd: 0 };
+  A.L.forEach(function (o) { by[o.no + "|" + o.own] = o; });
+  (list || []).slice(0, 300).forEach(function (x) {
+    var no = String(x.no || ""), own = String(x.own || "").toLowerCase(); if (!no || !own) return;
+    var o = by[no + "|" + own], items = (x.items || []).slice(0, 50).map(function (it) { return { n: String(it.n || "").slice(0, 160), q: +it.q || 0, l: String(it.l || "шт.").slice(0, 12), s: Math.round((+it.s || 0) * 100) / 100 }; });
+    if (!o) { o = { no: no, own: own, ts: +x.ts || Date.now(), items: items, ost: x.st || "new", pst: x.st === "cancel" ? "cancel" : "new", log: [{ ts: Date.now(), st: "new" }] }; pordPut(A.sh, o); by[no + "|" + own] = o; res.add++; return; }
+    var ch = false;
+    if (x.st && o.ost !== x.st) { o.ost = x.st; ch = true; if (x.st === "cancel" && o.pst !== "cancel") { o.pst = "cancel"; o.log.push({ ts: Date.now(), st: "cancel" }); } }
+    if (JSON.stringify(items) !== JSON.stringify(o.items)) { o.items = items; ch = true; }
+    if (ch) { pordPut(A.sh, o); res.upd++; }
+  });
+  return res;
+}
+function pordList(own, nos) {
+  var lim = Date.now() - 90 * 864e5, want = nos ? {} : null;
+  if (nos) (nos || []).forEach(function (n) { want[String(n)] = 1; });
+  return pordAll().L.filter(function (o) { if (want) return want[o.no]; return (!own || o.own === String(own).toLowerCase()) && o.ts > lim; })
+    .map(function (o) { delete o.row; return o; }).sort(function (a, b) { return b.ts - a.ts; }).slice(0, 300);
+}
+function pordSet(me, p) {
+  var no = String(p.no || ""), st = String(p.st || ""), own = me.role === "partner" ? me.who.toLowerCase() : String(p.own || "").toLowerCase();
+  var A = pordAll(), o = A.L.filter(function (x) { return x.no === no && x.own === own; })[0];
+  if (!o) return { ok: false, error: "none" };
+  if (o.pst === "cancel") return { ok: false, error: "cancel" };
+  var cur = PSTEPS.indexOf(o.pst), nx = PSTEPS.indexOf(st);
+  if (nx < 0) return { ok: false, error: "st" };
+  if (me.role === "partner" && (st === "sc" || nx !== cur + 1)) return { ok: false, error: "order" };
+  if (me.role !== "partner" && st !== "sc" && nx < cur) return { ok: false, error: "order" };
+  o.pst = st; o.log.push({ ts: Date.now(), st: st, w: me.who, r: me.role });
+  pordPut(A.sh, o); delete o.row;
+  return { ok: true, o: o };
+}
+function pstFor(nos) {
+  var out = {}, need = [];
+  (nos || []).slice(0, 60).forEach(function (n) { n = String(n); var c = C().get("pst:" + n); if (c) out[n] = JSON.parse(c); else need.push(n); });
+  if (need.length) {
+    var w = {}; need.forEach(function (n) { w[n] = 1; out[n] = []; });
+    pordAll().L.forEach(function (o) { if (w[o.no]) { var t = {}; o.log.forEach(function (l) { t[l.st] = l.ts; }); out[o.no].push({ st: o.pst, t: t, n: o.items.length }); } });
+    need.forEach(function (n) { C().put("pst:" + n, JSON.stringify(out[n]), 120); });
+  }
+  return out;
 }

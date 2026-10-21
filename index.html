@@ -957,7 +957,7 @@ function err(id,m){$("e-"+id).textContent=m;return !m}
 function pad(n){return n<10?"0"+n:""+n}
 function copy(text,ta){var done=function(){toast("Скопировано")},fail=function(){if(ta){ta.select();toast("Выделено, скопируйте вручную")}else toast("Не удалось скопировать")};
 try{navigator.clipboard.writeText(text).then(done,fail)}catch(e){fail()}}
-function setTheme(){var r=document.documentElement,cur=r.getAttribute("data-theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),nx=cur==="dark"?"light":"dark";sv("uh_th",{t:nx,ph:WX.ph});var go=function(){r.setAttribute("data-theme",nx)};if(document.startViewTransition&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)){r.style.setProperty("--vx",VXY[0]+"px");r.style.setProperty("--vy",VXY[1]+"px");document.startViewTransition(go)}else go()}
+function setTheme(){var r=document.documentElement,cur=r.getAttribute("data-theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),nx=cur==="dark"?"light":"dark";sv("uh_th",{t:nx,ph:WX.ph,manual:1});var go=function(){r.setAttribute("data-theme",nx)};if(document.startViewTransition&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)){r.style.setProperty("--vx",VXY[0]+"px");r.style.setProperty("--vy",VXY[1]+"px");document.startViewTransition(go)}else go()}
 var LAST=null,SHOP={ph:PHSHOW,addr:"",inn:""};
 var ONES=["","один","два","три","четыре","пять","шесть","семь","восемь","девять","десять","одиннадцать","двенадцать","тринадцать","четырнадцать","пятнадцать","шестнадцать","семнадцать","восемнадцать","девятнадцать"],TENS=["","","двадцать","тридцать","сорок","пятьдесят","шестьдесят","семьдесят","восемьдесят","девяносто"],HUN=["","сто","двести","триста","четыреста","пятьсот","шестьсот","семьсот","восемьсот","девятьсот"];
 function trip(n,fem){var r=[],h=Math.floor(n/100),t=n%100,o;if(h)r.push(HUN[h]);if(t<20){if(t){o=ONES[t];if(fem&&t===1)o="одна";if(fem&&t===2)o="две";r.push(o)}}else{r.push(TENS[Math.floor(t/10)]);o=ONES[t%10];if(fem&&t%10===1)o="одна";if(fem&&t%10===2)o="две";if(o)r.push(o)}return r.join(" ")}
@@ -2247,16 +2247,14 @@ if(t<sr-40||t>=ss+70)return"night";if(t<sr+180)return"morning";if(t>=ss-90)retur
 function wxKind(c){c=+c;if(c>=95)return"storm";if((c>=71&&c<=77)||c===85||c===86)return"snow";if((c>=51&&c<=67)||(c>=80&&c<=82))return"rain";if(c===45||c===48)return"fog";if(c===3)return"cloud";if(c===1||c===2)return"part";return"clear"}
 var WXT={clear:["Ясно","☀️","🌙"],part:["Переменная облачность","⛅","☁️"],cloud:["Пасмурно","☁️","☁️"],fog:["Туман","🌫️","🌫️"],rain:["Дождь","🌧️","🌧️"],snow:["Снег","❄️","❄️"],storm:["Гроза","⛈️","⛈️"]};
 var WXP={morning:"Утро",day:"День",evening:"Вечер",night:"Ночь"};
-function wxTheme(){var r=document.documentElement,s=ld("uh_th",null),dark=WX.ph==="night";
-if(s&&s.t&&s.ph===WX.ph){r.setAttribute("data-theme",s.t);return}
-r.setAttribute("data-theme",dark?"dark":"light")}
+function wxTheme(){var r=document.documentElement,s=ld("uh_th",null);r.setAttribute("data-theme",s&&s.t&&s.manual?s.t:"light")}
 function wxLayer(){var L=$("wx");if(!L){L=document.createElement("div");L.id="wx";L.setAttribute("aria-hidden","true");document.body.insertBefore(L,document.body.firstChild)}
 var k=WX.k||"clear",n=k==="rain"||k==="storm"?70:k==="snow"?45:0,h='<i class="wxp"></i><i class="wxg"></i>';
-if(WX.ph==="night"&&(k==="clear"||k==="part")){for(var i=0;i<40;i++)h+='<b class="wxs" style="left:'+(Math.random()*100).toFixed(1)+'%;top:'+(Math.random()*55).toFixed(1)+'%;animation-delay:'+(Math.random()*4).toFixed(2)+'s"></b>'}
+if(false){for(var i=0;i<40;i++)h+='<b class="wxs" style="left:'+(Math.random()*100).toFixed(1)+'%;top:'+(Math.random()*55).toFixed(1)+'%;animation-delay:'+(Math.random()*4).toFixed(2)+'s"></b>'}
 if(k==="part"||k==="cloud"||k==="fog"||k==="rain"||k==="storm"||k==="snow"){var nc=k==="part"?2:4;for(var c=0;c<nc;c++)h+='<b class="wxc" style="top:'+(4+c*13)+'%;animation-duration:'+(70+c*25)+'s;animation-delay:-'+(c*22)+'s"></b>'}
 for(var j=0;j<n;j++){var dl=(Math.random()*(k==="snow"?10:1.2)).toFixed(2),du=k==="snow"?(7+Math.random()*7).toFixed(1):(.55+Math.random()*.45).toFixed(2);h+='<b class="'+(k==="snow"?"wxf":"wxr")+'" style="left:'+(Math.random()*100).toFixed(1)+'%;animation-delay:-'+dl+'s;animation-duration:'+du+'s"></b>'}
 if(k==="storm")h+='<i class="wxl"></i>';
-L.innerHTML=h;var r=document.documentElement;r.setAttribute("data-ph",WX.ph);r.setAttribute("data-wx",k)}
+L.innerHTML=h;var r=document.documentElement;r.setAttribute("data-ph","u");r.setAttribute("data-wx",k)}
 function wxChip(){var b=$("wxb");if(!b)return;var d=WX.d;if(!d){b.hidden=true;return}var T=WXT[WX.k]||WXT.clear,ic=WX.ph==="night"?T[2]:T[1];b.hidden=false;b.innerHTML='<span class="wxi">'+ic+'</span><span class="wxt"><b>'+(d.t>0?"+":"")+Math.round(d.t)+'°</b> <span>Душанбе · '+WXP[WX.ph].toLowerCase()+', '+T[0].toLowerCase()+'</span></span>';b.title="Душанбе: "+T[0].toLowerCase()+", "+(d.t>0?"+":"")+Math.round(d.t)+"°"}
 function wxApply(){WX.ph=wxPhase();WX.k=WX.d?wxKind(WX.d.c):"clear";wxTheme();wxLayer();wxChip()}
 function wxLoad(){var c=ld("uh_wx",null);if(c&&Date.now()-c.at<25*6e4){WX.d=c;wxApply();return}

@@ -2138,7 +2138,7 @@ if(d.length===13){var p=EP[d[0]];for(i=1;i<7;i++)b+=p[i-1]==="L"?EL[d[i]]:eanG(d
 else{for(i=0;i<4;i++)b+=EL[d[i]];b+="01010";for(i=4;i<8;i++)b+=eanR(d[i])}return{b:b+"101",t:"ean"}}
 var codes=[104],sum=104,k;for(k=0;k<s.length;k++){var v=s.charCodeAt(k)-32;if(v<0||v>94)v=0;codes.push(v);sum+=v*(k+1)}codes.push(sum%103);codes.push(106);
 var bits="";codes.forEach(function(c){var w=C128[c],bar=true;for(var j=0;j<w.length;j++){bits+=(bar?"1":"0").repeat(+w[j]);bar=!bar}});return{b:bits,t:"c128"}}
-function drawBar(x,code,px,py,w,h){var B=bcBits(code),n=B.b.length,mw=w/n,i;x.fillStyle="#000";for(i=0;i<n;i++)if(B.b[i]==="1")x.fillRect(px+i*mw,py,Math.max(1,mw+.15),h);x.font="500 15px sans-serif";x.textAlign="center";x.textBaseline="top";x.fillText(code,px+w/2,py+h+2)}
+function drawBar(x,code,px,py,w,h,noT){var B=bcBits(code),n=B.b.length,mw=w/n,i;x.fillStyle="#000";for(i=0;i<n;i++)if(B.b[i]==="1")x.fillRect(px+i*mw,py,Math.max(1,mw+.15),h);x.font="500 15px sans-serif";x.textAlign="center";x.textBaseline="top";if(!noT)x.fillText(code,px+w/2,py+h+2)}
 function itemBc(it){if(it.bc&&it.bc.length)return it.bc;var p=null;D.forEach(function(x){if(!p&&x.n===it.n)p=x});return p&&p.bc?p.bc:[]}
 /* ===== Тип клиента, который определяет сотрудник ===== */
 var CTN={r:"Розничный",c:"Корпоративный",w:"Оптовый"};
@@ -2182,7 +2182,7 @@ function drawCard(o,nth,L){var Z=cardData(o,nth);L=L||loyOf(o,[o]);var GL=goalsO
 var W=1080,PADX=90,CW=W-2*PADX,its=Z.its,ln0=Math.min(6,its.length),cu=o.cust||{},nm=String(cu.nm||"").split(" ")[0]||"друг";
 var T=tier===2?{bg:["#0b0b14","#16142a","#231a3a"],ink:"#f6f1e3",mut:"#b9b1a0",card:"rgba(255,255,255,.06)",line:"rgba(232,196,104,.35)",acc:"#e8c468",plate:"#fff"}:
 tier===1?{bg:[Z.pal[0],Z.pal[1]],ink:"#1d1d1f",mut:"#6b6b72",card:"#ffffff",line:"#eee",acc:Z.pal[1],plate:"#fff"}:{bg:["#fbf8f3","#f3eee6"],ink:"#1d1d1f",mut:"#77777e",card:"#ffffff",line:"#eee",acc:"#e8590c",plate:"#f6f3ee"};
-var listH=96+ln0*92+(its.length>6?46:0)+100,discH=win?(BCDISC[win.p]?470:330):0,nextH=next?190:0,H=Math.max(1500,560+listH+50+discH+nextH+300+110)+500,cv=document.createElement("canvas");cv.width=W;cv.height=H;var x=cv.getContext("2d");
+var listH=96+ln0*92+(its.length>6?46:0)+100,discH=win?(BCDISC[win.p]?590:330):0,nextH=next?190:0,H=Math.max(1500,560+listH+50+discH+nextH+300+110)+500,cv=document.createElement("canvas");cv.width=W;cv.height=H;var x=cv.getContext("2d");
 var imgs=its.slice(0,6).map(function(it){var p=prodOf(it.n);return p&&p.i});
 return Promise.all(imgs.map(function(s){return loadImg(s)})).then(function(IM){
 function tx(s,X,Y,font,col,al){x.font=font;x.fillStyle=col;x.textAlign=al||"center";x.textBaseline="top";x.fillText(s,X,Y)}
@@ -2214,7 +2214,7 @@ x.fillStyle=T.line;x.fillRect(PADX+40,yy+12,CW-80,2);tx("Итого",PADX+40,yy+
 if(win){var dh=discH;shadowCard(PADX,y,CW,dh,40,tier===2?"#151324":"#fff");if(tier===2){x.strokeStyle=gold(y,y+dh);x.lineWidth=3;rrect(x,PADX,y,CW,dh,40);x.stroke()}
 var cy=y+40;tx(tier===2?"ВАША ПРЕМИУМ-СКИДКА":"ВАША СКИДКА В МАГАЗИНЕ",W/2,cy,"700 26px sans-serif",tier===2?T.acc:T.mut);cy+=46;
 tx("−"+win.p+"%",W/2,cy,"900 120px sans-serif",tier===2?gold(cy,cy+120):Z.pal[1]);cy+=140;
-var code=BCDISC[win.p];if(code){x.fillStyle="#fff";rrect(x,W/2-260,cy,520,150,20);x.fill();drawBar(x,code,W/2-220,cy+18,440,92);cy+=172;tx("Покажите штрихкод на кассе",W/2,cy,"500 28px sans-serif",tier===2?T.mut:T.mut)}
+var code=BCDISC[win.p];if(code){x.fillStyle="#fff";rrect(x,PADX+40,cy,CW-80,270,24);x.fill();drawBar(x,code,PADX+110,cy+30,CW-220,210,1);cy+=292;tx("Покажите штрихкод на кассе",W/2,cy,"500 28px sans-serif",tier===2?T.mut:T.mut)}
 else tx("Покажите эту карточку на кассе",W/2,cy,"500 30px sans-serif",tier===2?T.mut:T.mut);y+=dh+40}
 if(next){var nh=nextH-30;shadowCard(PADX,y,CW,nh,36,tier===2?"rgba(255,255,255,.05)":"#fff");tx(win?"Следующая цель — скидка "+next.p+"%":"Ваша цель — скидка "+next.p+"%",W/2,y+30,"700 32px sans-serif",T.ink);
 var nt=next.t.replace(/^До скидки \d+%: /,"");wr(nt,PADX+50,y+76,CW-100,"500 26px sans-serif",T.mut,32,"center",1);

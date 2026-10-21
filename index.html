@@ -2162,7 +2162,7 @@ var CATX=[[/ручк|карандаш|маркер/i,"🖊️",["«Что нап
 [/калькул/i,"🧮",["«Счёт дружбы не портит» — народная мудрость","«Копейка рубль бережёт»"],["Первые карманные калькуляторы появились в начале 1970-х годов","Солнечная батарея в калькуляторе работает даже от обычной лампы"]],
 [/бейдж|штамп|печат/i,"🔖",["«Встречают по одёжке, а провожают по уму»","«Слово — серебро, а печать — золото»"],["Резиновые штампы стали массовыми после изобретения вулканизации резины в XIX веке","Бейдж помогает запомнить имя собеседника с первой встречи"]]];
 /* Штрихкоды скидок для магазина: впишите коды, когда они будут (5% и 10%) */
-var BCDISC={5:"",10:""};
+var BCDISC={5:"VAHDAT1",10:"VAHDAT2"};
 function loyOf(o,list){var ph=(o.cust||{}).ph,ol=[];(list||[]).forEach(function(x){var q=x.o||x;if((q.cust||{}).ph===ph)ol.push({ts:x.ts||q.ts||0,sum:q.sg||q.sum,st:x.st||q.st||"new"})});if(!ol.length)ol.push({ts:o.ts||Date.now(),sum:o.sg||o.sum,st:"new"});return loyalty(ol)}
 function goalsOf(o,L){var s0=+(o.sg||o.sum)||0,need=LOYC.sum-s0,G=[];
 G.push({p:LOYC.p2,ok:!!(L.a5||L.pct>=LOYC.p2),pr:Math.min(1,s0/LOYC.sum),t:"До скидки "+LOYC.p2+"%: заказ от "+LOYC.sum+" сом."+(need>0?" — в этот раз не хватило "+f(need):"")});
@@ -2182,7 +2182,7 @@ function drawCard(o,nth,L){var Z=cardData(o,nth);L=L||loyOf(o,[o]);var GL=goalsO
 var W=1080,PADX=90,CW=W-2*PADX,its=Z.its,ln0=Math.min(6,its.length),cu=o.cust||{},nm=String(cu.nm||"").split(" ")[0]||"друг";
 var T=tier===2?{bg:["#0b0b14","#16142a","#231a3a"],ink:"#f6f1e3",mut:"#b9b1a0",card:"rgba(255,255,255,.06)",line:"rgba(232,196,104,.35)",acc:"#e8c468",plate:"#fff"}:
 tier===1?{bg:[Z.pal[0],Z.pal[1]],ink:"#1d1d1f",mut:"#6b6b72",card:"#ffffff",line:"#eee",acc:Z.pal[1],plate:"#fff"}:{bg:["#fbf8f3","#f3eee6"],ink:"#1d1d1f",mut:"#77777e",card:"#ffffff",line:"#eee",acc:"#e8590c",plate:"#f6f3ee"};
-var listH=96+ln0*92+(its.length>6?46:0)+100,discH=win?(BCDISC[win.p]?470:330):0,nextH=next?190:0,H=Math.max(1500,560+listH+50+discH+nextH+300+110),cv=document.createElement("canvas");cv.width=W;cv.height=H;var x=cv.getContext("2d");
+var listH=96+ln0*92+(its.length>6?46:0)+100,discH=win?(BCDISC[win.p]?470:330):0,nextH=next?190:0,H=Math.max(1500,560+listH+50+discH+nextH+300+110)+500,cv=document.createElement("canvas");cv.width=W;cv.height=H;var x=cv.getContext("2d");
 var imgs=its.slice(0,6).map(function(it){var p=prodOf(it.n);return p&&p.i});
 return Promise.all(imgs.map(function(s){return loadImg(s)})).then(function(IM){
 function tx(s,X,Y,font,col,al){x.font=font;x.fillStyle=col;x.textAlign=al||"center";x.textBaseline="top";x.fillText(s,X,Y)}
@@ -2194,7 +2194,7 @@ var g=x.createLinearGradient(0,0,W*.6,H);T.bg.forEach(function(c,i){g.addColorSt
 if(tier===0){x.globalAlpha=.5;x.fillStyle=Z.pal[0];x.beginPath();x.arc(W*.92,-40,260,0,7);x.fill();x.fillStyle=Z.pal[1];x.beginPath();x.arc(-60,H*.42,200,0,7);x.fill();x.globalAlpha=1;x.fillStyle="rgba(251,248,243,.82)";x.fillRect(0,0,W,H)}
 if(tier===1){x.globalAlpha=.18;x.fillStyle="#fff";for(var k=0;k<7;k++){x.beginPath();x.arc(Z.R()*W,Z.R()*H,90+Z.R()*220,0,7);x.fill()}x.globalAlpha=1;var sh=x.createLinearGradient(0,0,W,0);sh.addColorStop(0,"rgba(255,255,255,0)");sh.addColorStop(.5,"rgba(255,255,255,.14)");sh.addColorStop(1,"rgba(255,255,255,0)");x.fillStyle=sh;x.save();x.translate(W/2,H/2);x.rotate(-.5);x.fillRect(-W,-120,W*2,240);x.restore()}
 if(tier===2){x.strokeStyle="rgba(232,196,104,.07)";x.lineWidth=2;for(var d=-H;d<W+H;d+=46){x.beginPath();x.moveTo(d,0);x.lineTo(d+H*.6,H);x.stroke()}for(var s2=0;s2<60;s2++){x.fillStyle="rgba(255,236,170,"+(.15+Z.R()*.5)+")";var r0=1+Z.R()*2.5;x.beginPath();x.arc(Z.R()*W,Z.R()*H,r0,0,7);x.fill()}
-x.strokeStyle=gold(0,H);x.lineWidth=4;rrect(x,28,28,W-56,H-56,46);x.stroke();x.lineWidth=1.5;x.strokeStyle="rgba(232,196,104,.5)";rrect(x,42,42,W-84,H-84,38);x.stroke()}
+}
 var y=92,onCol=tier===1?"#fff":T.ink;
 /* шапка */
 if(tier===2){tx("УМАРИ ХАЙЁМ",W/2,y,"700 30px Georgia, serif",T.acc);x.font="600 22px sans-serif";y+=46;tx("PREMIUM CLIENT",W/2,y,"700 22px sans-serif",T.mut);y+=56}else{tx("Умари Хайём.",W/2,y,"800 38px sans-serif",tier===1?"#fff":Z.pal[1]);y+=84}
@@ -2222,7 +2222,7 @@ x.fillStyle=tier===2?"rgba(255,255,255,.12)":"#efece6";rrect(x,PADX+50,y+nh-38,C
 /* цитата */
 var qc=tier===1?"#fff":tier===2?T.ink:T.ink,qm=tier===1?"rgba(255,255,255,.8)":tier===2?T.acc:Z.pal[1];
 x.fillStyle=qm;x.fillRect(W/2-60,y,120,3);y+=34;x.font="italic 500 36px Georgia, serif";var ql=wrapT(x,Z.q,CW-80);ql.forEach(function(l,j){tx(l,W/2,y+j*50,"italic 500 36px Georgia, serif",qc)});y+=ql.length*50+28;x.fillStyle=qm;x.fillRect(W/2-60,y,120,3);
-tx("umari_khayom.tj · +992 98 686 86 62",W/2,H-96,"600 28px sans-serif",tier===1?"rgba(255,255,255,.85)":T.mut);return cv})}
+var FH=Math.max(1500,y+190),cv2=document.createElement("canvas");cv2.width=W;cv2.height=FH;var x0=cv2.getContext("2d");x0.drawImage(cv,0,0);x=x0;H=FH;if(tier===2){x.strokeStyle=gold(0,H);x.lineWidth=4;rrect(x,28,28,W-56,H-56,46);x.stroke();x.lineWidth=1.5;x.strokeStyle="rgba(232,196,104,.5)";rrect(x,42,42,W-84,H-84,38);x.stroke()}tx("umari_khayom.tj · +992 98 686 86 62",W/2,H-96,"600 28px sans-serif",tier===1?"rgba(255,255,255,.85)":T.mut);return cv2})}
 function orderNth(o,list){var ph=(o.cust||{}).ph,n=0;(list||[]).forEach(function(x){var q=x.o||x;if((q.cust||{}).ph===ph&&(x.st||q.st)!=="cancel"&&(x.ts||q.ts||0)<=(o.ts||0))n++});return Math.max(1,n)}
 function cardGo(o,nth,L){cardShow(o,nth,L)}
 /* ===== Защищённый просмотр карточки: без скачивания и пересылки ===== */

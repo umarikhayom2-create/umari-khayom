@@ -98,6 +98,8 @@ body.cho .chb{display:none}
 .sca{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--bd)}.sca .btn[disabled]{opacity:.45;cursor:not-allowed}.sca .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-left:2px}
 .scm{min-height:300px;max-height:56vh}
 @media (min-width:860px){.scw{grid-template-columns:300px 1fr}.scw .scl,.scw.open .scl{display:flex}.scd{display:flex}#adm .scbk{display:none}}
+
+.dlvn{margin:10px 0 4px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,#16a34a 10%,var(--sf));color:var(--tx);font-size:13.5px;line-height:1.4}.dlvn.pay{background:color-mix(in srgb,#f59e0b 14%,var(--sf))}.dlvn[hidden]{display:none}
 </style>
 <title>Умари Хайём — канцелярские товары</title>
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#faf8f4"><link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/png" sizes="32x32" href="icon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="icon-16.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Умари Хайём"><meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -626,7 +628,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <main class="w" id="top">
 <section class="hero">
 <div><button type="button" class="wxb" id="wxb" aria-label="Погода в Душанбе" hidden></button><h1>Канцелярские товары <span class="hl">для офиса и учёбы</span></h1>
-<p>Бумага, папки, ножницы, калькуляторы и степлеры. Соберите заказ из каталога, укажите адрес и способ оплаты, и мы подтвердим его в WhatsApp.</p>
+<p>Бумага, папки, ножницы, калькуляторы и степлеры — всё в одном каталоге. Соберите заказ за минуту, укажите адрес и способ оплаты, а мы быстро соберём и привезём. <b>Доставка бесплатно от 79 сомони.</b></p>
 <div class="cta"><a class="btn shine" href="#catalog">Открыть каталог</a><a class="btn o" href="https://www.instagram.com/umari_khayom.tj" target="_blank" rel="noopener">Instagram</a></div></div>
 <div class="stats"><div class="st1"><em>📦</em><b id="s1">0</b><span>товаров</span></div><div class="st2"><em>🗂️</em><b id="s2">5</b><span>категорий</span></div><div class="st3"><em>⚡</em><b>1 мин</b><span>на оформление</span></div></div>
 </section>
@@ -681,8 +683,8 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <div class="fl"><label for="org">Организация или ИП (необязательно)</label><input id="org" autocomplete="organization" placeholder="Название компании или ИП"><small class="er" id="e-org"></small></div>
 <p class="note" id="ctw" hidden style="color:var(--tx)"></p><p class="note" id="ctc" hidden style="color:var(--tx);padding:10px 12px;border-radius:12px;background:var(--sf2)">🏢 Для счёт-фактуры пришлите документы компании: «Мой профиль» → «Документы компании». <a href="#" data-a="prof">Открыть профиль</a></p>
 <fieldset><legend>Получение</legend><div class="opts">
-<label class="opt on"><input type="radio" name="dm" value="d" checked><span><b>Доставка</b><em>По указанному адресу</em></span></label>
-<label class="opt"><input type="radio" name="dm" value="p"><span><b>Самовывоз</b><em>Адрес магазина пришлём в WhatsApp</em></span></label></div></fieldset>
+<label class="opt on"><input type="radio" name="dm" value="d" checked><span><b>Доставка</b><em>Бесплатно от 79 сом., иначе 20 сом.</em></span></label>
+<label class="opt"><input type="radio" name="dm" value="p"><span><b>Самовывоз</b><em>Адрес магазина пришлём в WhatsApp</em></span></label></div><p class="dlvn" id="dlvn" hidden></p></fieldset>
 <div id="adw"><div class="fl"><label for="cty">Город или район</label><input id="cty" autocomplete="address-level2" placeholder="Например, Душанбе"></div>
 <div class="fl"><label for="ad">Адрес доставки</label><textarea id="ad" rows="2" autocomplete="street-address" placeholder="Улица, дом, квартира, ориентир"></textarea><small class="er" id="e-ad"></small></div></div>
 <fieldset><legend>Способ оплаты</legend><div class="opts">
@@ -856,7 +858,7 @@ function cartView(){var k=Object.keys(cart),h="",t=tot();
 if(!k.length){h='<div class="emp">В корзине пока пусто<br><button class="btn sm" data-a="close">Перейти в каталог</button></div>'}
 else h+='<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:4px"><span class="note" style="margin:0">Количество можно ввести вручную</span><button class="rm" data-a="clear">Очистить корзину</button></div>'+loyNote();
 k.forEach(function(key){var o=pk(key),p=D[o.i],m=mult(p,o.u);h+='<div class="ci"><div class="th">'+(p.i?'<img src="'+p.i+'" alt="">':'')+'</div><div class="cin"><b>'+esc(p.n)+'</b><span>'+esc(ulabel(p,o.u))+'</span><br><span>'+f(upc(p,o.u,cart[key]))+' × '+cart[key]+' = '+(oldTot(p,o.u,cart[key])>upc(p,o.u,cart[key])*cart[key]+0.004?'<s class="op">'+f(oldTot(p,o.u,cart[key]))+'</s> ':'')+f(upc(p,o.u,cart[key])*cart[key])+(dpct(p,o.u,cart[key])?' <b class="dtag">скидка '+dpct(p,o.u,cart[key])+'%</b>':'')+'</span>'+(tierHint(p,o.u,cart[key])?'<br><small class="dsc">'+esc(tierHint(p,o.u,cart[key]))+'</small>':'')+'<br><button class="rm" data-a="rm" data-k="'+key+'">Удалить</button></div>'+stepper(key)+'</div>'});
-$("cli").innerHTML=h;$("tt").innerHTML=totHtml(t.so,t.s);$("go").disabled=!k.length}
+if(k.length){var nd=DLV_MIN-t.s;h+='<p class="dlvn'+(nd>0?' pay':'')+'">'+(nd>0?'🚚 До бесплатной доставки осталось <b>'+f(nd)+'</b> Если заказ меньше '+DLV_MIN+' сом., доставка — '+f(DLV_FEE)+' (самовывоз бесплатно).':'🚚 <b>Доставка бесплатно</b> — сумма заказа от '+DLV_MIN+' сом.')+'</p>'}$("cli").innerHTML=h;$("tt").innerHTML=totHtml(t.so,t.s);$("go").disabled=!k.length;dlvUpd()}
 function sumView(){var t=tot();$("sm").innerHTML='<div><span>Позиций</span><b>'+t.l+'</b></div><div><span>Всего штук</span><b>'+t.pc+'</b></div>'+(t.so>t.s+0.004?'<div><span>Сумма без скидки</span><b><s class="op">'+f(t.so)+'</s></b></div><div><span>Ваша скидка</span><b>−'+f(t.so-t.s)+'</b></div>':'')+'<div><span>К оплате</span><b>'+f(t.s)+'</b></div>'}
 var VT={vc:"Корзина",vk:"Оформление заказа",vs:"Заказ готов",vh:"Мои заказы",vd:"Заказ оформлен",vp:"Мой профиль"};
 function view(v){if(v==="vk")setTimeout(function(){try{ctUi()}catch(x){}},0);["vc","vk","vs","vh","vd","vp"].forEach(function(id){$(id).hidden=id!==v});
@@ -992,7 +994,7 @@ if(st==="done")a='<div class="pr"><b>Заказ у вас?</b> Подтверд�
 else if(st==="recv"&&!o.sig)a='<div class="pr"><b>Спасибо, заказ получен.</b> Загрузите накладную с печатью магазина: укажите имя и фамилию и поставьте подпись.</div><button class="btn w100" data-a="sign" data-h="'+n+'">Загрузить накладную с печатью</button>';
 else if(st==="recv")a='<div class="pr">Подписано: '+esc(o.sig.name)+', '+esc(o.sig.time)+'</div><button class="btn w100" data-a="dl" data-h="'+n+'">Скачать накладную с печатью</button>';
 if(!API_URL&&st!=="recv"&&st!=="cancel")a+='<button class="btn sm o" data-a="nxt" data-h="'+n+'" style="margin-top:8px">Тест: следующий статус</button>';
-h+=a+'<div class="row" style="margin-top:8px"><button class="btn sm o" data-a="repeat" data-h="'+n+'">Повторить заказ</button>'+(ctOf(o)==="r"&&st!=="cancel"?'<button class="btn sm o" data-a="ocard" data-h="'+n+'">🎉 Карточка заказа</button>':'')+'</div></div>'}catch(er){h=h0+'<div class="oc"><div class="oh"><div><b>'+esc(o.no||"Заказ")+'</b><span>'+esc(o.date||"")+'</span></div><b>'+f(+o.sum||0)+'</b></div><div class="pr">Статус: <b>'+esc(ST[o.st||"new"]||"Обрабатывается")+'</b></div></div>'}});
+h+=a+'<div class="row" style="margin-top:8px"><button class="btn sm o" data-a="repeat" data-h="'+n+'">Повторить заказ</button>'+(ctOf(o)==="r"&&st==="recv"?'<button class="btn sm o" data-a="ocard" data-h="'+n+'">🎉 Карточка заказа</button>':'')+(ctOf(o)==="r"&&st!=="recv"&&st!=="cancel"?'<span class="note" style="margin:6px 0 0;flex-basis:100%">🎉 Карточка заказа откроется после подтверждения получения</span>':'')+'</div></div>'}catch(er){h=h0+'<div class="oc"><div class="oh"><div><b>'+esc(o.no||"Заказ")+'</b><span>'+esc(o.date||"")+'</span></div><b>'+f(+o.sum||0)+'</b></div><div class="pr">Статус: <b>'+esc(ST[o.st||"new"]||"Обрабатывается")+'</b></div></div>'}});
 $("hli").innerHTML=h}
 function sgOpen(o){if(!o||!o.cust||o.st!=="recv"){toast("Накладная доступна после получения заказа");return}sgS.o=o;$("sgn").value="";$("sgo").textContent="Накладная М-15 № "+o.no+" на сумму "+f(o.sum);$("sg").hidden=false;sgInit()}
 function sigObj(o){return new Promise(function(res){var img=new Image();img.onload=function(){res({img:img,name:o.sig.name,time:o.sig.time})};img.src=o.sig.png})}
@@ -1063,11 +1065,11 @@ else if(a==="less"){lim=7;render();goCatalog()}
 else if(a==="theme")setTheme();
 else if(a==="opencart")openD("vc");
 else if(a==="close")closeD();
-else if(a==="checkout"){if(Object.keys(cart).length){if(REP)repCheckout();else view("vk")}}
+else if(a==="checkout"){if(Object.keys(cart).length){if(REP)repCheckout();else{view("vk");dlvUpd()}}}
 else if(a==="back")view("vc");
 else if(a==="hist"){view("vh");syncSt()}
 else if(a==="adm")admOpen();
-else if(a==="mycard"){var lo=myLastO();if(lo)cardShow(lo,orderNth(lo,hist),LOYI||loyOf(lo,hist));else toast("Пока нет заказов")} else if(a==="ocard"){var oq=hist[parseInt(t.dataset.h,10)];if(oq)cardGo(oq,orderNth(oq,hist),LOYI||loyOf(oq,hist))}
+else if(a==="mycard"){var lo=myLastR();if(lo)cardShow(lo,orderNth(lo,hist),LOYI||loyOf(lo,hist));else toast("Карточка откроется после того, как вы подтвердите получение заказа")} else if(a==="ocard"){var oq=hist[parseInt(t.dataset.h,10)];if(oq&&oq.st==="recv")cardGo(oq,orderNth(oq,hist),LOYI||loyOf(oq,hist))}
 else if(a==="repeat"){var o=hist[parseInt(t.dataset.h,10)],n=0;if(o){o.items.forEach(function(it){var x=-1;D.forEach(function(d,j){if(d.n===it.n)x=j});if(x>-1&&it.q>0&&okU(D[x],it.u)){var key=x+"|"+it.u;cart[key]=(cart[key]||0)+it.q;n++}});sv("uh_cart2",cart);render();toast(n?"Товары добавлены в корзину":"Товары не найдены в каталоге");if(n)view("vc")}}
 else if(a==="again"){cart={};sv("uh_cart2",cart);closeD();render()}
 else if(a==="send"){if(!sent){if(window.claude&&window.claude.use){e.preventDefault();sendOrder()}else{try{navigator.clipboard.writeText($("ot").value)}catch(x){}if(ctOf(LAST)!=="r")dlBlob(LAST,null);$("fb").hidden=false}}}
@@ -1092,7 +1094,7 @@ function pr(){pmin=parseFloat($("pmin").value)||0;pmax=parseFloat($("pmax").valu
 $("pmin").addEventListener("input",pr);$("pmax").addEventListener("input",pr);
 $("fm").addEventListener("change",function(e){if(e.target.type!=="radio")return;
 document.querySelectorAll('input[name="'+e.target.name+'"]').forEach(function(r){r.closest(".opt").classList.toggle("on",r.checked)});
-if(e.target.name==="dm")$("adw").hidden=e.target.value==="p"});
+if(e.target.name==="dm"){$("adw").hidden=e.target.value==="p";dlvUpd()}});
 $("fm").addEventListener("submit",function(e){e.preventDefault();
 if(!Object.keys(cart).length){toast("Корзина пуста");return}
 var ct=val("ct")||"r",nm=$("nm").value.trim(),ph=$("ph").value.trim(),org=$("org").value.trim(),dm=val("dm"),cty=$("cty").value.trim(),ad=$("ad").value.trim(),pay=val("pay"),cm=$("cm").value.trim(),tm=$("tm").value;
@@ -1107,8 +1109,9 @@ L.push("Когда удобно: "+tm);L.push("Оплата: "+pay);if(cm)L.push
 var n=0,t=tot(),items=[];
 Object.keys(cart).forEach(function(key){var o=pk(key),p=D[o.i],m=mult(p,o.u),qty=cart[key];n++;var dd=dpct(p,o.u,qty),pu=upc(p,o.u,qty);var ww=wUnit(p,o.u);items.push({bc:(p.bc||[]).slice(0,6),n:p.n,u:o.u,q:qty,m:m,pr:pu,sum:Math.round(pu*qty*100)/100,d:dd,v:p.vat||0,p0:upr(p,o.u,0),lo:LE,wn:ww[0],wg:ww[1],lbl:o.u==="u"?ub(p)+".":o.u==="p"?"пачка":"короб."});
 L.push(n+". "+p.n);L.push("   "+(o.u==="u"?qty+" "+ub(p)+". × "+f(pu):qty+" "+ushort(p,o.u)+" × "+f(pu))+" = "+f(pu*qty)+(dd?" (скидка "+dd+"%)":"")+(m>1?" (всего "+qty*m+" "+ub(p)+".)":""))});
-if(LE)L.push("","Бонусная скидка: "+LE+"% (уже в ценах)");L.push("","Всего штук: "+t.pc,"Итого: "+f(t.s));if(ct==="w"){var cwt=cartW();L.push("Вес: нетто "+fkg(cwt[0])+" кг, брутто "+fkg(cwt[1])+" кг")}var msg=L.join("\n");
-var ord={no:no,date:ds,ts:d.getTime(),sum:t.s,pc:t.pc,cust:{id:cid,nm:nm,ph:ph,org:org,ct:ct,dm:dm,cty:cty,ad:ad,tm:tm,pay:pay,cm:cm},items:items,loy:LE,sg:Math.round(t.s0*100)/100,grp:GRP};
+var DV=dlvOf(t.s,dm);if(DV){items.push({bc:[],n:"Доставка (заказ меньше "+DLV_MIN+" сом.)",u:"u",q:1,m:1,pr:DV,sum:DV,d:0,v:0,p0:DV,lo:0,wn:0,wg:0,lbl:"усл.",svc:1});L.push("","Доставка: "+f(DV)+" (бесплатно от "+DLV_MIN+" сом.)")}
+if(LE)L.push("","Бонусная скидка: "+LE+"% (уже в ценах)");L.push("","Всего штук: "+t.pc,"Итого: "+f(t.s+DV));if(ct==="w"){var cwt=cartW();L.push("Вес: нетто "+fkg(cwt[0])+" кг, брутто "+fkg(cwt[1])+" кг")}var msg=L.join("\n");
+var ord={no:no,date:ds,ts:d.getTime(),sum:Math.round((t.s+DV)*100)/100,dlv:DV,pc:t.pc,cust:{id:cid,nm:nm,ph:ph,org:org,ct:ct,dm:dm,cty:cty,ad:ad,tm:tm,pay:pay,cm:cm},items:items,loy:LE,sg:Math.round(t.s0*100)/100,grp:GRP};
 clog(ord,"Заказ оформлен");LAST=ord;hist.unshift(ord);hist=hist.slice(0,300);sv("uh_hist",hist);setTimeout(loadMy,2500);
 $("on").textContent=no;$("ot").value=msg;sent=false;$("wa2").textContent="Оформить заказ";var ENC=encodeURIComponent(msg);$("fb").hidden=true;$("wa2").href=/Android/i.test(navigator.userAgent)?"intent://send?phone="+PHONE+"&text="+ENC+"#Intent;scheme=whatsapp;package=com.whatsapp;end":"whatsapp://send?phone="+PHONE+"&text="+ENC;
 var tk=sendNew(ord,msg);if(!tk)view("vs");else{var bt=e.submitter;if(bt)bt.disabled=true;tk.then(function(){$("dq").hidden=true;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd")}).catch(function(er){toast("Не удалось отправить: "+((er&&er.code)||"нет связи")+". Заказ сохранён и отправится автоматически");try{window.__lastErr=er&&er.code}catch(x){}setTimeout(qRun,8000);$("dq").hidden=false;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd")}).then(function(){if(bt)bt.disabled=false})}})});
@@ -1340,6 +1343,7 @@ fetch(API_URL+"?a=my&ph="+encodeURIComponent(p.ph)+"&tk="+encodeURIComponent(ld(
 if(!j||!j.ok){if(j&&j.error==="otp"){otpHint();verBar(true)}applyMy(GRP,localOl());return}verBar(false);var g0=GRP;
 if(isN(j.dg)){DG=j.dg;sv("uh_dg",DG)}if(isN(j.g))sv("uh_grp",{p:p9(p.ph),g:j.g});applyMy(j.g,j.ol||[]);if(isN(j.g)&&isN(g0)&&j.g!==g0)toast("Ваши цены обновлены")}).catch(function(){applyMy(GRP,localOl())})}
 function dtx(ts){var d=new Date(ts);return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()}
+function myLastR(){var p=ld("uh_prof",{}),k=p.ph?p9(p.ph):"",b=null;hist.forEach(function(o){if(o&&o.cust&&o.st==="recv"&&(!k||p9(o.cust.ph||"")===k)&&(!b||(o.ts||0)>(b.ts||0)))b=o});return b}
 function myLastO(){var p=ld("uh_prof",{}),k=p.ph?p9(p.ph):"",b=null;hist.forEach(function(o){if(o&&o.cust&&o.st!=="cancel"&&(!k||p9(o.cust.ph||"")===k)&&(!b||(o.ts||0)>(b.ts||0)))b=o});return b}
 function profBonus(){var el=$("pbn");if(!el)return;var p=ld("uh_prof",{});
 if(!p.ph){el.innerHTML='<div class="lyb"><h3>Бонусы постоянным клиентам</h3><p>Зарегистрируйтесь и получайте скидки: 10 заказов — −'+LOYC.p1+'%, заказ от '+LOYC.sum+' сом. — −'+LOYC.p2+'%, покупки 3 месяца подряд на '+(LOYC.s3||1000)+' сом. — −'+LOYC.p3+'%.</p></div>';return}
@@ -1347,9 +1351,11 @@ var L=LOYI||loyalty(localOl()),h='<div class="lyb"><div class="big2">'+(L.pct?'�
 h+='<p><b>Заказов подряд: '+Math.min(L.cnt,LOYC.n)+' из '+LOYC.n+'</b> → скидка '+LOYC.p1+'% на 3 месяца'+(L.a3?'<br>Действует до '+dtx(L.u3)+'. Продлевается с каждым заказом.':'')+'</p><div class="bar2"><i style="width:'+Math.min(100,L.cnt/LOYC.n*100)+'%"></i></div>';
 h+='<p><b>Заказ от '+LOYC.sum+' сом.</b> → скидка '+LOYC.p2+'% (сразу на этот заказ и на 3 месяца)'+(L.a5?'<br>Действует до '+dtx(L.u5)+'. Продлевается с каждым заказом.':'')+'</p>';
 var S3=LOYC.s3||1000;h+='<p><b>Лучший клиент → −'+LOYC.p3+'%</b><br>Покупки без перерыва 3 месяца подряд, и сумма успешных заказов за эти 3 месяца — от '+S3+' сом. Месяцев с покупками: '+L.mc+' из 3, сумма: '+f(L.s3||0)+' из '+f(S3)+(L.t3?' <b>Вы получаете максимальную скидку!</b>':'')+'</p><div class="bar2"><i style="width:'+Math.min(100,(Math.min(1,L.mc/3)+Math.min(1,(L.s3||0)/S3))/2*100)+'%"></i></div>';
-var lo=myLastO(),mc='';if(API_URL&&!LOYI)mc='<p class="note" style="margin:10px 0 0;color:var(--tx)">🔒 Подтвердите номер телефона, чтобы открыть свою карточку скидки.</p>';else if(lo)mc='<button type="button" class="btn w100" data-a="mycard" style="margin:10px 0 12px">🎫 '+(L.pct?'Моя карточка скидки −'+L.pct+'%':'Моя карточка заказа')+'</button><p class="note" style="margin:0 0 10px">Открывается только здесь, на экране. Скачать или переслать её нельзя.</p>';
+var lo=myLastR(),lo0=myLastO(),mc='';if(API_URL&&!LOYI)mc='<p class="note" style="margin:10px 0 0;color:var(--tx)">🔒 Подтвердите номер телефона, чтобы открыть свою карточку скидки.</p>';else if(!lo&&lo0)mc='<p class="note" style="margin:10px 0 12px;color:var(--tx)">🎫 Карточка заказа откроется после того, как заказ будет доставлен и вы нажмёте «Получил» в «Моих заказах».</p>';else if(lo)mc='<button type="button" class="btn w100" data-a="mycard" style="margin:10px 0 12px">🎫 '+(L.pct?'Моя карточка скидки −'+L.pct+'%':'Моя карточка заказа')+'</button><p class="note" style="margin:0 0 10px">Открывается только здесь, на экране. Скачать или переслать её нельзя.</p>';
 el.innerHTML=h+mc+'<p class="note" style="margin:0">Скидки не суммируются: действует наибольшая. Они применяются вместе с оптовой скидкой на товар.</p></div>'}
 function loyNote(){var t=tot();if(LE)return'<p class="note" style="margin:6px 0 8px;color:var(--tx)"><b>Ваша бонусная скидка −'+LE+'%</b> уже учтена в ценах.</p>';var need=LOYC.sum-t.s0;return'<p class="note" style="margin:6px 0 8px">'+(need>0&&t.s0>0?'Добавьте товаров ещё на <b>'+f(need)+'</b> и получите скидку '+LOYC.p2+'%.':'Заказ от '+LOYC.sum+' сом. — скидка '+LOYC.p2+'%.')+'</p>'}
+var DLV_MIN=79,DLV_FEE=20;function dlvOf(sum,dm){return dm==="d"&&sum>0&&sum<DLV_MIN-0.004?DLV_FEE:0}
+function dlvUpd(){var e=$("dlvn");if(!e)return;var t=tot(),dm=val("dm"),dv=dlvOf(t.s,dm);if(!Object.keys(cart).length){e.hidden=true;return}e.hidden=false;e.className="dlvn"+(dv?" pay":"");e.innerHTML=dm!=="d"?'<b>Самовывоз — бесплатно.</b> К оплате: <b>'+f(t.s)+'</b>':dv?'🚚 <b>Доставка: '+f(DLV_FEE)+'</b> — заказ меньше '+DLV_MIN+' сом. Добавьте товаров ещё на <b>'+f(DLV_MIN-t.s)+'</b>, и доставка будет бесплатной.<br>К оплате: <b>'+f(t.s+dv)+'</b>':'🚚 <b>Доставка бесплатно</b> (заказ от '+DLV_MIN+' сом.). К оплате: <b>'+f(t.s)+'</b>'}
 var bnI=0,bnT=null,bnH="";
 function startBn(){clearInterval(bnT);var el=$("bnt");if(!el)return;bnT=setInterval(function(){var c=el.children.length;if(c<2)return;bnI=(bnI+1)%c;el.scrollTo({left:bnI*(el.clientWidth+12),behavior:"smooth"})},4500)}
 var ART={
@@ -1543,7 +1549,7 @@ var PK={base:4,pos:1.5,pcs:0.03,take:10,takeK:0.2,asmK:1.3,asmAdd:5,wh:[8,19]},B
 var LBK={"Обрабатывается":"new","На сборке":"pick","Готов к отгрузке":"ready","Готов к выдаче":"ready","Передан курьеру":"courier","Доставлен":"done","Выдан":"done","Получен":"recv","Отменён":"cancel"};
 function tlOf(r){if(r.tl&&r.tl.length)return r.tl;var o=[];(r.log||[]).forEach(function(l){var m=/Изменил статус: «(.+?)» → «(.+?)»/.exec(l.t||"");if(m&&LBK[m[2]])o.push({k:LBK[m[2]],ts:l.ts,w:l.w,r:l.r})});return o}
 function wmin(a,b){if(b<=a)return 0;var tot=0,d=new Date(a),t;d.setHours(0,0,0,0);for(t=d.getTime();t<b;t+=864e5){if(new Date(t).getDay()===0&&!PK.sun)continue;var lo=Math.max(a,t+PK.wh[0]*36e5),hi=Math.min(b,t+PK.wh[1]*36e5);if(hi>lo)tot+=(hi-lo)/6e4}return tot}
-function normOf(o){var its=o.items.filter(function(i){return i.q>0}),pcs=0;its.forEach(function(i){pcs+=i.q*(i.m||1)});var u=urg(o);return{pos:its.length,pcs:pcs,k:u.k,ul:u.l,norm:Math.max(5,Math.round((PK.base+PK.pos*its.length+PK.pcs*Math.min(pcs,2000))*10)/10)}}
+function normOf(o){var its=o.items.filter(function(i){return i.q>0&&!i.svc}),pcs=0;its.forEach(function(i){pcs+=i.q*(i.m||1)});var u=urg(o);return{pos:its.length,pcs:pcs,k:u.k,ul:u.l,norm:Math.max(5,Math.round((PK.base+PK.pos*its.length+PK.pcs*Math.min(pcs,2000))*10)/10)}}
 function urg(o){var t=String((o.cust&&o.cust.tm)||"");if(/Завтра утром/.test(t))return{k:8,l:"Не срочно: завтра утром"};if(/Завтра днём/.test(t))return{k:10,l:"Не срочно: завтра днём"};if(/второй половине/.test(t))return{k:2.5,l:"Сегодня во второй половине дня"};return{k:1,l:""}}
 function takeSla(n){return Math.round((PK.take+PK.takeK*n.norm)*(n.k||1)*10)/10}
 function asmSla(n){return Math.round((n.norm*PK.asmK+PK.asmAdd)*(1+((n.k||1)-1)*0.5)*10)/10}
@@ -1817,7 +1823,7 @@ if(!rows.length)return res;
 st=A.from?new Date(A.from+"T00:00:00").getTime():Math.min.apply(null,rows.map(function(r){return r.ts}));en=A.to?new Date(A.to+"T00:00:00").getTime():now;if(en<st)en=st;
 if(g==="auto"){var sp=(en-st)/864e5;g=sp<=21?"d":sp<=120?"w":"m"}res.g=g;
 for(t=st;t<=en;t+=864e5){var k=abcKey(t,g);if(!seen[k]){seen[k]=1;keys.push(k)}}var ke=abcKey(en,g);if(!seen[ke]){seen[ke]=1;keys.push(ke)}
-var P={};rows.forEach(function(r){var k=abcKey(r.ts,g);(r.o.items||[]).forEach(function(it){if(!(it.q>0)||!it.n)return;var p=P[it.n]||(P[it.n]={n:it.n,s:0,q:0,by:{}});p.s+=it.sum;p.q+=it.q*(it.m||1);p.by[k]=(p.by[k]||0)+it.q*(it.m||1)})});
+var P={};rows.forEach(function(r){var k=abcKey(r.ts,g);(r.o.items||[]).forEach(function(it){if(!(it.q>0)||!it.n||it.svc)return;var p=P[it.n]||(P[it.n]={n:it.n,s:0,q:0,by:{}});p.s+=it.sum;p.q+=it.q*(it.m||1);p.by[k]=(p.by[k]||0)+it.q*(it.m||1)})});
 var L=Object.keys(P).map(function(k){return P[k]}).sort(function(a,b){return b.s-a.s}),tot=0,cum=0;L.forEach(function(p){tot+=p.s});res.tot=tot;res.n=keys.length;
 L.forEach(function(p){var prev=cum,xs,mean,sd=0,i;cum+=p.s;p.sh=tot?p.s/tot*100:0;p.cum=tot?cum/tot*100:0;p.abc=(tot&&prev/tot*100>=95)?"C":(tot&&prev/tot*100>=80)?"B":"A";
 xs=keys.map(function(k){return p.by[k]||0});mean=p.q/keys.length;xs.forEach(function(v){sd+=(v-mean)*(v-mean)});sd=Math.sqrt(sd/keys.length);p.cv=mean?sd/mean*100:0;
@@ -1911,7 +1917,7 @@ else if(a==="payfill"){r=rw(t.dataset.n);if(r){var rest=r.sum-paidOf(r),vv=t.dat
 else if(a==="wa"){r=rw(t.dataset.n);if(r){var lp=lastPay(r);offerWa(r,t.dataset.k,lp.amt)}}
 else if(a==="wax")$("wsh").hidden=true
 else if(a==="wasent"){$("wsh").hidden=true;r=A.wa&&rw(A.wa.no);if(r){var nt="Открыл WhatsApp для уведомления клиента ("+(A.wa.kind==="recv"?"получение заказа":A.wa.kind==="adj"?"корректировка заказа":A.wa.kind==="new"?"подтверждение заказа":"оплата")+")";if(!API_URL)pushLog(r,nt);else api({a:"admin_note",key:A.key,role:A.role,who:A.who,no:r.no,text:nt}).then(function(j){if(j.log)r.log=j.log}).catch(function(){})}}
-else if(a==="inv"){r=rw(t.dataset.n);if(r)deliverPdf(r.o,null,"m15")}else if(a==="whl"){r=rw(t.dataset.n);if(r)deliverPdf(r.o,null,"w")}else if(a==="cdocs"){r=rw(t.dataset.n);if(r){if(!DOCS_URL){toast("Приём документов ещё не подключён");return}cdocInfo(r.o.cust.ph).then(function(j){if(j&&j.url){window.open(j.url,"_blank");toast("Получены "+dtx(j.ts)+(j.n?", файлов: "+j.n:""))}else toast("Клиент ещё не прислал документы")})}}else if(a==="ctset"){r=rw(t.dataset.n);if(r)ctSet(r,t.dataset.v)}else if(a==="card"){r=rw(t.dataset.n);if(r)cardGo(r.o,orderNth(r.o,A.rows),loyOf(r.o,A.rows))}
+else if(a==="inv"){r=rw(t.dataset.n);if(r)deliverPdf(r.o,null,"m15")}else if(a==="whl"){r=rw(t.dataset.n);if(r)deliverPdf(r.o,null,"w")}else if(a==="cdocs"){r=rw(t.dataset.n);if(r){if(!DOCS_URL){toast("Приём документов ещё не подключён");return}cdocInfo(r.o.cust.ph).then(function(j){if(j&&j.url){window.open(j.url,"_blank");toast("Получены "+dtx(j.ts)+(j.n?", файлов: "+j.n:""))}else toast("Клиент ещё не прислал документы")})}}else if(a==="ctset"){r=rw(t.dataset.n);if(r)ctSet(r,t.dataset.v)}else if(a==="card"){r=rw(t.dataset.n);if(r&&r.st==="recv")cardGo(r.o,orderNth(r.o,A.rows),loyOf(r.o,A.rows))}
 else if(a==="csv")saveAny("zakazy-"+(A.from||"all")+"-"+(A.to||"all")+".csv",csvOf(viewRows()),"text/csv;charset=utf-8");
 else if(a==="pdf")saveAny("otchet-"+(A.from||"all")+"-"+(A.to||"all")+".pdf",pagesPdf(drawReport(viewRows()),595,842),"application/pdf");
 else if(a==="acsv"){abcXlsx()}else if(a==="acsv_old")saveAny("abc-xyz-"+(A.from||"all")+"-"+(A.to||"all")+".csv",abcCsv(),"text/csv;charset=utf-8");
@@ -2247,7 +2253,7 @@ if(best)return{t:{"Розничный":"r","Корпоративный":"c","О�
 function ctSet(r,v){var tx="Тип клиента: "+CTN[v];if(!API_URL){pushLog(r,tx);sv("uh_hist",hist);admRender();return}api({a:"admin_note",key:A.key,role:A.role,who:A.who,no:r.no,text:tx}).then(function(j){if(j.log)r.log=j.log;else pushLog(r,tx);admRender()}).catch(function(){toast("Не удалось сохранить тип клиента")})}
 function ctBlock(r,n){var T=rType(r),hint=(r.o.cust||{}).ct,h='<div class="ctsel"><b>Тип клиента:</b> '+["r","c","w"].map(function(v){return'<button class="btn sm'+(T.t===v?"":" o")+'" data-ad="ctset" data-v="'+v+'" data-n="'+n+'">'+CTN[v]+'</button>'}).join("")+'</div>';
 if(!T.t)h+='<p class="note" style="margin:6px 0 0">'+(CT[hint]?'Клиент при заказе указал: <b>'+CT[hint]+'</b>. ':'')+'Подтвердите тип клиента — после этого появятся нужные документы.</p>';else if(T.src==="c")h+='<p class="note" style="margin:6px 0 0">Тип взят из прошлых заказов этого клиента. Нажмите, чтобы закрепить за заказом.</p>';return h}
-function docBtns(r,n){var t=rType(r).t;if(t==="r")return'<button class="btn sm" data-ad="card" data-n="'+n+'">🎉 Карточка заказа для клиента</button>';
+function docBtns(r,n){var t=rType(r).t;if(t==="r")return r.st==="recv"?'<button class="btn sm" data-ad="card" data-n="'+n+'">🎉 Карточка заказа для клиента</button>':'<span class="note" style="margin:0">🎉 Карточка заказа появится, когда клиент подтвердит получение</span>';
 if(t==="c")return'<button class="btn sm o" data-ad="cdocs" data-n="'+n+'">📁 Документы компании</button><button class="btn sm" data-ad="inv" data-n="'+n+'">Накладная М-15</button>'+(can("inv2")?'<button class="btn sm" data-ad="sf" data-n="'+n+'">Счёт-фактура</button>':'');
 if(t==="w")return'<button class="btn sm" data-ad="whl" data-n="'+n+'">Оптовая накладная (цены, скидки, вес, штрихкоды)</button>';return""}
 function ctChip(r){var t=rType(r).t;return t?'<span class="chip ct-'+t+'">'+CTN[t]+'</span>':'<span class="chip ct-x">Тип не определён</span>'}

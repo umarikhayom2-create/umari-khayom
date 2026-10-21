@@ -26,7 +26,7 @@ function route(p) {
   return { ok: false, error: "action" };
 }
 
-/* ---------- хранение ---------- */
+// ---------- хранение ----------
 function book() {
   var pr = PropertiesService.getScriptProperties(), id = pr.getProperty("ssid"), ss = null;
   if (id) { try { ss = SpreadsheetApp.openById(id); } catch (x) { ss = null; } }
@@ -73,7 +73,7 @@ function since(d, after) { after = +after || 0; return d.msgs.filter(function (x
 function agentOf(d) { return d.m.ag ? { w: d.m.ag.w, r: d.m.ag.r, rn: ALL_ROLES[d.m.ag.r] || "" } : null; }
 function clean(s, n) { return String(s || "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n); }
 
-/* ---------- клиент ---------- */
+// ---------- клиент ----------
 function client(a, p) {
   var cid = clean(p.cid, 40), sec = clean(p.sec, 60);
   if (!/^[a-z0-9]{12,40}$/i.test(cid) || sec.length < 16) return { ok: false, error: "id" };
@@ -103,7 +103,7 @@ function client(a, p) {
   return { ok: false, error: "action" };
 }
 
-/* ---------- сотрудники ---------- */
+// ---------- сотрудники ----------
 function staff(p) {
   var role = clean(p.role, 20), who = clean(p.who, 60), key = String(p.key || "");
   if (!ALL_ROLES[role] || !who || !key) return null;

@@ -2466,7 +2466,7 @@ wxApply();wxLoad();setInterval(function(){var p=WX.ph;WX.ph=wxPhase();if(p!==WX.
 
 
 /* ===== CRM: чат, кто в сети, сигналы о заказах, вибро, оповещения, подсказки ===== */
-var CHAT_URL="",SVC_PHONE="992908222188",CHR={operator:"Оператор",admin:"Администратор",director:"Руководитель"},RCOL={operator:"#e8430f",admin:"#2563eb",director:"#7c3aed",accountant:"#0d9488",content:"#ca8a04"};
+var CHAT_URL="https://script.google.com/macros/s/AKfycbxH7G72oOTHvKqa3ooTjJbgRnJX97JLD4yEmaxRADl6EyBDPHSx6gpYqiVE4FRAUExY/exec",SVC_PHONE="992908222188",CHR={operator:"Оператор",admin:"Администратор",director:"Руководитель"},RCOL={operator:"#e8430f",admin:"#2563eb",director:"#7c3aed",accountant:"#0d9488",content:"#ca8a04"};
 function vib(p){try{if(navigator.vibrate)navigator.vibrate(p)}catch(x){}}
 /* звук */
 var AU=null;function auOn(){try{if(!AU){var C0=window.AudioContext||window.webkitAudioContext;if(C0)AU=new C0()}if(AU&&AU.state==="suspended")AU.resume()}catch(x){}}

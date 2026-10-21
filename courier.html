@@ -25,9 +25,10 @@ input,textarea{width:100%;border:1px solid var(--bd);border-radius:12px;padding:
 label{display:block;font-weight:600;font-size:14px;margin:0 0 4px}.er{color:#dc2626;font-weight:600;min-height:20px;font-size:14px}
 #map iframe{width:100%;height:60vh;border:0;border-radius:16px}
 .its{font-size:13.5px;color:var(--mut);margin:4px 0 0}
+#navld{position:fixed;left:0;right:0;top:0;height:4px;z-index:30;opacity:0;pointer-events:none}#navld.on{opacity:1}#navld i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd43b,#ff7a3d,#e8430f)}#navld.on i{animation:nl 5s cubic-bezier(.1,.7,.2,1) forwards}@keyframes nl{from{width:0}20%{width:45%}to{width:92%}}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111;color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;z-index:20}
 </style></head><body>
-<div id="app"></div>
+<div id="navld"><i></i></div><div id="app"></div>
 <script>
 var CHAT_URL="https://script.google.com/macros/s/AKfycbxH7G72oOTHvKqa3ooTjJbgRnJX97JLD4yEmaxRADl6EyBDPHSx6gpYqiVE4FRAUExY/exec";
 var S={tok:"",me:null,tab:"ready",ready:[],mine:[],seen:null,at:0};try{S.tok=localStorage.getItem("ku_tok")||""}catch(e){}
@@ -73,5 +74,6 @@ if(k==="fail"){var w=prompt("Почему не удалось вручить? (�
 if(k==="drop"&&!confirm("Вернуть заказ в общий список?"))return;
 b.disabled=true;pl.a="k_"+k;api(pl).then(function(j){if(!j.ok){toast(j.error==="taken"?"Этот заказ уже взял другой курьер":"Не получилось, обновляем");load();return}vib([30,40,30]);toast({take:"Заказ ваш — в путь!",done:"Доставлено ✓",fail:"Отмечено: не вручено",drop:"Заказ возвращён"}[k]);if(k==="take")S.tab="mine";load()}).catch(function(){b.disabled=false;toast("Нет связи")})});
 setInterval(function(){if(S.tok&&!document.hidden)load()},20000);document.addEventListener("visibilitychange",function(){if(!document.hidden&&S.tok)load()});
+document.addEventListener("click",function(e){var l=e.target.closest('a[href="./"]');if(l)$("navld").className="on"});addEventListener("pageshow",function(){$("navld").className=""});
 S.tok?load():login();
 </script></body></html>

@@ -169,6 +169,8 @@ body.cho .chb{display:none}
 .ftb td.n{text-align:right;white-space:nowrap}.ftb td,.ftb th{font-size:13.5px}.fdl{border:0;background:none;color:#dc2626;cursor:pointer;font-size:13px;padding:0 4px}
 .fexr{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--bd);border-radius:12px;margin-bottom:6px;background:var(--sf)}.fexr small{display:block;color:var(--mut);font-size:12.5px}
 .fview{position:fixed;inset:0;z-index:160;background:#555;overflow:auto;padding:60px 10px 20px}.fview canvas{display:block;max-width:900px;margin:0 auto 12px;box-shadow:0 6px 20px rgba(0,0,0,.4)}.fvh{position:fixed;left:0;right:0;top:0;display:flex;gap:8px;align-items:center;padding:10px 14px;background:var(--bg);z-index:2}.fvh b{flex:1}
+
+#navld{position:fixed;left:0;right:0;top:0;height:4px;z-index:300;pointer-events:none;opacity:0;transition:opacity .2s}#navld.on{opacity:1}#navld i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd43b,#ff7a3d,#e8430f);box-shadow:0 0 10px rgba(232,67,15,.6)}#navld.on i{animation:navld 6s cubic-bezier(.1,.7,.2,1) forwards}@keyframes navld{from{width:0}20%{width:45%}to{width:92%}}
 </style>
 <title>Умари Хайём — канцелярские товары</title>
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#faf8f4"><link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/png" sizes="32x32" href="icon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="icon-16.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Умари Хайём"><meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -2741,7 +2743,9 @@ var _bR=boardRender;boardRender=function(){_bR();if(!VST)vstLoad()};
 accDraw();if(accOn())setTimeout(accLoad,1200);
 
 /* ===== Скорость: уведомление о новой версии и прогрев фото ===== */
-if("serviceWorker"in navigator)navigator.serviceWorker.addEventListener("message",function(e){if(e.data&&e.data.t==="upd"&&!window.__updShown){window.__updShown=1;var p0=pop("🔄","Сайт обновился","Нажмите, чтобы открыть новую версию","st",15000);p0.style.cursor="pointer";p0.onclick=function(ev){if(ev.target.tagName==="BUTTON")return;location.reload()}}});
+/* полоса загрузки при переходе по ссылкам сайта */
+document.addEventListener("click",function(e){var l=e.target.closest("a[href]");if(!l||e.defaultPrevented||l.target==="_blank"||e.ctrlKey||e.metaKey)return;var h=l.getAttribute("href");if(!h||h.charAt(0)==="#"||/^(tel|mailto|geo|whatsapp|intent|yandexnavi):/i.test(h))return;var u;try{u=new URL(h,location.href)}catch(x){return}if(u.origin!==location.origin||(u.pathname===location.pathname&&u.hash))return;var b=document.getElementById("navld");if(!b){b=document.createElement("div");b.id="navld";b.innerHTML="<i></i>";document.body.appendChild(b)}b.className="on"});
+addEventListener("pageshow",function(){var b=document.getElementById("navld");if(b)b.className=""});
 setTimeout(function(){try{var c=navigator.connection||{};if(c.saveData||/2g/.test(c.effectiveType||""))return;if(!navigator.serviceWorker||!navigator.serviceWorker.controller)return;var L=[];D.forEach(function(p){if(vis(p)&&p.i)L.push(TH(p.i))});navigator.serviceWorker.controller.postMessage({t:"warm",u:L})}catch(x){}},8000);
 
 /* ===== Как нас найти: карты и навигаторы ===== */

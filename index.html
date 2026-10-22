@@ -808,7 +808,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <p class="fc">© <span class="js-year">2026</span> Умари Хайём. Все права защищены.</p>
 <p>ООО «Молҳои Умари Хайём» · Таджикистан, г. Душанбе, р. Шохмансур, ул. А. Дониш, 5/3</p>
 <p>Тел.: <a href="https://wa.me/992986868662" style="color:inherit">+992 98 686 86 62</a> (WhatsApp)</p>
-<nav class="fl2"><a href="privacy.html">Политика конфиденциальности</a><a href="terms.html">Условия использования</a><a href="delivery.html">Доставка и оплата</a><a href="returns.html">Возврат и обмен</a><a href="#admin" data-a="adm" style="opacity:.6">Для поставщика</a><a href="courier.html" style="opacity:.6">Для курьера</a></nav>
+<nav class="fl2"><a href="privacy.html">Политика конфиденциальности</a><a href="terms.html">Условия использования</a><a href="delivery.html">Доставка и оплата</a><a href="returns.html">Возврат и обмен</a><a href="#admin" data-a="adm" style="opacity:.6">Для поставщика</a><a href="team.html" style="opacity:.6">Рабочий персонал</a></nav>
 <p class="fn">Все материалы сайта (фотографии, тексты, логотип, дизайн) являются собственностью магазина «Умари Хайём». Копирование без письменного разрешения запрещено. Цены указаны в сомони и не являются публичной офертой до подтверждения заказа менеджером.</p>
 <section class="whr" id="where" aria-labelledby="whrh"><h3 id="whrh">📍 Как нас найти</h3><p class="whrs">Нажмите на магазин — откроется карта или навигатор на вашем телефоне с маршрутом до нас.</p><div class="whrl">
 <button type="button" class="whc" data-a="map" data-m="0"><i>🏬</i><span><b>Омар Хайям</b><small>Душанбе, улица Ахмада Дониша</small></span><em>Маршрут →</em></button>
@@ -3381,7 +3381,7 @@ function krLoad(){if(!CHAT_URL)return;Promise.all([stApi("s_krate",{}),stApi("s_
 var _crl=crLoad;crLoad=function(){krLoad();return _crl.apply(this,arguments)};
 var _crh=crHtml;crHtml=function(){var base=_crh.apply(this,arguments);if(!CRS.at)return base;var h="",ic=["⭐","🥉","🥈","🥇","💎"];
 var tot=0;KR.cash.forEach(function(x){tot+=x.hand.amt});
-h+='<h3>💵 Деньги на руках у курьеров'+(KR.cash.length?': '+f(tot):'')+'</h3>'+(KR.cash.length?KR.cash.map(function(x){return'<div class="pq" style="border-left:5px solid #f2b705"><b>'+esc(x.hand.w||"")+'</b> · заказ '+esc(x.no)+' · <b>'+f(x.hand.amt)+'</b>'+(x.hand.part?' <span class="chip ps-part">частично</span>':'')+'<br><small>получено '+new Date(x.hand.ts).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+' · подтвердите приём в карточке заказа</small></div>'}).join(""):'<div class="emp" style="padding:12px">Все деньги сданы ✓</div>');
+h+='<h3>💵 Деньги на руках у курьеров'+(KR.cash.length?': '+f(tot):'')+'</h3>'+(KR.cash.length?KR.cash.map(function(x){return'<div class="pq" style="border-left:5px solid #f2b705"><b>'+esc(x.hand.w||"")+'</b> · заказ '+esc(x.no)+' · <b>'+f(x.hand.amt)+'</b>'+(x.hand.part?' <span class="chip ps-part">частично</span>':'')+'<br><small>получено '+new Date(x.hand.ts).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+(String(x.key).indexOf("B|")===0?' · доставка филиала</small><button class="btn sm" data-kcj="'+esc(x.key)+'" style="margin-top:6px">✅ Курьер сдал деньги</button></div>':' · подтвердите приём в карточке заказа</small></div>')}).join(""):'<div class="emp" style="padding:12px">Все деньги сданы ✓</div>');
 h+='<h3>🏆 Рейтинг курьеров (месяц)</h3>'+(KR.L.length?KR.L.slice().sort(function(a,b){return((b.cur||{}).pct||0)-((a.cur||{}).pct||0)}).map(function(c){var u=c.cur||{},act=(c.cpn||[]).filter(function(k){return k.act})[0];
 return'<div class="pq"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>'+ic[Math.min(4,c.lvl||0)]+' '+esc(c.nm||c.login)+' <small>'+esc(c.lvn||"")+'</small></b><b style="font-size:22px;color:'+(u.pct==null?"var(--mut)":u.pct>=85?"#16a34a":u.pct>=60?"#b7791f":"#dc2626")+'">'+(u.pct==null?"—":u.pct+"%")+'</b></div><small>доставок '+(u.n||0)+' · вовремя '+(u.ontime||0)+' · опозданий '+(u.late||0)+' · взял за 15 мин '+(u.genius||0)+' · долго не брал '+(u.slow||0)+' · с фото '+(u.photo||0)+' · среднее в пути '+(u.avg||0)+' мин'+(c.drop?' · <b style="color:#dc2626">📉 падает</b>':'')+(act?' · 🎁 купон '+esc(act.code):'')+'</small></div>'}).join(""):'<div class="emp" style="padding:12px">'+(KR.at?"Пока нет данных":"Загружаем…")+'</div>');
 if(!KR.at)setTimeout(krLoad,0);
@@ -3574,6 +3574,8 @@ document.addEventListener("click",function(e){var t=e.target.closest&&e.target.c
 var er=g("ter").value;t.disabled=true;stApi("t_eadd",{er:er,title:er==="custom"?g("tet").value.trim():"",br:g("tebr").value,nm:g("tmn").value.trim(),ph:g("tmp").value.trim(),login:g("tml").value.trim(),pw:g("tmw").value}).then(function(j){t.disabled=false;done(j,"Сотрудник добавлен ✓ Отправьте ему ссылку, логин и пароль")}).catch(function(){t.disabled=false;toast("Нет связи")})},true);
 })();
 
+/* приём денег за доставки филиалов */
+document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("[data-kcj]");if(!t)return;e.preventDefault();e.stopPropagation();if(!confirm("Курьер сдал деньги за доставку филиала?"))return;t.disabled=true;stApi("s_kcashok",{jk:t.dataset.kcj}).then(function(j){toast(j&&j.ok?"Принято ✓":"Не получилось");try{crLoad()}catch(x){}})},true);
 })();
 </script>
 </body></html>

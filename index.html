@@ -6,7 +6,7 @@ window.__dbg=function(where,e){L.push("❌ "+where+": "+String(e&&e.message||e)+
 addEventListener("error",function(e){__dbg("Ошибка",e.error||e.message)});addEventListener("unhandledrejection",function(e){__dbg("Промис",e.reason)});
 var _f=window.fetch;window.fetch=function(u,o){var t=Date.now();return _f.apply(this,arguments).then(function(r){if(!r.ok)__dbg("Сервер "+r.status,String(u).slice(0,90));return r},function(er){__dbg("Нет связи с сервером",String(u).slice(0,90)+" — "+(er&&er.message));throw er})};
 addEventListener("DOMContentLoaded",function(){setTimeout(box,1500)})})();</script>
-<meta name="uh-ver" content="23.10.2026 01:01">
+<meta name="uh-ver" content="23.10.2026 01:11">
 <script>/* версия сайта и оповещение о новой версии */(function(){var me=(document.querySelector('meta[name="uh-ver"]')||{}).content||"";
 function bar(v){if(document.getElementById("uhnv"))return;var d=document.createElement("div");d.id="uhnv";d.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:99999;background:#16a34a;color:#fff;border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;font:600 15px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";d.innerHTML='<span>🔄 Вышла новая версия сайта</span><button style="border:0;border-radius:12px;padding:10px 14px;background:#fff;color:#15803d;font:700 15px system-ui">Обновить</button>';d.querySelector("button").onclick=function(){try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){if(r)r.update()})}catch(x){}location.reload()};document.body.appendChild(d)}
 function check(){if(!me||document.hidden)return;fetch(location.pathname+"?nv="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="uh-ver" content="([^"]+)"/);if(m&&m[1]!==me)bar(m[1])}).catch(function(){})}
@@ -933,6 +933,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <script>/* журнал ошибок и скорости */(function(){var U="https://script.google.com/macros/s/AKfycbxH7G72oOTHvKqa3ooTjJbgRnJX97JLD4yEmaxRADl6EyBDPHSx6gpYqiVE4FRAUExY/exec",n=0,seen={};function s(k,m,ms){if(n>=6)return;n++;var b=JSON.stringify({a:"c_log",k:k,pg:"index",m:m||"",ms:ms||0,ua:navigator.userAgent.slice(0,110)});try{if(navigator.sendBeacon&&navigator.sendBeacon(U,b))return}catch(e){}try{fetch(U,{method:"POST",body:b,keepalive:true}).catch(function(){})}catch(e){}}addEventListener("error",function(e){if(!e.message)return;var m=String(e.message).slice(0,200)+" @"+(e.lineno||0);if(seen[m])return;seen[m]=1;s("err",m)});addEventListener("load",function(){setTimeout(function(){try{if(Math.random()>.3)return;var t=performance.getEntriesByType("navigation")[0],ms=t?Math.round(t.loadEventEnd||t.duration):0;if(ms>0)s("speed","",ms)}catch(e){}},500)})})();</script>
 <script>
 (function(){
+var CLRS=[["синий","#1c5bd9"],["красный","#e03131"],["черный","#1d1d1f"],["зеленый","#2b9a46"],["фиолетовый","#7b3fe4"],["голубой","#3fa9f5"],["желтый","#f5c518"],["оранжевый","#fd7e14"],["розовый","#f06595"],["коричневый","#8b5a2b"],["серый","#8a9199"],["белый","#ffffff"],["золотой","#d4a017"],["серебряный","#c0c4c8"]];;var CSEL={},cartC=ld("uh_cartc",{}); /* цвета — объявлены в начале, чтобы карточки с цветами не ломали каталог */
 var CT={r:"Частное лицо",c:"Компания",w:"Оптовый покупатель"};
 var PHONE="992986868662",PHSHOW="+992 98 686 86 62";
 var API_URL="https://script.google.com/macros/s/AKfycbxGssdYbn5tGiCuyyphhqVggnTh8htbdRkQBB-LB68DVWPCN54gveCYn5ysgWrSzNeM0g/exec",TG_TOKEN="",TG_CHAT="",CATO=[];
@@ -3147,11 +3148,11 @@ else if(a==="fx-del")del("ex",t.dataset.id)},true);
 
 /* ===== Цвета товаров ===== */
 var CLRS=[["синий","#1c5bd9"],["красный","#e03131"],["черный","#1d1d1f"],["зеленый","#2b9a46"],["фиолетовый","#7b3fe4"],["голубой","#3fa9f5"],["желтый","#f5c518"],["оранжевый","#fd7e14"],["розовый","#f06595"],["коричневый","#8b5a2b"],["серый","#8a9199"],["белый","#ffffff"],["золотой","#d4a017"],["серебряный","#c0c4c8"]];
-function clrHex(c){c=String(c).toLowerCase().replace(/ё/g,"е");for(var j=0;j<CLRS.length;j++)if(CLRS[j][0]===c)return CLRS[j][1];return""}
+function clrHex(c){c=String(c==null?"":c).toLowerCase().replace(/ё/g,"е");var L=CLRS||[];for(var j=0;j<L.length;j++)if(L[j][0]===c)return L[j][1];return""}
 function clrDot(c){var h=clrHex(c);return '<i class="cdot" style="background:'+(h||"conic-gradient(#e03131,#f5c518,#2b9a46,#1c5bd9,#7b3fe4,#e03131)")+'"></i>'}
 function clrParse(p){if(!p)return;var d=String(p.desc||""),m=d.match(/\s*⟦цвета:([^⟧]*)⟧\s*$/);if(m){p.desc=d.slice(0,m.index);var cl=[],ph={};m[1].split(",").forEach(function(x){x=x.trim();if(!x)return;var a=x.split("@"),n=a[0].trim();if(!n)return;cl.push(n);if(a[1]!=null&&/^\d+$/.test(a[1].trim()))ph[n]=+a[1]});if(!(p.cl&&p.cl.length))p.cl=cl;if(!p.cph)p.cph=ph}if(p.cl&&!Array.isArray(p.cl))p.cl=[];if(!p.cph||typeof p.cph!=="object")p.cph={}}
 function clrPack(desc,cl,ph){desc=String(desc||"").replace(/\s*⟦цвета:[^⟧]*⟧\s*$/,"");ph=ph||{};return cl&&cl.length?desc+"\n⟦цвета: "+cl.map(function(c){return c+(ph[c]!=null?"@"+ph[c]:"")}).join(", ")+"⟧":desc}
-var CSEL={};
+CSEL=CSEL||{};
 function cPh(p,c){var ix=p&&p.cph?p.cph[c]:null;if(ix==null)return"";return imgs(p)[ix]||""}
 function cFirst(i){var k=i+"|"+cu(i),m=(cartC&&cartC[k])||{},p=D[i];if(!p||!p.cl)return"";for(var j=0;j<p.cl.length;j++)if(m[p.cl[j]]>0)return p.cl[j];return""}
 function cSel(i){var p=D[i];if(!hasC(p))return"";var c=(CSEL&&CSEL[i])||cFirst(i);return c?cPh(p,c):""}
@@ -3162,8 +3163,8 @@ function clrRefSrc(r){if(r==null)return"";if(r==="__main")return E.img!==undefin
 function clrIdx(cl){var o={};cl.forEach(function(c){var r=E.cph&&E.cph[c];if(r==null)return;if(r==="__main"){if(clrRefSrc(r))o[c]=0;return}var j=E.ims.indexOf(r);if(j>-1)o[c]=j+1});return o}
 function hasC(p){return!!(p&&p.cl&&p.cl.length)}
 function nBase(n){return String(n||"").replace(/ · цвета: .*$/,"")}
-var cartC=ld("uh_cartc",{});
-function cSum(k){var o=cartC[k]||{},n=0;for(var c in o)n+=o[c];return n}
+cartC=cartC||ld("uh_cartc",{});
+function cSum(k){if(!cartC)cartC=ld("uh_cartc",{});var o=cartC[k]||{},n=0;for(var c in o)n+=o[c];return n}
 function cTxt(k){var o=pk(k),p=D[o.i];if(!hasC(p)||!cartC[k])return"";var a=[];p.cl.forEach(function(c){if(cartC[k][c]>0)a.push(c+" ×"+cartC[k][c])});var r=(cart[k]||0)-cSum(k);if(r>0)a.push("любой цвет ×"+r);return a.join(", ")}
 function clrSync(){Object.keys(cartC).forEach(function(k){var o=pk(k),p=D[o.i];if(!cart[k]||!hasC(p)){delete cartC[k];return}var m=cartC[k];Object.keys(m).forEach(function(c){if(p.cl.indexOf(c)<0||!(m[c]>0))delete m[c]});if(!Object.keys(m).length){delete cartC[k];return}if(cSum(k)>cart[k])cart[k]=cSum(k)});sv("uh_cartc",cartC)}
 function setC(k,c,v){v=Math.max(0,Math.min(99999,v|0));var had=cSum(k),rest=Math.max(0,(cart[k]||0)-had);cartC[k]=cartC[k]||{};if(v>0)cartC[k][c]=v;else delete cartC[k][c];var n=cSum(k)+rest;if(n>0)cart[k]=n;else{delete cart[k];delete cartC[k]}changed()}

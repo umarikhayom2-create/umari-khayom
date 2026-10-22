@@ -3346,11 +3346,11 @@ return'<div class="qrbox"><b>💳 Клиент сообщил: оплатил п
 '<div class="note" style="margin:6px 0 0">Откройте кабинет Алиф, найдите поступление на эту сумму за это время и нажмите кнопку ниже.</div>'+
 '<div class="row" style="flex-wrap:wrap;gap:8px"><a class="btn sm o" href="'+ALIF_CAB+'" target="_blank" rel="noopener">Открыть кабинет Алиф ↗</a>'+
 (can("pay")?'<button class="btn sm" data-qra="ok" data-n="'+n+'">✅ Платёж найден — провести оплату</button><button class="btn sm o" data-qra="rej" data-n="'+n+'">❌ Не найден</button>':'<span class="note">Провести оплату может сотрудник с правом «Принимать оплату»</span>')+'</div></div>'};
-function admAct(t){var r=rw(t.dataset.n),c=r&&claim(r);if(!r||!c)return;
+function admAct(t){var r=(A.rows||[]).filter(function(x){return x.no===t.dataset.n})[0],c=r&&claim(r);if(!r||!c)return;
 if(t.dataset.qra==="ok"){var rest=r.sum-paidOf(r),amt=Math.min(+c.amt||0,rest);if(!(amt>0)){tst("Заказ уже оплачен");return}
 if(!g("pam-"+r.no)){tst("Раскройте заказ и повторите");return}
 g("pam-"+r.no).value=String(amt.toFixed(2));var pm=g("pmt-"+r.no);if(pm)pm.value="QR-код (Алиф)";var pw=g("pwh-"+r.no);if(pw&&!pw.value)pw.value=(c.nm||"")+(c.bank?" ("+c.bank+")":"");var pc=g("pco-"+r.no);if(pc&&!pc.value)pc.value="Единый QR — сверено в кабинете Алиф";
-c.st="ok";payAdd(r);stApi("s_qrset",{no:r.no,st:"ok"}).catch(function(){})}
+t.disabled=true;t.textContent="⏳ Проводим оплату…";c.st="ok";payAdd(r);stApi("s_qrset",{no:r.no,st:"ok"}).catch(function(){})}
 else{var why=prompt("Почему платёж не найден? Клиент увидит этот текст.","Поступление на эту сумму не найдено");if(why===null)return;c.st="rej";c.why=why;admRender();
 stApi("s_qrset",{no:r.no,st:"rej",why:why}).then(function(j){tst(j&&j.ok?"Клиенту показано: оплата не найдена":"Не удалось сохранить")}).catch(function(){tst("Нет связи с сервером")})}}
 var qaT=0;qrAdmPull=function(){if(!CHAT_URL||!A.key||A.role==="partner"||A.role==="content")return;qaT=Date.now();

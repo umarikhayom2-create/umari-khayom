@@ -1257,13 +1257,13 @@ if(!(a&&b&&c&&c2)){(!a?$("nm"):!b?$("ph"):!c?$("ad"):$("org")).focus();return}
 if(BNS.use&&!BNS.hold&&bnsAmt()>0){var sb0=e.submitter;if(sb0)sb0.disabled=true;bnsHold().then(function(){if(sb0)sb0.disabled=false;$("fm").requestSubmit()},function(er){if(sb0)sb0.disabled=false;toast(er.message);bnsDraw()});return}
 var cid=custId(ph);
 if($("rem").checked){var old0=ld("uh_prof",{}),np0={nm:nm,ph:ph,org:org,cty:cty,ad:ad,id:cid,ct:ct};sv("uh_prof",np0);if(old0.ph!==ph)notifyReg(np0)}
-var sbt=e.submitter;if(sbt)sbt.disabled=true;nextNo().then(function(no){if(sbt)sbt.disabled=false;var d=new Date(),ds=pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear(),L=["Заказ "+no,"","Клиент: "+nm+" (код "+cid+")","Тип: "+CT[ct]];
+var sbt=e.submitter;if(sbt)sbt.disabled=true;nextNo().then(function(no){if(sbt)sbt.disabled=false;var d=new Date(),ds=pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear(),L=["Заказ "+no,"","Клиент: "+nm+" (код "+cid+")"];
 if(org)L.push("Организация: "+org);L.push("Телефон: "+ph);L.push("Получение: "+(dm==="d"?"Доставка":"Самовывоз"));
-if(dm==="d")L.push("Адрес: "+(cty?cty+", ":"")+ad);if(dm==="d"&&GEO)L.push("Точка на карте: https://yandex.ru/maps/?pt="+GEO.lo+","+GEO.la+"&z=17");
+if(dm==="d")L.push("Адрес: "+(cty?cty+", ":"")+ad);
 L.push("Когда удобно: "+tm);L.push("Оплата: "+pay);if(cm)L.push("Комментарий: "+cm);L.push("","Товары:");
 var n=0,t=tot(),items=[];
 Object.keys(cart).forEach(function(key){var o=pk(key),p=D[o.i],m=mult(p,o.u),qty=cart[key];n++;var dd=dpct(p,o.u,qty),pu=upc(p,o.u,qty);var ww=wUnit(p,o.u);items.push({bc:(p.bc||[]).slice(0,6),n:p.n+(cTxt(key)?" · цвета: "+cTxt(key):""),u:o.u,q:qty,m:m,pr:pu,sum:Math.round(pu*qty*100)/100,d:dd,v:p.vat||0,p0:upr(p,o.u,0),lo:LE,wn:ww[0],wg:ww[1],lbl:o.u==="u"?ub(p)+".":o.u==="p"?"пачка":"короб.",own:p.own||undefined});
-L.push(n+". "+p.n+(cTxt(key)?" — цвета: "+cTxt(key):""));L.push("   "+(o.u==="u"?qty+" "+ub(p)+". × "+f(pu):qty+" "+ushort(p,o.u)+" × "+f(pu))+" = "+f(pu*qty)+(dd?" (скидка "+dd+"%)":"")+(m>1?" (всего "+qty*m+" "+ub(p)+".)":""))});
+L.push(n+". "+p.n+(cTxt(key)?" — цвета: "+cTxt(key):""));L.push((o.u==="u"?qty+" "+ub(p)+". × "+f(pu):qty+" "+ushort(p,o.u)+" × "+f(pu))+" = "+f(pu*qty)+(dd?" (скидка "+dd+"%)":"")+(m>1?" (всего "+qty*m+" "+ub(p)+".)":""))});
 var DV=dlvOf(t.s,dm);if(DV){items.push({bc:[],n:"Доставка (заказ меньше "+DLV_MIN+" сом.)",u:"u",q:1,m:1,pr:DV,sum:DV,d:0,v:0,p0:DV,lo:0,wn:0,wg:0,lbl:"усл.",svc:1});L.push("","Доставка: "+f(DV)+" (бесплатно от "+DLV_MIN+" сом.)")}
 var BV=BNS.hold?Math.min(BNS.hold.amt,Math.round((t.s+DV)*100)/100):0;if(BV){items.push({bc:[],n:"Оплачено бонусами",u:"u",q:1,m:1,pr:-BV,sum:-BV,d:0,v:0,p0:-BV,lo:0,wn:0,wg:0,lbl:"бон.",svc:1});L.push("Оплачено бонусами: −"+f(BV))}
 if(LE)L.push("","Бонусная скидка: "+LE+"% (уже в ценах)");L.push("","Всего штук: "+t.pc,"Итого: "+f(t.s+DV-BV));if(ct==="w"){var cwt=cartW();L.push("Вес: нетто "+fkg(cwt[0])+" кг, брутто "+fkg(cwt[1])+" кг")}var msg=L.join("\n");

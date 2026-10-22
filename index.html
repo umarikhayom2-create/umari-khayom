@@ -229,7 +229,7 @@ p.pkh{border-style:solid;cursor:default}button.pkh{animation:pkp 2.4s ease-in-ou
 .sht{display:block;width:100%;text-align:left;background:none;border:0;padding:7px 2px 0;color:var(--tx);font:inherit;cursor:pointer}
 .sht{white-space:nowrap}.shnm{white-space:normal}.shp{font-size:16px;font-weight:800}.sht s{font-size:12px;color:var(--mut);margin-left:3px}
 .shnm{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12.5px;line-height:1.3;margin-top:3px;color:var(--tx);opacity:.85}
-.sec2{font-size:22px;font-weight:800;margin:6px 0 8px}
+.sec2{font-size:22px;font-weight:800;margin:6px 0 8px}.gall{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:4px 0 16px;padding:16px;border:0;border-radius:18px;background:linear-gradient(100deg,#ff7a3d,#e8430f);color:#fff;font:inherit;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(232,67,15,.3)}.gall b{background:rgba(255,255,255,.25);padding:2px 9px;border-radius:10px}.gall span{font-size:12px;opacity:.9}.ctw2{flex-wrap:wrap;overflow:visible;gap:12px 6px}
 @media(min-width:900px){.shc{flex-basis:170px}.shi{width:170px;height:170px}.shadd{top:134px}}
 </style>
 <title>Умари Хайём — канцелярские товары</title>
@@ -770,7 +770,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <select id="so" aria-label="Сортировка"><option value="rec">Рекомендуем: новинки и скидки</option><option value="def">Как в прайсе</option><option value="pa">Сначала дешевле</option><option value="pd">Сначала дороже</option><option value="n">По названию</option></select>
 <input id="pmin" type="number" min="0" inputmode="decimal" placeholder="Цена от" aria-label="Цена от" style="flex:0 1 110px"><input id="pmax" type="number" min="0" inputmode="decimal" placeholder="до" aria-label="Цена до" style="flex:0 1 110px"></div>
 <div class="ctw" id="chips"></div>
-<div id="shelf"></div><h2 class="sec2" id="gh" hidden>🛍️ Ещё больше товаров</h2>
+<div id="shelf"></div><h2 class="sec2" id="gh" hidden>🛍️ Ещё больше товаров</h2><button type="button" class="gall" id="gallb" hidden></button>
 <p class="cnt" id="cnt"></p><p class="snote" id="sn" hidden></p>
 <div class="g" id="g"></div>
 <div class="none" id="n" hidden>Здесь пока пусто. Выберите другую категорию или сбросьте фильтры.</div>
@@ -3092,7 +3092,10 @@ return '<div class="shc"><button class="shi" data-a="view" data-i="'+i+'" aria-l
 '<button class="sht" data-a="view" data-i="'+i+'"><b class="shp">'+f(base)+'</b>'+(o>base+0.004?' <s>'+f(o).replace(/\s*сом\.?$/,"")+'</s>':'')+'<span class="shnm">'+esc(p.n)+'</span></button></div>'}
 function shRail(id,ttl,sub,list,act){if(!list.length)return"";return '<section class="shs" id="'+id+'"><div class="shh"><div><h3>'+ttl+'</h3>'+(sub?'<p>'+sub+'</p>':'')+'</div>'+(act?'<button class="sha" '+act+' aria-label="Смотреть все">'+svgI("arr")+'</button>':'')+'</div><div class="shr">'+list.map(shCard).join("")+'</div></section>'}
 var SHK="";
-function shelf(){var el=$("shelf");if(!el)return;var home=cat==="Все"&&!q&&!favOnly&&!pmin&&!pmax;$("gh").hidden=!home;el.hidden=!home;
+var GALL=false;
+function gallUi(home){var open=!home||GALL,n=0;D.forEach(function(p){if(vis(p))n++});["g","cnt","mr","cl"].forEach(function(id){var e=$(id);if(e&&!open)e.hidden=true});if(!open){$("g").style.display="none";$("n").hidden=true;var sn=$("sn");if(sn)sn.hidden=true}else{$("g").style.display="";$("g").hidden=false}if(open&&$("cnt"))$("cnt").hidden=false;
+var b=$("gallb");if(b){b.hidden=!home;b.innerHTML=GALL?'Свернуть все товары <span>▲</span>':'🛍️ Смотреть все товары <b>'+n+'</b> <span>▼</span>'}$("gh").hidden=!(home&&GALL)}
+function shelf(){var el=$("shelf");if(!el)return;var home=cat==="Все"&&!q&&!favOnly&&!pmin&&!pmax;if(!home)GALL=false;gallUi(home);el.hidden=!home;
 if(!home){SHK="";return}
 var all=[];D.forEach(function(p,i){if(vis(p))all.push(i)});var wph=function(L){return L.filter(function(i){return!!D[i].i}).concat(L.filter(function(i){return!D[i].i}))};
 var key=all.length+"|"+Object.keys(cart).map(function(k){return k+":"+cart[k]}).join(",")+"|"+GRP;if(key===SHK)return;SHK=key;
@@ -3105,10 +3108,11 @@ var h=shRail("sh-deal","🔥 Выгодные предложения","Самы�
 h+=shRail("sh-new","✨ Новинки","Только что появились на сайте",nw,'data-sgo="g"');
 h+=shRail("sh-bulk","📦 Выгодно оптом","Берите больше — платите меньше",bulk,'data-sgo="g"');
 var by={},ord=[];rec.forEach(function(i){var c=D[i].c;if(!by[c]){by[c]=[];ord.push(c)}by[c].push(i)});
-ord.sort(function(a,b){return by[b].length-by[a].length}).forEach(function(c,j){h+=shRail("sh-c"+j,'<span class="shci" style="--cf:'+CPAL[(j+1)%CPAL.length][1]+';--cb:'+CPAL[(j+1)%CPAL.length][0]+'">'+svgI(cIco(c))+'</span>'+esc(c),by[c].length+" "+plural(by[c].length,"товар","товара","товаров"),wph(by[c]).slice(0,12),'data-a="cat" data-c="'+esc(c)+'" data-sgo="c"')});
+ord.sort(function(a,b){return by[b].length-by[a].length});var rest=ord.slice(5);ord.slice(0,5).forEach(function(c,j){h+=shRail("sh-c"+j,'<span class="shci" style="--cf:'+CPAL[(j+1)%CPAL.length][1]+';--cb:'+CPAL[(j+1)%CPAL.length][0]+'">'+svgI(cIco(c))+'</span>'+esc(c),by[c].length+" "+plural(by[c].length,"товар","товара","товаров"),wph(by[c]).slice(0,12),'data-a="cat" data-c="'+esc(c)+'" data-sgo="c"')});
+if(rest.length){h+='<section class="shs"><div class="shh"><div><h3>🗂️ Другие категории</h3><p>Нажмите, чтобы открыть</p></div></div><div class="ctw ctw2">'+rest.map(function(c,j){return cTile(c,by[c].length,false,j+6,"cat")}).join("")+'</div></section>'}
 el.innerHTML=h;Object.keys(keep).forEach(function(id){var s=document.getElementById(id);if(s)s.querySelector(".shr").scrollLeft=keep[id]})}
 var _render1=render;render=function(){_render1();try{shelf()}catch(x){}};
-document.addEventListener("click",function(e){var t=e.target.closest("[data-sgo]");if(!t)return;var g=t.dataset.sgo;setTimeout(function(){var el=$(g==="g"?"gh":"catalog");if(el)el.scrollIntoView({behavior:"smooth",block:"start"})},30)});
+document.addEventListener("click",function(e){if(e.target.closest("#gallb")){GALL=!GALL;lim=7;render();if(!GALL){var s0=$("shelf");s0&&s0.lastElementChild&&s0.lastElementChild.scrollIntoView({behavior:"smooth",block:"start"})}return}if(e.target.closest(".ctw2 [data-a=cat]"))setTimeout(function(){goCatalog()},30);var t=e.target.closest("[data-sgo]");if(!t)return;var g=t.dataset.sgo;setTimeout(function(){var el=$(g==="g"?"gh":"catalog");if(el)el.scrollIntoView({behavior:"smooth",block:"start"})},30)});
 try{render()}catch(x){}
 
 })();

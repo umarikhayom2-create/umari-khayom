@@ -3618,6 +3618,16 @@ document.addEventListener("click",function(e){var t=e.target.closest&&e.target.c
 var perm={};if(t.dataset.acdef)perm=Object.assign({},m.def);else document.querySelectorAll('[data-acp="'+lg+'"]').forEach(function(el){perm[el.dataset.k]=el.type==="checkbox"?(el.checked?1:0):+el.value});
 var tw=(document.querySelector('[data-actw="'+lg+'"]')||{}).value||"",old={perm:m.perm,tw:m.tw};m.perm=perm;m.tw=tw;var c=document.getElementById("admC");if(c&&A.tab==="t")c.innerHTML=TM.html();toast("Доступы сохранены ✓");
 stApi("t_eset",{login:lg,perm:perm,tw:tw}).then(function(j){if(j&&j.ok){if(TM.all){TM.all.merch=j.merch;if(j.tws)TM.all.tws=j.tws}var c2=document.getElementById("admC");if(c2&&A.tab==="t")c2.innerHTML=TM.html()}else{m.perm=old.perm;m.tw=old.tw;var c3=document.getElementById("admC");if(c3&&A.tab==="t")c3.innerHTML=TM.html();toast("Не сохранилось: "+((j&&j.error)||"нет связи"))}}).catch(function(){m.perm=old.perm;m.tw=old.tw;toast("Нет связи — доступы не сохранились")})},true);
+/* ==== защита каталога: товар с неполными данными пропускается, витрина никогда не пустая ==== */
+(function(){var sent={};function rep(m){m=String(m).slice(0,250);if(sent[m])return;sent[m]=1;try{var b=JSON.stringify({a:"c_log",k:"err",pg:"catalog",m:m,ua:navigator.userAgent.slice(0,110)});if(!(navigator.sendBeacon&&navigator.sendBeacon(CHAT_URL,b)))fetch(CHAT_URL,{method:"POST",body:b}).catch(function(){})}catch(x){}}
+var _c=card;card=function(i){try{return _c(i)}catch(e){rep("Товар «"+((D[i]||{}).n||i)+"» не показан в списке: "+(e&&e.message));return""}};
+var _s=shCard;shCard=function(i){try{return _s(i)}catch(e){rep("Товар «"+((D[i]||{}).n||i)+"» не показан на витрине: "+(e&&e.message));return""}};
+var showAll=function(why){if(why)rep(why);SHK="";GALL=true;try{gallUi(true)}catch(x){}var g0=$("g");if(g0){g0.style.display="";g0.hidden=false}};
+var _sh=shelf;shelf=function(){var el=$("shelf");if(el&&!el.children.length)SHK="";try{_sh()}catch(e){showAll("Витрина не построилась: "+(e&&e.message));return}
+var home=cat==="Все"&&!q&&!favOnly&&!pmin&&!pmax;if(home&&el&&!el.children.length&&!GALL&&D.length)showAll("Витрина пустая — показан общий список")};
+setTimeout(function(){try{shelf()}catch(x){}},2500);
+try{render()}catch(e){rep("Каталог: "+(e&&e.message))}
+})();
 })();
 </script>
 </body></html>

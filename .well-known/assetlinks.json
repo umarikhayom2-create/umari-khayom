@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.umarikhayom2_create.twa",
+        "sha256_cert_fingerprints": ["2A:E1:72:D8:89:B4:2A:17:89:6F:C8:1D:D9:BB:8C:CC:78:78:C6:3E:2E:69:FB:5B:70:A6:F9:0F:31:5F:85:DF"]
+      }
+    }]

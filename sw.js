@@ -39,6 +39,7 @@ self.addEventListener("fetch", function (e) {
   if (req.method !== "GET") return;
   if (/fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) { e.respondWith(imgFirst(req)); return; }
   if (url.origin !== self.location.origin) return;
+  if (/\.apk$/.test(url.pathname) || /\/\.well-known\//.test(url.pathname)) return; // файл приложения всегда свежий, не кэшируем
   if (req.mode === "navigate" || /\.html$/.test(url.pathname) || /\/$/.test(url.pathname)) {
     var key = pageKey(req.url);
     var net = fetch(req.url, { cache: "no-cache", credentials: "same-origin" }).then(function (r) {

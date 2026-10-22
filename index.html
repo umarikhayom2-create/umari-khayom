@@ -841,6 +841,7 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <div class="fl"><label for="ad">Адрес доставки</label><textarea id="ad" rows="2" autocomplete="street-address" placeholder="Улица, дом, квартира, ориентир"></textarea><small class="er" id="e-ad"></small></div></div>
 <fieldset><legend>Способ оплаты</legend><div class="opts">
 <label class="opt on"><input type="radio" name="pay" value="Наличными при получении" checked><span><b>Наличными</b><em>Оплата при получении</em></span></label>
+<label class="opt"><input type="radio" name="pay" value="QR-код (единый QR)"><span><b>Оплата по QR-коду</b><em>Алиф, Душанбе Сити, Хумо и любой банк — сразу после заказа</em></span></label>
 <label class="opt"><input type="radio" name="pay" value="Переводом на карту"><span><b>Перевод на карту</b><em>Реквизиты пришлём в WhatsApp</em></span></label>
 <label class="opt"><input type="radio" name="pay" value="Оплата через расчётный счёт"><span><b>Оплата через расчётный счёт</b><em>Безналичный расчёт, реквизиты пришлём в WhatsApp</em></span></label> <label class="opt"><input type="radio" name="pay" value="Мобильный кошелёк"><span><b>Мобильный кошелёк</b><em>Реквизиты пришлём в WhatsApp</em></span></label></div></fieldset>
 <div class="fl"><label for="tm">Когда удобно</label><select id="tm"><option>Как можно скорее</option><option>Сегодня во второй половине дня</option><option>Завтра утром</option><option>Завтра днём</option></select></div>
@@ -896,6 +897,27 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <p class="note">Накладная М-15 с печатью магазина и вашей подписью сохранится на устройство, копия уйдёт магазину на почту. Нажимая кнопку, вы подтверждаете получение товара.</p></div></div>
 <div class="ts" id="ts" hidden role="status"></div>
 
+<style>
+.qrov{position:fixed;inset:0;z-index:9999;background:rgba(20,20,21,.55);display:flex;align-items:flex-end;justify-content:center}
+.qrsh{background:var(--bg,#faf8f4);color:var(--tx,#141415);width:100%;max-width:460px;max-height:94vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px 22px;box-shadow:0 -10px 40px rgba(0,0,0,.25);box-sizing:border-box}
+@media(min-width:600px){.qrov{align-items:center}.qrsh{border-radius:20px}}
+.qrsh h3{margin:0 0 4px;font-size:19px}.qrsh .qrx{float:right;border:0;background:var(--sf2,#eee);border-radius:50%;width:34px;height:34px;font-size:20px;line-height:1;color:inherit}
+.qram{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--sf,#fff);border:1px solid var(--bd,#e7e2d9);border-radius:14px;padding:12px 14px;margin:12px 0}
+.qram b{font-size:24px}.qram small{display:block;color:var(--mut,#777)}
+.qrimg{display:block;width:100%;max-width:300px;margin:6px auto;background:#fff;border-radius:14px;border:1px solid var(--bd,#e7e2d9);padding:6px;box-sizing:border-box}
+.qrto{text-align:center;font-size:13px;color:var(--mut,#777);margin:2px 0 10px}
+.qrst{margin:10px 0;padding:0;list-style:none;counter-reset:q}.qrst li{counter-increment:q;position:relative;padding:6px 0 6px 34px;font-size:14px;line-height:1.4}
+.qrst li:before{content:counter(q);position:absolute;left:0;top:5px;width:24px;height:24px;border-radius:50%;background:var(--ac,#d9480f);color:var(--ac2,#fff);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.qrrow{display:flex;gap:8px;flex-wrap:wrap}.qrrow>*{flex:1 1 140px}
+.qrsh .btn{margin-top:10px}.qrsh .btn.o2{background:var(--sf2,#eee);color:var(--tx,#141415)}
+.qrsh label{display:block;font-size:13px;color:var(--mut,#777);margin:10px 0 4px}
+.qrsh input,.qrsh select{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:10px;border:1px solid var(--bd,#e7e2d9);background:var(--sf,#fff);color:inherit;font:inherit}
+.qrw{background:#fff4d6;color:#7a4b00;border-radius:12px;padding:10px 12px;margin-top:8px;font-size:14px}
+.qrr{background:#ffe3e3;color:#a61e1e;border-radius:12px;padding:10px 12px;margin-top:8px;font-size:14px}
+.chip.qrc{background:#fff0c2;color:#7a4b00;font-weight:700}
+.qrbox{border:2px solid #f2b705;background:#fffaeb;color:#4a3500;border-radius:14px;padding:12px;margin:10px 0}
+.qrbox .btn{margin-top:8px}
+</style>
 <script>
 (function(){
 var CT={r:"Частное лицо",c:"Компания",w:"Оптовый покупатель"};
@@ -1156,7 +1178,7 @@ hist.forEach(function(o,n){var a="",h0=h;try{
 if(!o.cust){h+='<div class="oc"><div class="oh"><div><b>'+esc(o.no)+'</b><span>'+esc(o.date||"")+' · '+o.items.length+' поз.</span></div><b>'+f(o.sum)+'</b></div><div class="row"><button class="btn sm o" data-a="repeat" data-h="'+n+'">Повторить</button></div></div>';return}
 var st=o.st||"new",s=stepsOf(o),ci=s.indexOf(st),pl=o.ps==='paid'?'Оплачен':o.ps==='part'?'Частично оплачен ('+fn(o.paid||0)+' из '+fn(o.sum)+' сом.)':'Не оплачен';
 h+='<div class="oc"><div class="oh"><div><b>'+esc(o.no)+'</b><span>'+esc(o.date||"")+' · '+o.items.length+' поз.</span></div><b>'+f(o.sum)+'</b></div>'+(st==='cancel'?'<div class="pr"><b>Заказ отменён.</b> Если это ошибка, свяжитесь с нами в WhatsApp.</div>':'<ol class="ol">');
-if(st!=='cancel'){s.forEach(function(k,i){h+='<li class="'+(i<ci?"sd":i===ci?"sc":"")+'"><i></i><span>'+esc(stLbl(o,k))+'</span></li>'});h+='</ol><div class="pr">Оплата: <b>'+pl+'</b></div>'}
+if(st!=='cancel'){s.forEach(function(k,i){h+='<li class="'+(i<ci?"sd":i===ci?"sc":"")+'"><i></i><span>'+esc(stLbl(o,k))+'</span></li>'});h+='</ol><div class="pr">Оплата: <b>'+pl+'</b></div>'+qrHistHtml(o,n)}
 h+=adjHtml(o);if(st==="new"||st==="ready")h+='<button class="btn sm o" data-a="cx" data-h="'+n+'" style="margin-top:8px">Отменить заказ</button>';
 if(st==="done")a='<div class="pr"><b>Заказ у вас?</b> Подтвердите получение.</div><button class="btn w100" data-a="got" data-h="'+n+'">Получил</button>';
 else if(st==="recv"&&!o.sig)a='<div class="pr"><b>Спасибо, заказ получен.</b> Загрузите накладную с печатью магазина: укажите имя и фамилию и поставьте подпись.</div><button class="btn w100" data-a="sign" data-h="'+n+'">Загрузить накладную с печатью</button>';
@@ -1284,7 +1306,7 @@ if(LE)L.push("","Бонусная скидка: "+LE+"% (уже в ценах)")
 var ord={no:no,date:ds,ts:d.getTime(),sum:Math.round((t.s+DV-BV)*100)/100,dlv:DV,bns:BV,bid:BNS.hold?BNS.hold.id:"",pc:t.pc,cust:{id:cid,nm:nm,ph:ph,org:org,ct:ct,dm:dm,cty:cty,ad:ad,tm:tm,pay:pay,cm:cm,geo:dm==="d"&&GEO?{la:GEO.la,lo:GEO.lo}:undefined},items:items,loy:LE,sg:Math.round(t.s0*100)/100,grp:GRP};
 clog(ord,"Заказ оформлен");LAST=ord;hist.unshift(ord);hist=hist.slice(0,300);sv("uh_hist",hist);setTimeout(loadMy,2500);try{bnsLink(no);accPush([ord])}catch(x){}
 $("on").textContent=no;$("ot").value=msg;sent=false;$("wa2").textContent="Оформить заказ";var ENC=encodeURIComponent(msg);$("fb").hidden=true;$("wa2").href=/Android/i.test(navigator.userAgent)?"intent://send?phone="+PHONE+"&text="+ENC+"#Intent;scheme=whatsapp;package=com.whatsapp;end":"whatsapp://send?phone="+PHONE+"&text="+ENC;
-var tk=sendNew(ord,msg);if(!tk)view("vs");else{var bt=e.submitter;if(bt)bt.disabled=true;tk.then(function(){$("dq").hidden=true;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd")}).catch(function(er){toast("Не удалось отправить: "+((er&&er.code)||"нет связи")+". Заказ сохранён и отправится автоматически");try{window.__lastErr=er&&er.code}catch(x){}setTimeout(qRun,8000);$("dq").hidden=false;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd")}).then(function(){if(bt)bt.disabled=false})}})});
+var tk=sendNew(ord,msg);if(!tk)view("vs");else{var bt=e.submitter;if(bt)bt.disabled=true;tk.then(function(){$("dq").hidden=true;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd");qrAfter(ord)}).catch(function(er){toast("Не удалось отправить: "+((er&&er.code)||"нет связи")+". Заказ сохранён и отправится автоматически");try{window.__lastErr=er&&er.code}catch(x){}setTimeout(qRun,8000);$("dq").hidden=false;$("dn").textContent=no;$("dp").textContent=ph;cart={};sv("uh_cart2",cart);render();view("vd");qrAfter(ord)}).then(function(){if(bt)bt.disabled=false})}})});
 fillCheckout();fillProfForm();
 
 var A={fo:{},qf:"all",open:{},role:"",who:"",pend:{},draft:{},gr:"auto",key:"",rows:[],tab:"o",from:"",to:"",q:"",fs:"",fp:"",ok:false};
@@ -1350,9 +1372,9 @@ function nextSt(r){if(!can("st"))return null;var s=stepsOf(r.o),i=s.indexOf(r.st
 function doNext(r){var n=nextSt(r);if(!n)return;var old=r.st;admSet(r,{st:n}).then(function(j){toast("Статус: "+stN(r,r.st));if(r.st==="recv"&&old!=="recv")waAfter(r,j,"recv");admRender()})}
 function payBlock(r){var n=esc(r.no),pd=paidOf(r),rest=Math.max(0,r.sum-pd),pays=r.pays||[],pend=A.pend[r.no]||[],h='<div class="pf"><b>Оплата</b><div class="pbar"><i style="width:'+Math.min(100,Math.round(pd/(r.sum||1)*100))+'%"></i></div><div class="pr">Оплачено <b>'+f(pd)+'</b> из <b>'+f(r.sum)+'</b>'+(rest>0.004?' · остаток <b>'+f(rest)+'</b>':' · <b class="ps-paid">оплачен полностью</b>')+'</div>';
 if(pays.length)h+='<div class="pls">'+pays.slice().sort(function(a,b){return b.ts-a.ts}).map(function(p){var rv=pays.some(function(x){return x.rev===p.id});return'<div class="pl'+(p.amt<0?" neg":"")+(rv?" rv":"")+'"><div><b>'+(p.amt<0?"−":"+")+f(Math.abs(p.amt))+'</b> <small>'+dtf(p.ts)+'</small></div><div class="pr">'+esc(RL[p.by]||p.by)+(p.byName?" ("+esc(p.byName)+")":"")+' · '+esc(p.method||"")+(p.who?" · "+esc(p.who):"")+(p.comment?"<br>"+esc(p.comment):"")+(rv?"<br><em>сторнирован</em>":"")+'</div>'+filesHtml(p)+((can("rev")&&p.amt>0&&!rv)?'<button class="btn sm o" data-ad="payrev" data-n="'+n+'" data-id="'+esc(p.id)+'">Сторно</button>':"")+'</div>'}).join("")+'</div>';
-if(can("pay")&&rest>0.004){var dv=function(k,d){return A.draft[k+"-"+r.no]!=null?A.draft[k+"-"+r.no]:d},mt=dv("pmt","Наличными");
+if(can("pay")&&rest>0.004){var dv=function(k,d){return A.draft[k+"-"+r.no]!=null?A.draft[k+"-"+r.no]:d},mt=dv("pmt",/QR/.test((r.o.cust||{}).pay||"")?"QR-код (Алиф)":"Наличными");
 h+='<div class="pform"><b>Принять оплату</b><div class="fl"><label>Сумма, сом.</label><input class="pin" id="pam-'+n+'" type="number" step="0.01" min="0" inputmode="decimal" value="'+esc(dv("pam",rest.toFixed(2)))+'"></div><div class="row"><button class="btn sm o" data-ad="payfill" data-n="'+n+'" data-v="1">Весь остаток</button><button class="btn sm o" data-ad="payfill" data-n="'+n+'" data-v="2">Половина</button></div>'+
-'<div class="fl" style="margin-top:10px"><label>Как оплачено</label><select class="pin" id="pmt-'+n+'">'+["Наличными","На карту","Переводом","Через расчётный счёт","Другое"].map(function(m){return"<option"+(m===mt?" selected":"")+">"+m+"</option>"}).join("")+'</select></div>'+
+'<div class="fl" style="margin-top:10px"><label>Как оплачено</label><select class="pin" id="pmt-'+n+'">'+["Наличными","QR-код (Алиф)","На карту","Переводом","Через расчётный счёт","Другое"].map(function(m){return"<option"+(m===mt?" selected":"")+">"+m+"</option>"}).join("")+'</select></div>'+
 '<div class="fl"><label>Кто принял или на чью карту</label><input class="pin" id="pwh-'+n+'" value="'+esc(dv("pwh",""))+'" placeholder="Например: карта Алишера, касса офиса"></div>'+
 '<div class="fl"><label>Комментарий</label><textarea class="pin" id="pco-'+n+'" rows="2" placeholder="Например: оплата на карту сотрудника, сумма сверена">'+esc(dv("pco",""))+'</textarea></div>'+
 '<label class="btn sm o attach">📎 Прикрепить чек, скриншот или фото<input type="file" accept="image/*,application/pdf" multiple hidden data-pf="'+n+'"></label>'+
@@ -1375,12 +1397,12 @@ if(!rows.length)return'<div class="emp">Заказов не найдено</div>
 rows.sort(function(a,b){return b.ts-a.ts});var FD={ok:"",cancel:"",test:""},FC={ok:0,cancel:0,test:0},FN={ok:"✅ Успешные",cancel:"❌ Отменённые",test:"🧪 Тестовые"},act="";
 rows.forEach(function(r){h="";var o=r.o,c=o.cust,ph=String(c.ph).replace(/\D/g,""),items="",nx=nextSt(r),n=esc(r.no),pd=paidOf(r);o.items.forEach(function(it,i){items+=admItemLine(it,i)});
 var hs=heatSt(r);h+='<details class="ac" data-no="'+n+'"'+(A.open[r.no]?" open":"")+(hs?' style="'+hs+'"':'')+'><summary><div class="oh"><div><b>'+n+'</b><span>'+esc(o.date||"")+' · '+o.items.length+' поз. · '+(c.dm==="d"?"доставка":"самовывоз")+'</span></div><b>'+f(r.sum)+'</b></div>'+
-'<div class="chips">'+(isTest(r)?'<span class="chip tst">🧪 Тестовый</span>':'')+(o.adj?'<span class="chip">Скорректирован</span>':'')+'<span class="chip st-'+r.st+'">'+esc(stN(r,r.st))+'</span><span class="chip ps-'+r.ps+'">'+(r.ps==="part"?"Оплачено "+fn(pd)+" из "+fn(r.sum):PSL[r.ps])+'</span></div>'+
+'<div class="chips">'+(isTest(r)?'<span class="chip tst">🧪 Тестовый</span>':'')+(o.adj?'<span class="chip">Скорректирован</span>':'')+'<span class="chip st-'+r.st+'">'+esc(stN(r,r.st))+'</span><span class="chip ps-'+r.ps+'">'+(r.ps==="part"?"Оплачено "+fn(pd)+" из "+fn(r.sum):PSL[r.ps])+'</span>'+qrChip(r)+'</div>'+
 cdHtml(r)+'<div class="pr" style="margin:6px 0 0"><b>'+esc(c.nm)+'</b>'+(c.org?" ("+esc(c.org)+")":"")+' · '+esc(c.ph)+' '+ctChip(r)+'</div>'+(nx?'<button class="btn sm nx" data-ad="nx" data-n="'+n+'">'+esc(stN(r,nx))+' →</button>':'')+'</summary>'+
 '<div class="abody"><div class="pr"><a href="tel:+'+ph+'">Позвонить</a><br>'+(c.dm==="d"?"Доставка: "+esc((c.cty?c.cty+", ":"")+c.ad):"Самовывоз")+' · '+esc(c.tm||"")+'<br>Способ оплаты: '+esc(c.pay)+(c.cm?"<br>Комментарий: "+esc(c.cm):"")+'</div>'+
 '<details class="pr"><summary>Товары</summary>'+items+'</details>'+
 '<div class="fl"><label>Статус заказа'+(can("st")?"":" (изменение недоступно для вашей роли)")+'</label><select data-st="'+n+'"'+((can("st")&&allowedSt(r).length>1)?"":" disabled")+'>'+stOpts(r)+'</select></div>'+
-payBlock(r)+(can("lg")?logBox(r.log,true,r):"")+pBlock(r)+jBlock(r)+
+qrBox(r)+payBlock(r)+(can("lg")?logBox(r.log,true,r):"")+pBlock(r)+jBlock(r)+
 ctBlock(r,n)+'<div class="row" style="margin-top:10px">'+(canTest()?'<button class="btn sm o" data-ad="tst" data-n="'+n+'">'+(isTest(r)?'↩ Снять пометку «тестовый»':'🧪 Пометить как тестовый')+'</button>':'')+(adjEditable(r)?'<button class="btn sm" data-ad="adj" data-n="'+n+'">Корректировка заказа</button>':'')+'<button class="btn sm o" data-ad="pick" data-n="'+n+'">Лист сборки с фото</button>'+docBtns(r,n)+'<button class="btn sm o" data-ad="pp" data-n="'+n+'">Накладная приёма-передачи</button>'+(o.adj&&can("adj")?'<button class="btn sm o" data-ad="wa" data-n="'+n+'" data-k="adj">Уведомить о корректировке</button>':'')+'<a class="btn sm o" href="whatsapp://send?phone='+ph+'">WhatsApp клиенту</a>'+(r.st==="recv"?'<button class="btn sm o" data-ad="wa" data-n="'+n+'" data-k="recv">Уведомить о получении</button>':'')+(lastPay(r).amt?'<button class="btn sm o" data-ad="wa" data-n="'+n+'" data-k="pay">Уведомить об оплате</button>':'')+'</div></div></details>';var gk=isTest(r)?"test":(r.st==="done"||r.st==="recv")?"ok":r.st==="cancel"?"cancel":null;if(gk){FD[gk]+=h;FC[gk]++}else act+=h});
 var out=act||'<div class="emp" style="padding:16px">Активных заказов нет</div>';
 ["ok","cancel","test"].forEach(function(k){if(FC[k])out+='<details class="fold fold-'+k+'" data-fk="'+k+'"'+((A.fs===k||(k==="ok"&&(A.fs==="done"||A.fs==="recv"))||q||A.fo[k])?" open":"")+'><summary>'+FN[k]+' <span>'+FC[k]+'</span></summary>'+FD[k]+'</details>'});return out}
@@ -3245,6 +3267,98 @@ if(st.adm){if(st.tab)A.tab=st.tab;admOpen();
  var a=$("adm");if(st.ay)tryScroll(function(){a.scrollTop=st.ay},function(){return Math.abs(a.scrollTop-st.ay)<4},8000)}
 }catch(x){}
 setTimeout(function(){restoring=false},st.adm?8500:4500);
+})();
+
+/* ==== QR-оплата ==== */
+var qrOpen,qrHistHtml,qrSync,qrChip,qrBox,qrAdmPull,qrAfter;
+/* ===== Оплата по единому QR (QR рамзи ягона) =====
+   Клиент: выбирает «QR-код» при оформлении → видит QR, сумму, «Сохранить QR» и «Я оплатил».
+   Оператор: видит «Клиент оплатил по QR», открывает кабинет Алиф, сверяет и жмёт «Платёж найден» —
+   оплата проводится обычным способом, клиент видит «Оплачен». Отметки «Я оплатил» хранятся на сервере чата. */
+(function(){
+var QR_IMG="img/qr-pay.png",ALIF_CAB="https://alifpay.tj/salom",QR_TO="ООО «Молҳои Умари Ҳаём»";
+var BANKS=["Алиф","Душанбе Сити","Хумо","Эсхата","Амонатбанк","Ориёнбонк","Другой банк"];
+function g(id){return document.getElementById(id)}
+function e(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function money(n){return f(n)}
+function isQr(o){return/QR/i.test(((o&&o.cust)||{}).pay||"")}
+function mob(){return/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)}
+function tst(t){try{toast(t)}catch(x){alert(t)}}
+function due(o){return Math.max(0,Math.round(((+o.sum||0)-(+o.paid||0))*100)/100)}
+function close(){var v=g("qrov");if(v)v.remove()}
+function copy(t){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){tst("Скопировано: "+t)},function(){prompt("Скопируйте:",t)});else prompt("Скопируйте:",t)}
+var CUR=null;
+
+qrOpen=function(o){if(!o)return;close();CUR=o;var amt=due(o)||+o.sum||0,a=String(amt.toFixed(2)).replace(/\.00$/,"");
+var h='<div class="qrov" id="qrov"><div class="qrsh" role="dialog" aria-label="Оплата по QR"><button class="qrx" data-qx="1" aria-label="Закрыть">×</button>'+
+'<h3>Оплата по QR</h3><div class="note" style="margin:0">Заказ <b>'+e(o.no)+'</b> · любой банк Таджикистана</div>'+
+'<div class="qram"><div><small>Сумма к оплате</small><b>'+e(money(amt))+'</b></div><button class="btn sm o" data-qc="'+e(a)+'" style="margin:0">Копировать</button></div>'+
+'<img class="qrimg" src="'+QR_IMG+'" alt="QR-код для оплаты"><div class="qrto">Получатель: <b>'+e(QR_TO)+'</b></div>'+
+(mob()?'<div class="qrrow"><a class="btn" href="'+QR_IMG+'" download="QR-oplata-Umari-Khayom.png" data-qdl="1">⬇ Сохранить QR</a>'+(navigator.canShare?'<button class="btn o2" data-qsh="1">Поделиться</button>':'')+'</div>'+
+'<ol class="qrst"><li>Нажмите <b>«Сохранить QR»</b> — картинка попадёт в галерею.</li><li>Откройте приложение своего банка → <b>«Оплата по QR»</b> → значок <b>галереи</b> и выберите сохранённый QR.</li><li>Проверьте получателя, введите сумму <b>'+e(money(amt))+'</b> и подтвердите.</li><li>Вернитесь сюда и нажмите <b>«Я оплатил»</b>.</li></ol>'
+:'<ol class="qrst"><li>Откройте приложение банка на телефоне → <b>«Оплата по QR»</b>.</li><li>Наведите камеру на QR-код на экране.</li><li>Введите сумму <b>'+e(money(amt))+'</b> и подтвердите.</li><li>Нажмите <b>«Я оплатил»</b>.</li></ol>')+
+'<button class="btn" data-qpaid="1" style="width:100%">✅ Я оплатил</button><button class="btn o2" data-qx="1" style="width:100%">Оплачу позже</button>'+
+'<p class="note" style="font-size:12px">Оплатить позже можно в разделе «Мои заказы». Оператор сверит платёж и отметит заказ оплаченным.</p></div></div>';
+document.body.insertAdjacentHTML("beforeend",h)};
+
+function paidForm(){var o=CUR;if(!o)return;var sh=g("qrov").querySelector(".qrsh"),amt=due(o)||+o.sum||0;
+sh.innerHTML='<button class="qrx" data-qx="1" aria-label="Закрыть">×</button><h3>Вы оплатили заказ '+e(o.no)+'?</h3><div class="note" style="margin:0">Укажите сумму и банк — так оператор быстрее найдёт платёж.</div>'+
+'<label for="qra">Сумма, сом.</label><input id="qra" inputmode="decimal" value="'+e(String(amt.toFixed(2)))+'">'+
+'<label for="qrb">Банк, из которого платили</label><select id="qrb">'+BANKS.map(function(b){return"<option>"+b+"</option>"}).join("")+'</select>'+
+'<label for="qrm">Комментарий (необязательно)</label><input id="qrm" maxlength="150" placeholder="Например: платил с карты жены">'+
+'<button class="btn" data-qsend="1" style="width:100%">Отправить на проверку</button><button class="btn o2" data-qback="1" style="width:100%">Назад к QR</button>'}
+
+function sendPaid(bt){var o=CUR;if(!o)return;var amt=Math.round(parseFloat(String(g("qra").value).replace(",","."))*100)/100;
+if(!(amt>0)){tst("Укажите сумму");return}bt.disabled=true;var c=o.cust||{};
+var pl={a:"c_qrpay",no:o.no,amt:amt,sum:+o.sum||0,nm:c.nm||"",ph:c.ph||"",bank:g("qrb").value,cm:g("qrm").value.trim()};
+var done=function(ok){o.qr={st:"wait",amt:amt,ts:Date.now()};if(!ok)o.qrq=pl;sv("uh_hist",hist);close();try{if(!$("vh").hidden)histView()}catch(x){}tst(ok?"Спасибо! Оплата отправлена на проверку оператору":"Нет связи. Отметка сохранена и отправится автоматически")};
+if(!CHAT_URL){done(true);return}
+chApi(pl).then(function(j){if(j&&j.ok)done(true);else{bt.disabled=false;tst("Не удалось отправить"+(j&&j.error==="slow"?": слишком часто, подождите пару минут":""))}}).catch(function(){done(false)})}
+
+document.addEventListener("click",function(ev){var t=ev.target.closest&&ev.target.closest("[data-qx],[data-qc],[data-qpaid],[data-qsend],[data-qback],[data-qsh],[data-qrh],[data-qra],[data-qdl]");
+if(!t){if(ev.target.id==="qrov")close();return}
+if(t.dataset.qx)close();else if(t.dataset.qc)copy(t.dataset.qc);else if(t.dataset.qpaid)paidForm();else if(t.dataset.qsend)sendPaid(t);
+else if(t.dataset.qback)qrOpen(CUR);
+else if(t.dataset.qdl)setTimeout(function(){tst("QR сохранён. Откройте банк → «Оплата по QR» → галерея")},400);
+else if(t.dataset.qsh){fetch(QR_IMG).then(function(r){return r.blob()}).then(function(b){var fl=new File([b],"QR-oplata.png",{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[fl]}))return navigator.share({files:[fl],title:"QR для оплаты"})}).catch(function(){})}
+else if(t.dataset.qrh!=null){ev.preventDefault();ev.stopPropagation();qrOpen(hist[+t.dataset.qrh])}
+else if(t.dataset.qra){ev.preventDefault();ev.stopPropagation();admAct(t)}},true);
+
+/* --- «Мои заказы» у клиента --- */
+qrHistHtml=function(o,n){if(!isQr(o)||o.st==="cancel"||o.ps==="paid")return"";var q=o.qr;
+if(q&&q.st==="wait")return'<div class="qrw">⏳ <b>Оплата на проверке</b> ('+e(money(q.amt))+'). Оператор сверит платёж в банке и отметит заказ оплаченным.</div>';
+if(q&&q.st==="ok")return'<div class="qrw" style="background:#dcf5e3;color:#1a7f37">✅ Платёж найден. Статус «Оплачен» появится в течение пары минут.</div>';
+return(q&&q.st==="rej"?'<div class="qrr">❗ <b>Оплата не найдена.</b>'+(q.why?" "+e(q.why)+".":"")+' Проверьте платёж в банке или напишите нам в WhatsApp.</div>':'')+
+'<button class="btn" data-qrh="'+n+'" style="margin-top:8px;width:100%">💳 Оплатить по QR · '+e(money(due(o)))+'</button>'};
+var qsT=0;qrSync=function(force){if(!CHAT_URL)return;if(!force&&Date.now()-qsT<20000)return;qsT=Date.now();
+hist.forEach(function(o){if(o.qrq){chApi(o.qrq).then(function(j){if(j&&j.ok){delete o.qrq;sv("uh_hist",hist)}}).catch(function(){})}});
+var nos=hist.filter(function(o){return o.cust&&isQr(o)&&o.ps!=="paid"&&o.st!=="cancel"}).map(function(o){return o.no});if(!nos.length)return;
+chApi({a:"c_qrst",nos:nos}).then(function(j){if(!j||!j.ok)return;var ch=false;hist.forEach(function(o){var s=j.st&&j.st[o.no];if(s&&JSON.stringify(s)!==JSON.stringify(o.qr)){o.qr=s;ch=true}});
+if(ch){sv("uh_hist",hist);try{if(!$("vh").hidden)histView()}catch(x){}}}).catch(function(){})};
+
+/* --- Панель сотрудников --- */
+function claim(r){return A.qr&&A.qr[r.no]}
+qrChip=function(r){var c=claim(r);if(r.ps==="paid"||r.st==="cancel")return"";if(c&&c.st==="wait")return'<span class="chip qrc">💳 Клиент оплатил по QR · '+e(money(c.amt))+' — проверить</span>';
+if(c&&c.st==="rej")return'<span class="chip ps-unpaid">QR: платёж не найден</span>';return isQr(r.o)?'<span class="chip">QR-оплата</span>':""};
+qrBox=function(r){var c=claim(r);if(!c||c.st!=="wait"||r.ps==="paid")return"";var n=e(r.no),t=new Date(c.ts||Date.now()),rest=r.sum-paidOf(r);
+return'<div class="qrbox"><b>💳 Клиент сообщил: оплатил по QR</b><div class="pr" style="margin:6px 0 0">Сумма: <b>'+e(money(c.amt))+'</b>'+(Math.abs((+c.amt||0)-rest)>.004?' <span style="color:#c92a2a">(к оплате '+e(money(rest))+')</span>':'')+
+'<br>Банк: '+e(c.bank||"—")+' · '+e(t.toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+(c.nm?'<br>Плательщик: '+e(c.nm)+(c.ph?" · "+e(c.ph):""):"")+(c.cm?'<br>Комментарий: '+e(c.cm):"")+'</div>'+
+'<div class="note" style="margin:6px 0 0">Откройте кабинет Алиф, найдите поступление на эту сумму за это время и нажмите кнопку ниже.</div>'+
+'<div class="row" style="flex-wrap:wrap;gap:8px"><a class="btn sm o" href="'+ALIF_CAB+'" target="_blank" rel="noopener">Открыть кабинет Алиф ↗</a>'+
+(can("pay")?'<button class="btn sm" data-qra="ok" data-n="'+n+'">✅ Платёж найден — провести оплату</button><button class="btn sm o" data-qra="rej" data-n="'+n+'">❌ Не найден</button>':'<span class="note">Провести оплату может сотрудник с правом «Принимать оплату»</span>')+'</div></div>'};
+function admAct(t){var r=rw(t.dataset.n),c=r&&claim(r);if(!r||!c)return;
+if(t.dataset.qra==="ok"){var rest=r.sum-paidOf(r),amt=Math.min(+c.amt||0,rest);if(!(amt>0)){tst("Заказ уже оплачен");return}
+if(!g("pam-"+r.no)){tst("Раскройте заказ и повторите");return}
+g("pam-"+r.no).value=String(amt.toFixed(2));var pm=g("pmt-"+r.no);if(pm)pm.value="QR-код (Алиф)";var pw=g("pwh-"+r.no);if(pw&&!pw.value)pw.value=(c.nm||"")+(c.bank?" ("+c.bank+")":"");var pc=g("pco-"+r.no);if(pc&&!pc.value)pc.value="Единый QR — сверено в кабинете Алиф";
+c.st="ok";payAdd(r);stApi("s_qrset",{no:r.no,st:"ok"}).catch(function(){})}
+else{var why=prompt("Почему платёж не найден? Клиент увидит этот текст.","Поступление на эту сумму не найдено");if(why===null)return;c.st="rej";c.why=why;admRender();
+stApi("s_qrset",{no:r.no,st:"rej",why:why}).then(function(j){tst(j&&j.ok?"Клиенту показано: оплата не найдена":"Не удалось сохранить")}).catch(function(){tst("Нет связи с сервером")})}}
+var qaT=0;qrAdmPull=function(){if(!CHAT_URL||!A.key||A.role==="partner"||A.role==="content")return;qaT=Date.now();
+stApi("s_qr",{}).then(function(j){if(!j||!j.ok)return;var m={};(j.L||[]).forEach(function(o){m[o.no]=o});var ch=JSON.stringify(m)!==JSON.stringify(A.qr||{});A.qr=m;if(ch)try{admRender()}catch(x){}}).catch(function(){})};
+setInterval(function(){try{var c=g("admC");if(c&&c.offsetParent&&Date.now()-qaT>45000)qrAdmPull()}catch(x){}},15000);
+qrAfter=function(ord){if(!isQr(ord))return;var o=hist.filter(function(x){return x.no===ord.no})[0]||ord;setTimeout(function(){qrOpen(o)},350)};
+var _qhv=histView;histView=function(){var r=_qhv.apply(this,arguments);try{qrSync()}catch(x){}return r};
+var _qal=admLoad;admLoad=function(){var r=_qal.apply(this,arguments);try{qrAdmPull()}catch(x){}return r};
 })();
 
 })();

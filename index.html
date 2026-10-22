@@ -3555,8 +3555,8 @@ var i2=h.indexOf("<h3>Расходы по статьям</h3>");return i2>-1?h.s
 
 /* ==== 🩺 состояние сайта (для руководителя) ==== */
 (function(){var HL=null,at=0;var _h=TM.html;TM.html=function(){var h=_h.apply(this,arguments);if(A.role!=="director"&&A.role!=="admin")return h;
-if(!HL||Date.now()-at>120000){at=Date.now();stApi("t_health",{}).then(function(j){if(j&&j.ok){HL=j;var c=document.getElementById("admC");if(c&&A.tab==="t")c.innerHTML=TM.html()}}).catch(function(){})}
-if(!HL)return h;var sec=function(ms){return(ms/1000).toFixed(1).replace(".",",")+" с"},ok=HL.spMed&&HL.spMed<4000;
+if(!HL||Date.now()-at>120000){at=Date.now();stApi("t_health",{}).then(function(j){if(j&&j.ok&&j.err){HL=j;var c=document.getElementById("admC");if(c&&A.tab==="t")c.innerHTML=TM.html()}}).catch(function(){})}
+if(!HL||!HL.err)return h;var sec=function(ms){return(ms/1000).toFixed(1).replace(".",",")+" с"},ok=HL.spMed&&HL.spMed<4000;
 return h+'<h3>🩺 Состояние сайта (7 дней)</h3><div class="pq"><b>Скорость загрузки:</b> '+(HL.spN?'обычно '+sec(HL.spMed)+', у самых медленных — '+sec(HL.spP90)+' <span class="chip" style="color:'+(ok?"#16a34a":"#b7791f")+'">'+(ok?"быстро ✓":"можно ускорить")+'</span><br><small>замеров: '+HL.spN+'</small>':'замеров пока нет')+'</div>'+
 (HL.err.length?HL.err.map(function(e){return'<div class="pq" style="border-left:5px solid #dc2626"><small>'+new Date(e.last).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+' · '+esc(e.pg)+' · раз: '+e.n+'</small><br>'+esc(e.m)+'</div>'}).join("")+'<p class="note">Покажите этот список Claude — ошибки будут исправлены.</p>':'<div class="pq">✅ Ошибок на сайте не было</div>')};})();
 

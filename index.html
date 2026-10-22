@@ -201,6 +201,36 @@ body.cho .chb{display:none}
 
 .pkh{display:block;width:100%;margin:6px 0 2px;padding:7px 10px;border-radius:10px;border:1.5px dashed #2b9a46;background:rgba(43,154,70,.08);color:#2b8a3e;font:inherit;font-size:13.5px;line-height:1.35;text-align:left;cursor:pointer}
 p.pkh{border-style:solid;cursor:default}button.pkh{animation:pkp 2.4s ease-in-out infinite}@keyframes pkp{0%,100%{box-shadow:0 0 0 0 rgba(43,154,70,0)}50%{box-shadow:0 0 0 4px rgba(43,154,70,.15)}}
+.ctw{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 12px;margin:0 0 4px;scrollbar-width:none;scroll-snap-type:x proximity}.ctw::-webkit-scrollbar{display:none}
+.cti{flex:0 0 78px;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:0;padding:0;color:var(--tx);font:inherit;cursor:pointer;scroll-snap-align:start}
+.ctic{width:62px;height:62px;border-radius:20px;background:var(--cb);color:var(--cf);display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.ctic svg{width:32px;height:32px}
+.cti:active .ctic{transform:scale(.93)}
+.cti.on,.cti:hover{background:none!important;box-shadow:none!important}.cti.on .ctic{background:var(--cf);color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+.ctil{font-size:12px;font-weight:700;line-height:1.15;text-align:center;max-width:78px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ctin{font-size:11px;color:var(--mut);margin-top:-3px}
+[data-theme="dark"] .ctic{filter:brightness(.85) saturate(1.2)}
+#shelf{margin:4px 0 8px}
+.shs{margin:0 0 22px}
+.shh{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:0 0 10px}
+.shh h3{margin:0;font-size:21px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.shh p{margin:2px 0 0;font-size:13px;color:var(--mut)}
+.shci{width:30px;height:30px;border-radius:10px;background:var(--cb);color:var(--cf);display:inline-flex;align-items:center;justify-content:center}.shci svg{width:19px;height:19px}
+.sha{flex:0 0 36px;height:36px;border-radius:50%;border:0;background:var(--tx);color:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer}.sha svg{width:20px;height:20px}
+.shr{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.shr::-webkit-scrollbar{display:none}
+.shc{position:relative;flex:0 0 140px;scroll-snap-align:start}
+.shi{position:relative;display:block;width:140px;height:140px;padding:0;border:0;border-radius:16px;overflow:hidden;background:#fff;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.shi img{width:100%;height:100%;object-fit:contain;padding:8px;box-sizing:border-box}
+.shno{font-size:12px;color:#999}
+.shd{position:absolute;left:7px;top:7px;background:#e8113a;color:#fff;font-style:normal;font-weight:800;font-size:12.5px;padding:3px 7px;border-radius:9px}
+.shn{position:absolute;left:7px;bottom:7px;background:#16a34a;color:#fff;font-style:normal;font-weight:800;font-size:11px;padding:3px 7px;border-radius:9px}
+.shadd{position:absolute;right:6px;top:104px;width:32px;height:32px;border-radius:50%;border:0;background:#e8430f;color:#fff;font-size:21px;font-weight:700;line-height:1;cursor:pointer;box-shadow:0 3px 10px rgba(232,67,15,.4);display:flex;align-items:center;justify-content:center}
+.shadd.in{background:#16a34a;font-size:14px;box-shadow:0 3px 10px rgba(22,163,74,.4)}
+.sht{display:block;width:100%;text-align:left;background:none;border:0;padding:7px 2px 0;color:var(--tx);font:inherit;cursor:pointer}
+.sht{white-space:nowrap}.shnm{white-space:normal}.shp{font-size:16px;font-weight:800}.sht s{font-size:12px;color:var(--mut);margin-left:3px}
+.shnm{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12.5px;line-height:1.3;margin-top:3px;color:var(--tx);opacity:.85}
+.sec2{font-size:22px;font-weight:800;margin:6px 0 8px}
+@media(min-width:900px){.shc{flex-basis:170px}.shi{width:170px;height:170px}.shadd{top:134px}}
 </style>
 <title>Умари Хайём — канцелярские товары</title>
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#faf8f4"><link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/png" sizes="32x32" href="icon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="icon-16.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Умари Хайём"><meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -739,7 +769,8 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 <div class="tb"><input id="q" type="search" placeholder="Поиск: например, руч гел 0,5" aria-label="Поиск по названию" autocomplete="off">
 <select id="so" aria-label="Сортировка"><option value="rec">Рекомендуем: новинки и скидки</option><option value="def">Как в прайсе</option><option value="pa">Сначала дешевле</option><option value="pd">Сначала дороже</option><option value="n">По названию</option></select>
 <input id="pmin" type="number" min="0" inputmode="decimal" placeholder="Цена от" aria-label="Цена от" style="flex:0 1 110px"><input id="pmax" type="number" min="0" inputmode="decimal" placeholder="до" aria-label="Цена до" style="flex:0 1 110px"></div>
-<div class="chips" id="chips"></div>
+<div class="ctw" id="chips"></div>
+<div id="shelf"></div><h2 class="sec2" id="gh" hidden>🛍️ Ещё больше товаров</h2>
 <p class="cnt" id="cnt"></p><p class="snote" id="sn" hidden></p>
 <div class="g" id="g"></div>
 <div class="none" id="n" hidden>Здесь пока пусто. Выберите другую категорию или сбросьте фильтры.</div>
@@ -3020,6 +3051,65 @@ if(t.dataset.cpx!=null){delete E.cph[t.dataset.cpx];clrEd();return}var c=t.datas
 
 /* пачкой выгоднее — переключить одним нажатием */
 document.addEventListener("click",function(e){var t=e.target.closest("[data-pku]");if(!t)return;e.preventDefault();e.stopPropagation();sel[t.dataset.pku]=t.dataset.u;render();if(mid!==null)modal(mid);toast("Выбрано: "+(t.dataset.u==="p"?"пачка":"коробка")+" — скидка "+udisc(D[t.dataset.pku],t.dataset.u)+"%")},true);
+
+/* ===== Витрина: категории с иконками и полки товаров ===== */
+var CICO={
+pen:'<path d="M15.5 4.5l4 4L9 19H5v-4z"/><path d="M13.5 6.5l4 4"/>',
+pencil:'<path d="M4 20l1.5-5L16 4.5l3.5 3.5L9 18.5z"/><path d="M14 6.5l3.5 3.5"/><path d="M4 20l5-1.5"/>',
+marker:'<rect x="9" y="3" width="6" height="11" rx="1.5"/><path d="M9.5 14l1 4h3l1-4"/><path d="M11 18l1 3 1-3"/>',
+folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+stapler:'<path d="M3 15h15a3 3 0 0 1 3 3H3z"/><path d="M5 15l1-6h9a3 3 0 0 1 3 3v3"/><path d="M8 9V7"/>',
+clip:'<path d="M8 12V6.5a3.5 3.5 0 0 1 7 0V16a5 5 0 0 1-10 0V9"/><path d="M11.5 8v8"/>',
+scissors:'<circle cx="6" cy="6.5" r="2.6"/><circle cx="6" cy="17.5" r="2.6"/><path d="M8.2 8L20 18"/><path d="M8.2 16L20 6"/>',
+sticky:'<path d="M5 4h14v10l-6 6H5z"/><path d="M13 20v-6h6"/>',
+calc:'<rect x="5" y="3" width="14" height="18" rx="2"/><rect x="8" y="6" width="8" height="3.5" rx=".8"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01"/>',
+badge:'<rect x="5" y="6" width="14" height="15" rx="2"/><path d="M10 3h4v4h-4z"/><circle cx="12" cy="12" r="2"/><path d="M8.5 17.5a3.5 3.5 0 0 1 7 0"/>',
+stamp:'<path d="M9 3h6v5l2 4H7l2-4z"/><rect x="4" y="12" width="16" height="4" rx="1"/><path d="M6 20h12"/>',
+glue:'<path d="M9 9h6v10a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"/><path d="M10 9V6h4v3"/><path d="M11 6V3h2v3"/>',
+knife:'<path d="M3 20L16 7l3-3 1 1-3 3L4 21z"/><path d="M13 10l2 2"/>',
+paper:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 15.5h7M9 9h3"/>',
+book:'<path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h11"/><path d="M9 8h6"/>',
+tape:'<circle cx="10" cy="12" r="6"/><circle cx="10" cy="12" r="2"/><path d="M16 12h5v4h-7"/>',
+ruler:'<rect x="2.5" y="8" width="19" height="8" rx="1.5"/><path d="M6.5 8v3M10 8v4M13.5 8v3M17 8v4"/>',
+eraser:'<path d="M14 4l6 6-9 9H6l-3-3z"/><path d="M9 9l6 6"/><path d="M11 19h9"/>',
+bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
+box:'<path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5L12 12l9-4.5M12 12v9"/>',
+all:'<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+arr:'<path d="M9 5l7 7-7 7"/>',
+heart:'<path d="M12 20s-7-4.4-8.6-8.6C2.2 8.3 4 5 7.2 5c2 0 3.4 1.1 4.8 3 1.4-1.9 2.8-3 4.8-3C20 5 21.8 8.3 20.6 11.4 19 15.6 12 20 12 20z"/>'};
+var CRULE=[[/руч/,"pen"],[/карандаш/,"pencil"],[/маркер|фломастер|текстовыдел/,"marker"],[/папк|файл|скоросш|регистр/,"folder"],[/степлер|скоб|дырокол/,"stapler"],[/скреп|зажим|кноп/,"clip"],[/ножниц/,"scissors"],[/стикер|закладк|блок для запис|бумаг[аи] для замет/,"sticky"],[/калькул/,"calc"],[/бейдж/,"badge"],[/штамп|печат/,"stamp"],[/кле/,"glue"],[/нож/,"knife"],[/тетрад|блокнот|ежедн|книг|журнал/,"book"],[/бумаг|конверт|бланк/,"paper"],[/скотч|лент/,"tape"],[/линейк|чертеж/,"ruler"],[/ластик|корректор|замазк/,"eraser"],[/пакет|сумк/,"bag"]];
+var CPAL=[["#fff1e8","#e8430f"],["#eaf2ff","#2563eb"],["#f3ecff","#7c3aed"],["#e8f8ee","#16a34a"],["#fff6dc","#ca8a04"],["#ffeaf1","#db2777"],["#e6f7f8","#0891b2"],["#f1f1f4","#52525b"]];
+function cIco(c){var n=String(c||"").toLowerCase(),k="box";for(var j=0;j<CRULE.length;j++)if(CRULE[j][0].test(n)){k=CRULE[j][1];break}return k}
+function svgI(k){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+CICO[k]+'</svg>'}
+function cTile(c,n,on,i,act){var pal=CPAL[i%CPAL.length],k=c==="Все"?"all":act==="favf"?"heart":cIco(c);return '<button class="cti'+(on?' on':'')+'" data-a="'+act+'"'+(act==="cat"?' data-c="'+esc(c)+'"':'')+' style="--cb:'+pal[0]+';--cf:'+pal[1]+'"><span class="ctic">'+svgI(k)+'</span><span class="ctil">'+esc(c)+'</span><span class="ctin">'+n+'</span></button>'}
+var _chips0=chips;chips=function(){_chips0();var cnt={},ord=[],nv=0;D.forEach(function(p){if(!vis(p))return;nv++;if(!cnt[p.c]){cnt[p.c]=0;ord.push(p.c)}cnt[p.c]++});
+var h=cTile("Все",nv,cat==="Все"&&!favOnly,0,"cat");ord.forEach(function(c,i){h+=cTile(c,cnt[c],cat===c&&!favOnly,i+1,"cat")});h+=cTile("Избранное",Object.keys(favs).length,favOnly,5,"favf");
+var el=$("chips"),sl=el.scrollLeft;el.className="ctw";el.innerHTML=h;el.scrollLeft=sl};
+function dPct(i){var p=D[i],u=cu(i),base=upr(p,u,0),o=oldP(p,Math.round(base/(1-udisc(p,u)/100)*100)/100)||base;return o>base+0.004?Math.max(1,Math.round((1-base/o)*100)):0}
+function shCard(i){var p=D[i],u=cu(i),pc=dPct(i),base=upr(p,u,0),o=oldP(p,Math.round(base/(1-udisc(p,u)/100)*100)/100),k=i+"|"+u,inC=cart[k]||0;
+return '<div class="shc"><button class="shi" data-a="view" data-i="'+i+'" aria-label="'+esc(p.n)+'">'+(p.i?'<img loading="lazy" decoding="async" src="'+esc(TH(cCard(i)||p.i))+'" alt="">':'<span class="shno">Фото скоро</span>')+(pc?'<i class="shd">−'+pc+'%</i>':'')+(isNewP(p)?'<i class="shn">Новинка</i>':'')+'</button>'+
+'<button class="shadd'+(inC?' in':'')+'" '+(hasC(p)?'data-cp="open" data-i="'+i+'"':'data-a="add" data-k="'+k+'"')+' aria-label="В корзину">'+(inC?inC:'+')+'</button>'+
+'<button class="sht" data-a="view" data-i="'+i+'"><b class="shp">'+f(base)+'</b>'+(o>base+0.004?' <s>'+f(o).replace(/\s*сом\.?$/,"")+'</s>':'')+'<span class="shnm">'+esc(p.n)+'</span></button></div>'}
+function shRail(id,ttl,sub,list,act){if(!list.length)return"";return '<section class="shs" id="'+id+'"><div class="shh"><div><h3>'+ttl+'</h3>'+(sub?'<p>'+sub+'</p>':'')+'</div>'+(act?'<button class="sha" '+act+' aria-label="Смотреть все">'+svgI("arr")+'</button>':'')+'</div><div class="shr">'+list.map(shCard).join("")+'</div></section>'}
+var SHK="";
+function shelf(){var el=$("shelf");if(!el)return;var home=cat==="Все"&&!q&&!favOnly&&!pmin&&!pmax;$("gh").hidden=!home;el.hidden=!home;
+if(!home){SHK="";return}
+var all=[];D.forEach(function(p,i){if(vis(p))all.push(i)});var wph=function(L){return L.filter(function(i){return!!D[i].i}).concat(L.filter(function(i){return!D[i].i}))};
+var key=all.length+"|"+Object.keys(cart).map(function(k){return k+":"+cart[k]}).join(",")+"|"+GRP;if(key===SHK)return;SHK=key;
+var keep={};el.querySelectorAll(".shr").forEach(function(r){var s=r.closest(".shs");if(s)keep[s.id]=r.scrollLeft});
+var rec=recOrder(all.slice());
+var deals=all.filter(function(i){return dPct(i)>0&&D[i].i}).sort(function(a,b){return dPct(b)-dPct(a)}).slice(0,14);
+var nw=rec.filter(function(i){return isNewP(D[i])}).slice(0,14);
+var bulk=rec.filter(function(i){return hasDisc(D[i])&&!isNewP(D[i])&&D[i].i}).slice(0,14);
+var h=shRail("sh-deal","🔥 Выгодные предложения","Самые большие скидки сегодня",deals,'data-sgo="g"');
+h+=shRail("sh-new","✨ Новинки","Только что появились на сайте",nw,'data-sgo="g"');
+h+=shRail("sh-bulk","📦 Выгодно оптом","Берите больше — платите меньше",bulk,'data-sgo="g"');
+var by={},ord=[];rec.forEach(function(i){var c=D[i].c;if(!by[c]){by[c]=[];ord.push(c)}by[c].push(i)});
+ord.sort(function(a,b){return by[b].length-by[a].length}).forEach(function(c,j){h+=shRail("sh-c"+j,'<span class="shci" style="--cf:'+CPAL[(j+1)%CPAL.length][1]+';--cb:'+CPAL[(j+1)%CPAL.length][0]+'">'+svgI(cIco(c))+'</span>'+esc(c),by[c].length+" "+plural(by[c].length,"товар","товара","товаров"),wph(by[c]).slice(0,12),'data-a="cat" data-c="'+esc(c)+'" data-sgo="c"')});
+el.innerHTML=h;Object.keys(keep).forEach(function(id){var s=document.getElementById(id);if(s)s.querySelector(".shr").scrollLeft=keep[id]})}
+var _render1=render;render=function(){_render1();try{shelf()}catch(x){}};
+document.addEventListener("click",function(e){var t=e.target.closest("[data-sgo]");if(!t)return;var g=t.dataset.sgo;setTimeout(function(){var el=$(g==="g"?"gh":"catalog");if(el)el.scrollIntoView({behavior:"smooth",block:"start"})},30)});
+try{render()}catch(x){}
 
 })();
 </script>

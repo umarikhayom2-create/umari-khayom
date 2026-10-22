@@ -1,5 +1,11 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="uh-ver" content="23.10.2026 00:30">
+<script>/* версия сайта и оповещение о новой версии */(function(){var me=(document.querySelector('meta[name="uh-ver"]')||{}).content||"";
+function bar(v){if(document.getElementById("uhnv"))return;var d=document.createElement("div");d.id="uhnv";d.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:99999;background:#16a34a;color:#fff;border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;font:600 15px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";d.innerHTML='<span>🔄 Вышла новая версия сайта</span><button style="border:0;border-radius:12px;padding:10px 14px;background:#fff;color:#15803d;font:700 15px system-ui">Обновить</button>';d.querySelector("button").onclick=function(){try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){if(r)r.update()})}catch(x){}location.reload()};document.body.appendChild(d)}
+function check(){if(!me||document.hidden)return;fetch(location.pathname+"?nv="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="uh-ver" content="([^"]+)"/);if(m&&m[1]!==me)bar(m[1])}).catch(function(){})}
+setTimeout(check,8000);setInterval(check,90000);document.addEventListener("visibilitychange",function(){if(!document.hidden)check()});
+window.addEventListener("DOMContentLoaded",function(){var f=document.querySelector("footer")||document.body,s=document.createElement("div");s.style.cssText="font-size:12px;opacity:.55;text-align:center;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px))";s.textContent="Версия сайта: "+me;f.appendChild(s)})})();</script>
 <title>Курьер · Умари Хайём</title><meta name="robots" content="noindex"><meta name="theme-color" content="#0ea5e9">
 <link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>

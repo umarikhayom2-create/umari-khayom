@@ -76,9 +76,11 @@
     if (Q.req !== true) { d.innerHTML = ""; go.disabled = false; return }
     go.disabled = true;
     d.innerHTML = '<div style="' + box + 'background:#fef3c7;color:#78350f">📱 Нужен QR с экрана в магазине. Проще всего — навести на него обычную камеру телефона.</div>' +
-      '<label class="shot" style="margin-top:8px"><input type="file" accept="image/*" capture="environment" id="sqph" hidden><span id="sqst">📷 Сфотографировать QR</span></label>' +
+      '<button class="btn g" id="sqcam" type="button" style="width:100%;margin-top:8px">📷 Сканировать QR</button>' +
+      '<label class="shot" id="sqphl" hidden style="margin-top:8px"><input type="file" accept="image/*" capture="environment" id="sqph" hidden><span id="sqst">📷 Сфотографировать QR</span></label>' +
       '<div style="display:flex;gap:8px;margin-top:8px;align-items:center"><input id="sqin" placeholder="или код с экрана" maxlength="8" autocomplete="off" autocapitalize="characters" style="margin:0;flex:1;text-transform:uppercase;letter-spacing:.12em"><button class="btn o" id="sqok" type="button" style="flex:0 0 auto;margin:0">OK</button></div>' +
       '<div class="er" id="sqer" style="color:#dc2626;font-size:14px;min-height:18px;margin-top:4px"></div>';
+    el("sqcam").onclick = function () { scan() };
     el("sqok").onclick = function () { var v = el("sqin").value.trim(); if (v.replace(/\W/g, "").length < 6) { el("sqer").textContent = "В коде 6 символов"; return } Q.raw = v; trade() };
     el("sqph").onchange = function () {
       var f = this.files && this.files[0]; if (!f) return; el("sqst").textContent = "⏳ Ищем QR на фото…";
@@ -87,6 +89,55 @@
   }
   new MutationObserver(function () { if ((el("sgo") || el("kgo2")) && !el("sqbox")) draw() }).observe(document.body, { childList: true, subtree: true });
 
+
+  /* живой сканер: задняя камера, распознаёт QR без снимка */
+  function scan() {
+    var md = navigator.mediaDevices;
+    if (!md || !md.getUserMedia) return noCam("Этот браузер не даёт доступ к камере");
+    var ov = document.createElement("div");
+    ov.style.cssText = "position:fixed;inset:0;z-index:100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))";
+    ov.innerHTML = '<div style="position:relative;width:min(88vw,62vh);aspect-ratio:1;max-width:100%;border-radius:20px;overflow:hidden;background:#111">' +
+      '<video id="sqv" playsinline muted autoplay style="width:100%;height:100%;object-fit:cover"></video>' +
+      '<div style="position:absolute;inset:12%;border:3px solid #fff;border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.35)"></div></div>' +
+      '<div id="sqvt" style="color:#fff;font:600 16px system-ui;text-align:center">Наведите камеру на QR на экране магазина</div>' +
+      '<button type="button" id="sqvx" style="border:0;border-radius:14px;padding:13px 22px;font:700 15px system-ui;background:#fff;color:#111">Закрыть</button>';
+    document.body.appendChild(ov);
+    var v = el("sqv"), stream = null, done = 0, c = document.createElement("canvas"), x = c.getContext("2d", { willReadFrequently: true }), det = null, busy = 0;
+    try { if ("BarcodeDetector" in window) det = new BarcodeDetector({ formats: ["qr_code"] }) } catch (e) { det = null }
+    function stop() { done = 1; try { stream && stream.getTracks().forEach(function (t) { t.stop() }) } catch (e) {} ov.remove() }
+    el("sqvx").onclick = stop;
+    function hit(val) { if (done || !val) return; if (!/sq=|^[\w.\-]{6,}$/.test(val)) { el("sqvt").textContent = "Это не QR смены. Наведите на экран магазина"; return } if (navigator.vibrate) navigator.vibrate(60); stop(); Q.raw = val; trade() }
+    function frame() {
+      if (done) return;
+      if (!busy && v.readyState >= 2 && v.videoWidth) {
+        busy = 1;
+        if (det) det.detect(v).then(function (r) { busy = 0; if (r && r[0]) hit(r[0].rawValue) }).catch(function () { busy = 0; det = null });
+        else if (window.jsQR) {
+          var s = Math.min(v.videoWidth, v.videoHeight), k = Math.min(1, 720 / s);
+          c.width = c.height = Math.round(s * k);
+          x.drawImage(v, (v.videoWidth - s) / 2, (v.videoHeight - s) / 2, s, s, 0, 0, c.width, c.height);
+          var r = window.jsQR(x.getImageData(0, 0, c.width, c.height).data, c.width, c.height, { inversionAttempts: "dontInvert" });
+          busy = 0; if (r) hit(r.data);
+        } else busy = 0;
+      }
+      setTimeout(function () { requestAnimationFrame(frame) }, 120);
+    }
+    (det ? Promise.resolve() : loadJs()).catch(function () {}).then(function () {
+      return md.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    }).then(function (st) {
+      stream = st; if (done) return stop();
+      v.srcObject = st; var p = v.play(); if (p && p.catch) p.catch(function () {});
+      frame();
+    }).catch(function (e) {
+      stop();
+      noCam(e && e.name === "NotAllowedError" ? "Нет доступа к камере. Разрешите камеру для этого сайта в настройках браузера" : "Камера не включилась");
+    });
+  }
+  function noCam(t) {
+    say(t);
+    if (el("sqer")) el("sqer").textContent = t + ". Можно сфотографировать QR или ввести код с экрана.";
+    if (el("sqphl")) el("sqphl").hidden = false;
+  }
   /* распознавание QR на фото */
   function decode(file) {
     return new Promise(function (res, rej) {

@@ -3,7 +3,7 @@
 <script>/* сотрудник уже входил — сразу открываем его приложение (?site=1 — остаться на сайте, ?staff=0 — забыть) */(function(){try{var q=location.search,h=location.hash,ss=sessionStorage,ls=localStorage;
 if(/[?&]site=1/.test(q)){ss.setItem("uh_site","1");return}if(/[?&]staff=0/.test(q)){ls.removeItem("uh_staff");ss.setItem("uh_site","1");return}
 if(h||ss.getItem("uh_site")==="1")return;if(q&&!/^\?((utm_\w+|source|pwa)=[^&]*&?)+$/.test(q))return;
-var t=ls.getItem("tm_tok"),k=ls.getItem("ku_tok"),f=ls.getItem("uh_staff");if(k&&!t)location.replace("courier.html");else if(t||f)location.replace("team.html")}catch(e){}})();</script>
+var t=ls.getItem("tm_tok"),k=ls.getItem("ku_tok"),f=ls.getItem("uh_staff");if(k&&!t)location.replace("courier.html");else if(t||f)location.replace("team.html");else{var ad=JSON.parse(ls.getItem("uh_adm")||"null");if(ad&&ad.role&&ad.role!=="sales")location.replace(location.pathname+"#admin")}}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <script>/* режим диагностики: ?debug=1 — показывает все ошибки прямо на экране */(function(){var on=/[?&]debug=1/.test(location.search);try{if(on)localStorage.setItem("uh_dbg","1");if(/[?&]debug=0/.test(location.search))localStorage.removeItem("uh_dbg");on=on||localStorage.getItem("uh_dbg")==="1"}catch(x){}if(!on)return;
 var L=[];function box(){var b=document.getElementById("uhdbg");if(!b){b=document.createElement("div");b.id="uhdbg";b.style.cssText="position:fixed;left:6px;right:6px;top:6px;z-index:999999;max-height:45vh;overflow:auto;background:#111;color:#fff;font:12px/1.35 monospace;border-radius:10px;padding:8px;opacity:.93;white-space:pre-wrap;word-break:break-word";(document.body||document.documentElement).appendChild(b)}b.textContent="🛠 ДИАГНОСТИКА (выключить: ?debug=0)\n"+(L.length?L.join("\n\n"):"Ошибок пока нет ✓")}
@@ -11,7 +11,7 @@ window.__dbg=function(where,e){L.push("❌ "+where+": "+String(e&&e.message||e)+
 addEventListener("error",function(e){__dbg("Ошибка",e.error||e.message)});addEventListener("unhandledrejection",function(e){__dbg("Промис",e.reason)});
 var _f=window.fetch;window.fetch=function(u,o){var t=Date.now();return _f.apply(this,arguments).then(function(r){if(!r.ok)__dbg("Сервер "+r.status,String(u).slice(0,90));return r},function(er){__dbg("Нет связи с сервером",String(u).slice(0,90)+" — "+(er&&er.message));throw er})};
 addEventListener("DOMContentLoaded",function(){setTimeout(box,1500)})})();</script>
-<meta name="uh-ver" content="23.10.2026 19:45">
+<meta name="uh-ver" content="23.10.2026 19:55">
 <script>/* версия сайта и оповещение о новой версии */(function(){var me=(document.querySelector('meta[name="uh-ver"]')||{}).content||"";
 function bar(v){if(document.getElementById("uhnv"))return;var d=document.createElement("div");d.id="uhnv";d.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:99999;background:#16a34a;color:#fff;border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;font:600 15px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";d.innerHTML='<span>🔄 Вышла новая версия сайта</span><button style="border:0;border-radius:12px;padding:10px 14px;background:#fff;color:#15803d;font:700 15px system-ui">Обновить</button>';d.querySelector("button").onclick=function(){try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){if(r)r.update()})}catch(x){}location.reload()};document.body.appendChild(d)}
 function check(){if(!me||document.hidden)return;fetch(location.pathname+"?nv="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="uh-ver" content="([^"]+)"/);if(m&&m[1]!==me)bar(m[1])}).catch(function(){})}
@@ -822,16 +822,17 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 </div>
 </main>
 <footer class="w"><style>.fl2 a{color:inherit}.fl2{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0}footer p{margin:0 0 6px}footer .fc{color:var(--tx,inherit);font-weight:700}footer .fn{font-size:12px;opacity:.85}</style><div class="appdl" id="appdl" hidden><img src="icon-192.png" alt="" width="52" height="52"><div><b>Приложение «Умари Хайём»</b><small id="appdls">Скачайте на телефон — заказывать быстрее</small></div><button class="btn sm" data-pw="i" id="appdlb">Скачать</button></div>
-<p class="fc">© <span class="js-year">2026</span> Умари Хайём. Все права защищены.</p>
-<p>ООО «Молҳои Умари Хайём» · Таджикистан, г. Душанбе, р. Шохмансур, ул. А. Дониш, 5/3</p>
-<p>Тел.: <a href="https://wa.me/992986868662" style="color:inherit">+992 98 686 86 62</a> (WhatsApp)</p>
-<nav class="fl2"><a href="privacy.html">Политика конфиденциальности</a><a href="terms.html">Условия использования</a><a href="delivery.html">Доставка и оплата</a><a href="returns.html">Возврат и обмен</a><a href="#admin" data-a="adm" style="opacity:.6">Для поставщика</a><a href="team.html" style="opacity:.6">Рабочий персонал</a></nav>
-<p class="fn">Все материалы сайта (фотографии, тексты, логотип, дизайн) являются собственностью магазина «Умари Хайём». Копирование без письменного разрешения запрещено. Цены указаны в сомони и не являются публичной офертой до подтверждения заказа менеджером.</p>
 <section class="whr" id="where" aria-labelledby="whrh"><h3 id="whrh">📍 Как нас найти</h3><p class="whrs">Нажмите на магазин — откроется карта или навигатор на вашем телефоне с маршрутом до нас.</p><div class="whrl">
 <button type="button" class="whc" data-a="map" data-m="0"><i>🏬</i><span><b>Омар Хайям</b><small>Душанбе, улица Ахмада Дониша</small></span><em>Маршрут →</em></button>
 <button type="button" class="whc" data-a="map" data-m="1"><i>🏪</i><span><b>Умари Хайём</b><small>Душанбе, улица Мирзо Мастонгулова, 16/1</small></span><em>Маршрут →</em></button>
 <button type="button" class="whc" data-a="map" data-m="2"><i>🏢</i><span><b>Умари Хайём</b><small>Душанбе, улица Ахмади Дониш, 5/1, цокольный этаж</small></span><em>Маршрут →</em></button>
 </div><button type="button" class="btn o whm" data-a="mapall">🗺️ Показать все магазины на карте</button><div id="whmap" hidden></div></section>
+<p class="fc">© <span class="js-year">2026</span> Умари Хайём. Все права защищены.</p>
+<p>ООО «Молҳои Умари Хайём» · Таджикистан, г. Душанбе, р. Шохмансур, ул. А. Дониш, 5/3</p>
+<p>Тел.: <a href="https://wa.me/992986868662" style="color:inherit">+992 98 686 86 62</a> (WhatsApp)</p>
+<nav class="fl2"><a href="privacy.html">Политика конфиденциальности</a><a href="terms.html">Условия использования</a><a href="delivery.html">Доставка и оплата</a><a href="returns.html">Возврат и обмен</a><a href="#admin" data-a="adm" style="opacity:.6">Для поставщика</a><a href="team.html" style="opacity:.6">Рабочий персонал</a></nav>
+<p class="fn">Все материалы сайта (фотографии, тексты, логотип, дизайн) являются собственностью магазина «Умари Хайём». Копирование без письменного разрешения запрещено. Цены указаны в сомони и не являются публичной офертой до подтверждения заказа менеджером.</p>
+
 <script>document.querySelectorAll('.js-year').forEach(function(e){e.textContent=new Date().getFullYear()})</script></footer>
 
 <div class="bar" id="bar" hidden><span><b id="bt"></b></span><button class="btn sm" data-a="opencart">Открыть корзину</button></div>
@@ -1674,7 +1675,7 @@ Object.keys(cart).forEach(function(k){var o=pk(k);NO.rows.push({i:o.i,u:o.u,q:ca
 (function(){var r=$("rib");r.addEventListener("click",function(e){var t=e.target.closest("[data-ad]");if(!t)return;var a=t.dataset.ad;
 if(a==="repg"){REPG=+t.dataset.g;sv("uh_repg",REPG);GRP=REPG;repRib();render();if(dopen&&!$("vc").hidden)cartView();if(mid!=null&&!$("md").hidden)modal(mid);toast("Цены для клиента: "+(REPG>0?"+":"")+REPG+"%")}
 else if(a==="repo"){A.keepOpen=1;A.tab="o";admOpen();A.keepOpen=0;admRender()}
-else if(a==="repx"){stfEv("out");A.ok=false;A.key="";A.role="";A.who="";A.rows=[];try{sessionStorage.removeItem("uh_adm")}catch(x){}repMode(false);toast("Вы вышли из режима представителя")}})})();
+else if(a==="repx"){stfEv("out");A.ok=false;A.key="";A.role="";A.who="";A.rows=[];try{localStorage.removeItem("uh_adm")}catch(x){}repMode(false);toast("Вы вышли из режима представителя")}})})();
 var _modal=modal;modal=function(i){_modal(i);if(REP){var m=$("mdc");if(m&&!m.querySelector(".repg"))m.insertAdjacentHTML("beforeend",'<div class="repg"><b>Цены по категориям (за 1 '+esc(ulabel(D[i],cu(i)))+')</b>'+[100,50,30,10,0,-5].map(function(g){return'<div'+(g===REPG?' class="on"':'')+'><span>'+(g>0?"+":"")+g+'%</span><b>'+f(upr(D[i],cu(i),1,g))+'</b></div>'}).join("")+'<p class="note" style="margin:6px 0 0">Выбрать категорию для клиента можно в верхней строке (−5% только просмотр).</p></div>')}};
 
 
@@ -2069,11 +2070,11 @@ for(k=0;k<9;k++){x.strokeStyle="#000";x.lineWidth=1;x.strokeRect(cxx(k),y,CN[k],
 pages.forEach(function(p,i){var g=p.getContext("2d");g.textBaseline="top";g.font="400 18px sans-serif";g.fillStyle="#666";g.textAlign="center";g.fillText("Стр. "+(i+1)+" из "+pages.length,W/2,H-45)});return pages}
 function admRefreshList(){var l=$("admL");if(l)l.innerHTML=admCards()}
 function admOpen(){$("adm").hidden=false;document.body.style.overflow="hidden";$("alh").textContent=API_URL?"Выберите роль, укажите имя и пароль. Все ваши действия записываются в историю заказа.":"Демо-режим: сервер не подключён, показаны заказы с этого устройства. Пароль для всех ролей: demo";
-var kk=null;try{kk=JSON.parse(sessionStorage.getItem("uh_adm")||"null")}catch(x){}if(kk&&kk.role&&!A.ok){A.key=kk.key;A.role=kk.role;A.who=kk.who;admLogin()}else admRender()}
+var kk=null;try{kk=JSON.parse(localStorage.getItem("uh_adm")||"null")}catch(x){}if(kk&&kk.role&&!A.ok){A.key=kk.key;A.role=kk.role;A.who=kk.who;admLogin()}else admRender()}
 function admClose(){$("adm").hidden=true;document.body.style.overflow=""}
 function loginErr(t){var e=$("alerr");if(e){e.textContent=t||"";e.hidden=!t}if(t)toast(t)}
 function admLogin(){A.ok=false;loginErr("");A.key=String(A.key||"").trim();if(!API_URL){if(A.key!=="demo"){A.role="";A.key="";admRender();loginErr("Неверный пароль. Проверьте регистр букв и лишние пробелы.");return}}
-return admLoad().then(function(){A.ok=true;try{sessionStorage.setItem("uh_adm",JSON.stringify({role:A.role,who:A.who,key:A.key}))}catch(x){}shStart();stfStart();if(A.role==="sales"){repMode(true);if(!$("adm").hidden&&!A.keepOpen){admClose();toast("Режим торгового представителя включён")}}admRender()}).catch(function(er){var c=er&&er.code,rl=A.role;A.key="";A.role="";try{sessionStorage.removeItem("uh_adm")}catch(x){}admRender();loginErr(c==="key"?"Неверный пароль. Проверьте регистр букв (заглавная первая буква), пробелы и выбранную роль.":c==="action"?"⚠ Основной сервер сайта сейчас работает с кодом чата: его заменили по ошибке. В Apps Script откройте проект с идентификатором развёртывания AKfycbxGssdY… → «Управление развертываниями» → ✏️ → выберите предыдущую версию → «Развернуть».":"Не удалось войти: нет связи с сервером"+(c?" (код: "+c+")":"")+". Проверьте интернет и обновите страницу.")})}
+return admLoad().then(function(){A.ok=true;try{localStorage.setItem("uh_adm",JSON.stringify({role:A.role,who:A.who,key:A.key}))}catch(x){}shStart();stfStart();if(A.role==="sales"){repMode(true);if(!$("adm").hidden&&!A.keepOpen){admClose();toast("Режим торгового представителя включён")}}admRender()}).catch(function(er){var c=er&&er.code,rl=A.role;A.key="";A.role="";try{localStorage.removeItem("uh_adm")}catch(x){}admRender();loginErr(c==="key"?"Неверный пароль. Проверьте регистр букв (заглавная первая буква), пробелы и выбранную роль.":c==="action"?"⚠ Основной сервер сайта сейчас работает с кодом чата: его заменили по ошибке. В Apps Script откройте проект с идентификатором развёртывания AKfycbxGssdY… → «Управление развертываниями» → ✏️ → выберите предыдущую версию → «Развернуть».":"Не удалось войти: нет связи с сервером"+(c?" (код: "+c+")":"")+". Проверьте интернет и обновите страницу.")})}
 function saveAny(name,data,type){if(window.claude&&window.claude.use){return window.claude.use("downloads").then(function(dl){if(!dl){toast("Скачивание недоступно");return}return dl.save({filename:name,data:data}).then(function(){toast("Файл сохранён")})}).catch(function(e){toast(e&&e.code==="declined"?"Не сохранено":"Не удалось сохранить")})}
 try{var b=new Blob([data],{type:type}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},4000);toast("Файл сохранён")}catch(x){toast("Не удалось сохранить")}return Promise.resolve()}
 function csvOf(rows){var H=["Заказ","Дата","Клиент","Телефон","Организация","Получение","Адрес","Способ оплаты","Статус","Оплата","Сумма","Оплачено","Остаток","Оплата: способ","Оплата: кто принял","Оплата: комментарий"],L=[H.map(q).join(";")];function q(v){return'"'+String(v==null?"":v).replace(/"/g,'""')+'"'}function n2(v){return String(Math.round(v*100)/100).replace(".",",")}
@@ -2124,7 +2125,7 @@ else if(a==="cbcadd"){E.bcs.push("");edBc();var ins=document.querySelectorAll("#
 else if(a==="cbcx"){E.bcs.splice(+t.dataset.i,1);edBc()}
 else if(a==="cpdf")catPdf(t.dataset.c)
 else if(a==="cxlsx")catXlsx()
-else if(a==="out"){shEv("out");stfEv("out");A.brk=false;try{sessionStorage.removeItem("uh_brk")}catch(x){}A.ok=false;A.key="";A.role="";A.who="";A.rows=[];try{sessionStorage.removeItem("uh_adm")}catch(x){}admRender()}
+else if(a==="out"){shEv("out");stfEv("out");A.brk=false;try{sessionStorage.removeItem("uh_brk")}catch(x){}A.ok=false;A.key="";A.role="";A.who="";A.rows=[];try{localStorage.removeItem("uh_adm")}catch(x){}admRender()}
 else if(a==="ref")admLoad().then(function(){admRender();toast("Обновлено")}).catch(function(){toast("Не удалось обновить")});
 else if(a==="tab"){A.tab=t.dataset.t;admRender()}
 else if(a==="per"){var p=t.dataset.p,d=new Date(),td=dkey(d.getTime());if(p==="all"){A.from="";A.to=""}else if(p==="today"){A.from=td;A.to=td}else if(p==="week"){A.from=dkey(d.getTime()-6*864e5);A.to=td}else{A.from=d.getFullYear()+"-"+pad(d.getMonth()+1)+"-01";A.to=td}admRender()}
@@ -2168,7 +2169,7 @@ if(location.hash==="#admin")admOpen();
 
 if(API_URL)setTimeout(function(){var ct0=ld("uh_catt",0);if(Date.now()-ct0<300000&&CATO&&CATO.length)return;fetch(API_URL+"?a=catalog").then(function(r){return r.json()}).then(function(j){sv("uh_catt",Date.now());if(j&&typeof j.otp==="boolean"){OTP_ON=j.otp;sv("uh_otpon",OTP_ON)}if(j&&j.dg!=null){DG=j.dg;sv("uh_dg",DG);if(!ld("uh_prof",{}).ph){GRP=DG;render()}}if(j&&j.items){CATO=j.items;sv("uh_catc",CATO);applyCat(CATO);clean();render();buildBanner()}}).catch(function(){})},900);
 setTimeout(loadMy,400);buildBanner();
-try{var kk0=JSON.parse(sessionStorage.getItem("uh_adm")||"null");if(kk0&&kk0.role==="sales"){A.key=kk0.key;A.role="sales";A.who=kk0.who;admLogin()}}catch(x){}
+try{var kk0=JSON.parse(localStorage.getItem("uh_adm")||"null");if(kk0&&kk0.role==="sales"){A.key=kk0.key;A.role="sales";A.who=kk0.who;admLogin()}}catch(x){}
 render();setTimeout(syncSt,1500);setInterval(function(){if(!document.hidden)syncSt()},30000);
 
 /* ===== Контроль: контент-менеджеры и торговые представители ===== */

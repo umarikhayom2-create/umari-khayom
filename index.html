@@ -11,7 +11,7 @@ window.__dbg=function(where,e){L.push("❌ "+where+": "+String(e&&e.message||e)+
 addEventListener("error",function(e){__dbg("Ошибка",e.error||e.message)});addEventListener("unhandledrejection",function(e){__dbg("Промис",e.reason)});
 var _f=window.fetch;window.fetch=function(u,o){var t=Date.now();return _f.apply(this,arguments).then(function(r){if(!r.ok)__dbg("Сервер "+r.status,String(u).slice(0,90));return r},function(er){__dbg("Нет связи с сервером",String(u).slice(0,90)+" — "+(er&&er.message));throw er})};
 addEventListener("DOMContentLoaded",function(){setTimeout(box,1500)})})();</script>
-<meta name="uh-ver" content="23.10.2026 20:15">
+<meta name="uh-ver" content="23.10.2026 20:30">
 <script>/* версия сайта и оповещение о новой версии */(function(){var me=(document.querySelector('meta[name="uh-ver"]')||{}).content||"";
 function bar(v){if(document.getElementById("uhnv"))return;var d=document.createElement("div");d.id="uhnv";d.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:99999;background:#16a34a;color:#fff;border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;font:600 15px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";d.innerHTML='<span>🔄 Вышла новая версия сайта</span><button style="border:0;border-radius:12px;padding:10px 14px;background:#fff;color:#15803d;font:700 15px system-ui">Обновить</button>';d.querySelector("button").onclick=function(){try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){if(r)r.update()})}catch(x){}location.reload()};document.body.appendChild(d)}
 function check(){if(!me||document.hidden)return;fetch(location.pathname+"?nv="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="uh-ver" content="([^"]+)"/);if(m&&m[1]!==me)bar(m[1])}).catch(function(){})}
@@ -1447,10 +1447,10 @@ function catLogLoad(){if(!API_URL){A.clog=ld("uh_catlog",[]);return Promise.reso
 function catAddLog(t,id){if(API_URL)return;var L=ld("uh_catlog",[]);L.push({ts:Date.now(),r:A.role,w:A.who,t:t,pid:id});sv("uh_catlog",L);A.clog=L}
 function admCat(){var q=(A.cq||"").trim().toLowerCase(),h='<div class="row" style="margin-bottom:10px"><button class="btn" data-ad="cnew">+ Новый товар</button><button class="btn o" data-ad="cxlsx">Excel: все категории</button></div>';
 h+='<h3 style="margin-top:6px">PDF по категориям</h3><div class="row">'+catGroups().map(function(g){return'<button class="chipb" data-ad="cpdf" data-c="'+esc(g.c)+'">'+esc(g.c)+' <b>'+g.items.length+'</b> · PDF</button>'}).join("")+'</div>';
-h+='<h3>Товары</h3><div class="row" style="margin-bottom:10px"><input class="pin" id="cq" placeholder="Поиск по названию" value="'+esc(A.cq||"")+'" style="flex:1;min-width:180px"><select class="pin" id="cc"><option value="">Все категории</option>'+catGroups().map(function(g){return'<option'+(A.cc===g.c?" selected":"")+'>'+esc(g.c)+'</option>'}).join("")+'</select></div><div id="clist">'+catList()+'</div>';
+h+='<h3>Товары</h3><div class="row" style="margin-bottom:10px"><input class="pin" id="cq" placeholder="Поиск по названию" value="'+esc(A.cq||"")+'" style="flex:1;min-width:180px"><select class="pin" id="cc"><option value="">Все категории</option>'+catGroups().map(function(g){return'<option'+(A.cc===g.c?" selected":"")+'>'+esc(g.c)+'</option>'}).join("")+'</select></div>'+(function(){var nb=D.filter(function(p){return !(p.bc&&p.bc.length)}).length;return'<div class="row" style="margin:-2px 0 10px"><button class="chipb'+(A.cnb?' on':'')+'" data-ad="cnobc" style="'+(A.cnb?'background:var(--ac);color:var(--ac2);border-color:var(--ac)':'')+'">'+(A.cnb?'✓ ':'')+'Без штрихкода <b>'+nb+'</b></button>'+(nb?'':'<span class="note" style="margin:0;align-self:center">✅ У всех товаров есть штрихкод</span>')+'</div>'})()+'<div id="clist">'+catList()+'</div>';
 h+='<h3>История изменений каталога</h3><div id="clog">'+catLogHtml()+'</div>';return h}
-function catList(){var q=(A.cq||"").trim(),n=0,h="",pool=[];D.forEach(function(p,i){if(!A.cc||p.c===A.cc)pool.push(i)});var ord=pool;if(q){var RS=SE.search(q,pool);ord=RS.ids;if(RS.kind!=="exact")h+='<p class="snote">Точного совпадения нет. Показаны похожие товары.</p>'}ord.forEach(function(i){var p=D[i];n++;if(n>(A.cmax||40))return;
-h+='<div class="kr" data-ad="cedit" data-i="'+i+'"><div class="kth">'+(p.i?'<img alt="" loading="lazy" src="'+esc(TH(p.i))+'">':'')+'</div><div class="kri"><b>'+esc(p.n)+'</b><span>'+esc(p.c)+' · '+f(p.p)+' / '+esc(ub(p))+(p.k>1?' · пачка '+p.k:'')+(p.b>1?' · коробка '+p.b:'')+'</span>'+(p.disc&&p.disc.length?'<span class="dsc">'+esc(discTxt(p))+'</span>':'')+(p.hide?'<span class="chip st-cancel">скрыт</span>':'')+'</div><span class="note" style="margin:0">Изменить</span></div>'});
+function catList(){var q=(A.cq||"").trim(),n=0,h="",pool=[];D.forEach(function(p,i){if((!A.cc||p.c===A.cc)&&!(A.cnb&&p.bc&&p.bc.length))pool.push(i)});var ord=pool;if(q){var RS=SE.search(q,pool);ord=RS.ids;if(RS.kind!=="exact")h+='<p class="snote">Точного совпадения нет. Показаны похожие товары.</p>'}ord.forEach(function(i){var p=D[i];n++;if(n>(A.cmax||40))return;
+h+='<div class="kr" data-ad="cedit" data-i="'+i+'"><div class="kth">'+(p.i?'<img alt="" loading="lazy" src="'+esc(TH(p.i))+'">':'')+'</div><div class="kri"><b>'+esc(p.n)+'</b><span>'+esc(p.c)+' · '+f(p.p)+' / '+esc(ub(p))+(p.k>1?' · пачка '+p.k:'')+(p.b>1?' · коробка '+p.b:'')+'</span>'+(p.disc&&p.disc.length?'<span class="dsc">'+esc(discTxt(p))+'</span>':'')+(p.hide?'<span class="chip st-cancel">скрыт</span>':'')+'<span style="font-size:12px;opacity:.8">'+(p.art?'Арт. '+esc(p.art):'Артикул присвоится при сохранении')+' · '+(p.bc&&p.bc.length?'ШК '+esc(p.bc[0])+(p.bc.length>1?' +'+(p.bc.length-1):''):'<b style="color:var(--er)">нет штрихкода</b>')+'</span></div><span class="note" style="margin:0">Изменить</span></div>'});
 if(n>(A.cmax||40))h+='<button class="btn sm o" data-ad="cmore">Показать ещё ('+(n-(A.cmax||40))+')</button>';return h||'<div class="emp">Каталог пуст</div>'}
 function catLogHtml(){var L=(A.clog||[]).slice().sort(function(a,b){return b.ts-a.ts}).slice(0,60);return L.length?L.map(function(l){return logLine(l,false,null)}).join(""):'<div class="pr">Изменений пока нет</div>'}
 function edDisc(){var h=E.disc.map(function(d,i){return'<div class="kdrow"><span>от</span><input class="pin" type="number" min="1" data-dq="'+i+'" value="'+(d.q||"")+'" inputmode="numeric"><select class="pin" data-du="'+i+'"><option value="u"'+(d.u==="u"?" selected":"")+'>шт</option><option value="p"'+(d.u==="p"?" selected":"")+'>пач.</option><option value="b"'+(d.u==="b"?" selected":"")+'>кор.</option></select><span>−</span><input class="pin" type="number" min="1" max="90" step="0.5" data-dp="'+i+'" value="'+(d.pct||"")+'" inputmode="decimal"><span>%</span><button type="button" class="px2" data-ad="cddel" data-i="'+i+'" aria-label="Убрать">×</button></div>'}).join("");$("cdl").innerHTML=h||'<div class="pr">Скидок нет</div>'}
@@ -1468,7 +1468,7 @@ $("ced").innerHTML='<div class="kew"><h3 style="margin:0 0 12px">'+(E.isNew?"Н�
 '<div class="fl"><label>Фото'+(E.isNew?" *":"")+'</label><div class="row" style="align-items:center"><div class="kth big" id="cep">'+(p.i?'<img alt="" src="'+esc(p.i)+'">':'')+'</div><label class="btn sm o attach">Загрузить фото<input type="file" accept="image/*" hidden data-cf="1"></label><button type="button" class="btn sm o" data-ad="cimgrm">Убрать</button></div></div>'+
 '<div class="fl"><label>Дополнительные фото (листаются на карточке каждые 3 секунды)</label><div class="xims" id="cxp"></div><label class="btn sm o attach">+ Добавить фото<input type="file" accept="image/*" multiple hidden data-cfx="1"></label></div>'+
 '<div class="fl"><label>Артикул</label><input class="pin" id="ce-art" maxlength="30" autocapitalize="characters" value="'+esc(p.art||"")+'" placeholder="Пусто — присвоится сам при сохранении"><p class="note" style="margin:6px 0 0">Например UH-00012. Если оставить пустым, сайт сам выдаст следующий свободный номер.</p></div>'+
-'<div class="fl"><label>Штрихкоды товара *</label><div id="cbc"></div><button type="button" class="btn sm o" data-ad="cbcadd" style="margin-top:6px">+ Добавить штрихкод</button><p class="note" style="margin:6px 0 0">Можно несколько: у штуки, пачки и коробки бывают разные. Все попадут в оптовую накладную.</p></div>'+
+'<div class="fl"><label>Штрихкоды товара *</label><div id="cbc"></div><div class="row" style="margin-top:6px;gap:6px"><button type="button" class="btn sm" data-ad="cbcscan">📷 Сканировать штрихкод</button><button type="button" class="btn sm o" data-ad="cbcadd">+ Ввести вручную</button></div><p class="note" style="margin:6px 0 0">Можно несколько: у штуки, пачки и коробки бывают разные. Все попадут в оптовую накладную.</p></div>'+
 '<div class="fl"><label>Скидки за количество</label><div id="cdl"></div><button type="button" class="btn sm o" data-ad="cdadd" style="margin-top:6px">+ Добавить скидку</button><p class="note" style="margin:6px 0 0">Например: от 10 пачек −5%, от 20 пачек −7%. Применяется лучшая скидка.</p></div>'+
 '<div class="fl"><label>Скидка витрины, % (зачёркнутая старая цена)</label><input class="pin" id="ce-sd" type="number" min="0" max="90" step="1" inputmode="numeric" value="'+(p.sd||0)+'"><p class="note" style="margin:6px 0 0" id="ce-sdp"></p></div>'+
 '<label class="rem"><input type="checkbox" id="ce-h"'+(p.hide?" checked":"")+'> Скрыть товар на сайте</label>'+
@@ -2125,7 +2125,7 @@ else if(a==="cimgrm"){E.img="";$("cep").innerHTML=""}
 else if(a==="cdadd"){E.disc.push({q:"",u:"p",pct:""});edDisc()}
 else if(a==="cddel"){E.disc.splice(+t.dataset.i,1);edDisc()}
 else if(a==="cbcadd"){E.bcs.push("");edBc();var ins=document.querySelectorAll("#cbc input");if(ins.length)ins[ins.length-1].focus()}
-else if(a==="cbcx"){E.bcs.splice(+t.dataset.i,1);edBc()}
+else if(a==="cbcx"){E.bcs.splice(+t.dataset.i,1);edBc()} else if(a==="cbcscan"){bcScan(function(v){v=String(v||"").replace(/\s+/g,"");if(!v)return;if(E.bcs.indexOf(v)>-1){toast("Этот штрихкод уже добавлен");return}var k=E.bcs.indexOf("");if(k>-1)E.bcs[k]=v;else E.bcs.push(v);edBc();toast("Штрихкод добавлен: "+v)})} else if(a==="cnobc"){A.cnb=!A.cnb;A.cmax=40;admRender()}
 else if(a==="cpdf")catPdf(t.dataset.c)
 else if(a==="cxlsx")catXlsx()
 else if(a==="out"){shEv("out");stfEv("out");A.brk=false;try{sessionStorage.removeItem("uh_brk")}catch(x){}A.ok=false;A.key="";A.role="";A.who="";A.rows=[];try{localStorage.removeItem("uh_adm")}catch(x){}admRender()}
@@ -3633,6 +3633,35 @@ var home=cat==="Все"&&!q&&!favOnly&&!pmin&&!pmax;if(home&&el&&!el.children.le
 setTimeout(function(){try{shelf()}catch(x){}},2500);
 try{render()}catch(e){try{window.__dbg&&__dbg("Каталог",e)}catch(x){}rep("Каталог: "+(e&&e.message))}
 })();
+/* ==== Сканер штрихкодов камерой (карточка товара) ==== */
+function bcScan(onCode){
+ var md=navigator.mediaDevices;if(!md||!md.getUserMedia){toast("Этот браузер не даёт доступ к камере — введите штрихкод вручную");return}
+ var ov=document.createElement("div");
+ ov.style.cssText="position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))";
+ ov.innerHTML='<div style="position:relative;width:min(92vw,560px);aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:#111"><video id="bcv" playsinline muted autoplay style="width:100%;height:100%;object-fit:cover"></video><div style="position:absolute;left:8%;right:8%;top:32%;bottom:32%;border:3px solid #fff;border-radius:12px;box-shadow:0 0 0 999px rgba(0,0,0,.35)"></div><div style="position:absolute;left:10%;right:10%;top:50%;height:2px;background:#ff4d4d;opacity:.85"></div></div><div id="bcvt" style="color:#fff;font:600 16px system-ui;text-align:center;max-width:420px">Включаем камеру… Если телефон спросит доступ — нажмите «Разрешить»</div><button type="button" id="bcvx" style="border:0;border-radius:14px;padding:13px 22px;font:700 15px system-ui;background:#fff;color:#111">Закрыть</button>';
+ document.body.appendChild(ov);
+ var v=document.getElementById("bcv"),tx=document.getElementById("bcvt"),stream=null,done=0,zx=null,seen=0,last="",cnt=0;
+ function stop(){done=1;try{zx&&zx.reset()}catch(e){}try{stream&&stream.getTracks().forEach(function(t){t.stop()})}catch(e){}ov.remove()}
+ document.getElementById("bcvx").onclick=stop;
+ function hit(val){if(done||!val)return;val=String(val).trim();
+  /* засчитываем код, когда он прочитан два раза подряд одинаково — меньше ошибок */
+  if(val!==last){last=val;cnt=1;return}if(++cnt<2)return;
+  if(navigator.vibrate)navigator.vibrate(80);stop();onCode(val)}
+ function fail(e){stop();var n=e&&e.name;toast(n==="NotAllowedError"?"Нет доступа к камере. Нажмите на замок у адреса сайта → Камера → Разрешить":"Камера не включилась — введите штрихкод вручную")}
+ function watchdog(){setTimeout(function(){if(!done&&!seen){stop();toast("Камера не запустилась — введите штрихкод вручную")}},9000)}
+ var BD=window.BarcodeDetector;
+ (BD&&BD.getSupportedFormats?BD.getSupportedFormats():Promise.resolve([])).catch(function(){return[]}).then(function(fm){
+  fm=(fm||[]).filter(function(f){return/ean|upc|code_|itf|codabar|qr/.test(f)});
+  if(fm.length){var det=new BD({formats:fm}),busy=0;
+   return md.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false}).catch(function(e){if(e&&(e.name==="OverconstrainedError"||e.name==="NotReadableError"))return md.getUserMedia({video:true,audio:false});throw e}).then(function(st){
+    stream=st;if(done)return stop();v.srcObject=st;v.onloadedmetadata=function(){var p=v.play();if(p&&p.catch)p.catch(function(){})};
+    v.onplaying=function(){seen=1;tx.textContent="Наведите красную линию на штрихкод товара"};watchdog();
+    (function loop(){if(done)return;if(!busy&&v.readyState>=2){busy=1;det.detect(v).then(function(r){busy=0;if(r&&r[0])hit(r[0].rawValue)}).catch(function(){busy=0})}setTimeout(loop,100)})()})}
+  /* запасной вариант: библиотека ZXing */
+  return new Promise(function(res,rej){if(window.ZXing)return res();var sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js";sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)}).then(function(){
+   if(done)return;zx=new ZXing.BrowserMultiFormatReader();v.onplaying=function(){seen=1;tx.textContent="Наведите красную линию на штрихкод товара"};watchdog();
+   return zx.decodeFromConstraints({video:{facingMode:{ideal:"environment"}}},v,function(r){if(r)hit(r.getText())})})
+ }).catch(fail)}
 /* ==== Смена по QR: экраны филиалов и кто отмечается по QR (вкладка «Команда») ==== */
 (function(){
 if(typeof TM==="undefined"||typeof stApi!=="function")return;

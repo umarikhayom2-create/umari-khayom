@@ -32,6 +32,11 @@
     });
   };
 
+  /* [hidden] должен скрывать всегда (иначе видна пустая картинка «Фото») */
+  try { var st0 = document.createElement("style"); st0.textContent = "[hidden]{display:none!important}"; document.head.appendChild(st0) } catch (e) {}
+  /* узнаём, нужен ли этому сотруднику QR (первый запрос страницы прошёл до подключения этого файла) */
+  (function ask() { var tok = ls(TK); if (!tok) return setTimeout(ask, 1500); A0(KU ? { a: "k_shst", tok: tok } : { a: "m_me", tok: tok }).then(function (j) { if (j && j.ok && j.sq != null) { Q.req = !!j.sq; draw() } }).catch(function () {}) })();
+
   /* код → пропуск на 10 минут */
   function trade() {
     if (!Q.raw || Q.busy) return;
@@ -75,17 +80,12 @@
     if (live()) { d.innerHTML = '<div style="' + box + 'background:#dcfce7;color:#14532d">✅ QR принят' + (Q.bn ? ' · ' + h(Q.bn) : '') + '</div>'; go.disabled = false; return }
     if (Q.req !== true) { d.innerHTML = ""; go.disabled = false; return }
     go.disabled = true;
-    d.innerHTML = '<div style="' + box + 'background:#fef3c7;color:#78350f">📱 Нужен QR с экрана в магазине. Проще всего — навести на него обычную камеру телефона.</div>' +
+    d.innerHTML = '<div style="' + box + 'background:#fef3c7;color:#78350f">📱 Нужен QR с экрана в магазине. Нажмите «Сканировать QR» и наведите камеру на экран.</div>' +
       '<button class="btn g" id="sqcam" type="button" style="width:100%;margin-top:8px">📷 Сканировать QR</button>' +
-      '<label class="shot" id="sqphl" hidden style="margin-top:8px"><input type="file" accept="image/*" capture="environment" id="sqph" hidden><span id="sqst">📷 Сфотографировать QR</span></label>' +
       '<div style="display:flex;gap:8px;margin-top:8px;align-items:center"><input id="sqin" placeholder="или код с экрана" maxlength="8" autocomplete="off" autocapitalize="characters" style="margin:0;flex:1;text-transform:uppercase;letter-spacing:.12em"><button class="btn o" id="sqok" type="button" style="flex:0 0 auto;margin:0">OK</button></div>' +
       '<div class="er" id="sqer" style="color:#dc2626;font-size:14px;min-height:18px;margin-top:4px"></div>';
     el("sqcam").onclick = function () { scan() };
     el("sqok").onclick = function () { var v = el("sqin").value.trim(); if (v.replace(/\W/g, "").length < 6) { el("sqer").textContent = "В коде 6 символов"; return } Q.raw = v; trade() };
-    el("sqph").onchange = function () {
-      var f = this.files && this.files[0]; if (!f) return; el("sqst").textContent = "⏳ Ищем QR на фото…";
-      decode(f).then(function (v) { Q.raw = v; trade() }).catch(function () { if (el("sqst")) el("sqst").textContent = "📷 QR не найден — ещё раз"; if (el("sqer")) el("sqer").textContent = "Снимите QR ближе и ровнее или введите код с экрана" });
-    };
   }
   new MutationObserver(function () { if ((el("sgo") || el("kgo2")) && !el("sqbox")) draw() }).observe(document.body, { childList: true, subtree: true });
 
@@ -111,7 +111,7 @@
       if (done) return;
       if (!busy && v.readyState >= 2 && v.videoWidth) {
         busy = 1;
-        if (det) det.detect(v).then(function (r) { busy = 0; if (r && r[0]) hit(r[0].rawValue) }).catch(function () { busy = 0; det = null });
+        if (det) det.detect(v).then(function (r) { busy = 0; if (r && r[0]) hit(r[0].rawValue) }).catch(function () { busy = 0; det = null; loadJs().catch(function () {}) });
         else if (window.jsQR) {
           var s = Math.min(v.videoWidth, v.videoHeight), k = Math.min(1, 720 / s);
           c.width = c.height = Math.round(s * k);
@@ -122,21 +122,30 @@
       }
       setTimeout(function () { requestAnimationFrame(frame) }, 120);
     }
+    var t0 = Date.now(), seen = 0;
+    el("sqvt").textContent = "Включаем камеру… Если телефон спросит доступ — нажмите «Разрешить»";
     (det ? Promise.resolve() : loadJs()).catch(function () {}).then(function () {
-      return md.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+      return md.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false }).catch(function (e) {
+        if (e && (e.name === "OverconstrainedError" || e.name === "NotReadableError")) return md.getUserMedia({ video: true, audio: false });
+        throw e;
+      });
     }).then(function (st) {
       stream = st; if (done) return stop();
-      v.srcObject = st; var p = v.play(); if (p && p.catch) p.catch(function () {});
+      v.muted = true; v.setAttribute("playsinline", ""); v.setAttribute("muted", "");
+      v.srcObject = st;
+      v.onloadedmetadata = function () { var p = v.play(); if (p && p.catch) p.catch(function () {}) };
+      v.onplaying = function () { seen = 1; el("sqvt").textContent = "Наведите камеру на QR на экране магазина" };
       frame();
+      setTimeout(function () { if (!done && !seen) { stop(); noCam("Камера не запустилась") } }, 8000);
     }).catch(function (e) {
       stop();
-      noCam(e && e.name === "NotAllowedError" ? "Нет доступа к камере. Разрешите камеру для этого сайта в настройках браузера" : "Камера не включилась");
+      var n = e && e.name;
+      noCam(n === "NotAllowedError" ? "Нет доступа к камере. Нажмите на замок у адреса сайта → Разрешения → Камера → Разрешить" : n === "NotFoundError" ? "Камера не найдена" : "Камера не включилась (" + (n || "ошибка") + ")");
     });
   }
   function noCam(t) {
     say(t);
-    if (el("sqer")) el("sqer").textContent = t + ". Можно сфотографировать QR или ввести код с экрана.";
-    if (el("sqphl")) el("sqphl").hidden = false;
+    if (el("sqer")) el("sqer").textContent = t + ". Введите код, который написан под QR на экране.";
   }
   /* распознавание QR на фото */
   function decode(file) {

@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Смена · Умари Хайём</title><meta name="robots" content="noindex"><link rel="icon" href="icon-192.png">
+<script>
+/* Сюда ведёт QR с экрана в филиале. Открываем приложение сотрудника или курьера и передаём код. */
+(function(){var m=location.hash.match(/sq=([\w.\-]+)/)||location.hash.match(/^#([\w.\-]+)$/),code=m?m[1]:"",tm="",ku="";
+try{tm=localStorage.getItem("tm_tok")||"";ku=localStorage.getItem("ku_tok")||""}catch(e){}
+location.replace((!tm&&ku?"courier.html":"team.html")+(code?"#sq="+code:""))})();
+</script></head>
+<body style="font:16px system-ui;padding:24px;text-align:center"><a href="team.html">Открыть приложение сотрудника</a></body></html>

@@ -6,7 +6,7 @@ window.__dbg=function(where,e){L.push("❌ "+where+": "+String(e&&e.message||e)+
 addEventListener("error",function(e){__dbg("Ошибка",e.error||e.message)});addEventListener("unhandledrejection",function(e){__dbg("Промис",e.reason)});
 var _f=window.fetch;window.fetch=function(u,o){var t=Date.now();return _f.apply(this,arguments).then(function(r){if(!r.ok)__dbg("Сервер "+r.status,String(u).slice(0,90));return r},function(er){__dbg("Нет связи с сервером",String(u).slice(0,90)+" — "+(er&&er.message));throw er})};
 addEventListener("DOMContentLoaded",function(){setTimeout(box,1500)})})();</script>
-<meta name="uh-ver" content="23.10.2026 01:16">
+<meta name="uh-ver" content="23.10.2026 19:00">
 <script>/* версия сайта и оповещение о новой версии */(function(){var me=(document.querySelector('meta[name="uh-ver"]')||{}).content||"";
 function bar(v){if(document.getElementById("uhnv"))return;var d=document.createElement("div");d.id="uhnv";d.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:99999;background:#16a34a;color:#fff;border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;font:600 15px system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)";d.innerHTML='<span>🔄 Вышла новая версия сайта</span><button style="border:0;border-radius:12px;padding:10px 14px;background:#fff;color:#15803d;font:700 15px system-ui">Обновить</button>';d.querySelector("button").onclick=function(){try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){if(r)r.update()})}catch(x){}location.reload()};document.body.appendChild(d)}
 function check(){if(!me||document.hidden)return;fetch(location.pathname+"?nv="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/name="uh-ver" content="([^"]+)"/);if(m&&m[1]!==me)bar(m[1])}).catch(function(){})}
@@ -3620,6 +3620,51 @@ var _sh=shelf;shelf=function(){var el=$("shelf");if(el&&!el.children.length)SHK=
 var home=cat==="Все"&&!q&&!favOnly&&!pmin&&!pmax;if(home&&el&&!el.children.length&&!GALL&&D.length)showAll("Витрина пустая — показан общий список")};
 setTimeout(function(){try{shelf()}catch(x){}},2500);
 try{render()}catch(e){try{window.__dbg&&__dbg("Каталог",e)}catch(x){}rep("Каталог: "+(e&&e.message))}
+})();
+/* ==== Смена по QR: экраны филиалов и кто отмечается по QR (вкладка «Команда») ==== */
+(function(){
+if(typeof TM==="undefined"||typeof stApi!=="function")return;
+var SQC=null,SQL=0;
+function sqRd(){var c=document.getElementById("admC");if(c&&A.tab==="t")c.innerHTML=TM.html()}
+function sqLoad(){if(SQL)return;SQL=1;stApi("t_sqget",{}).then(function(j){SQL=0;SQC=j&&j.ok?j:{err:(j&&j.error)||"нет связи"};sqRd()}).catch(function(){SQL=0;SQC={err:"нет связи"};sqRd()})}
+function sqReq(pk){var r=SQC.rule[pk];if(r===0||r===1)return r;return SQC.def[pk.split("|")[0]]?1:0}
+function sqBase(){return location.href.split("#")[0].split("?")[0].replace(/[^\/]*$/,"")}
+function sqSeg(pk){var on=sqReq(pk);return'<span style="display:inline-flex;border:1.5px solid var(--bd);border-radius:10px;overflow:hidden;flex:0 0 auto">'+
+'<button type="button" data-sqpk="'+esc(pk)+'" data-sqv="1" style="border:0;padding:7px 10px;font:600 13px system-ui;cursor:pointer;background:'+(on?'var(--ac)':'transparent')+';color:'+(on?'var(--ac2)':'var(--mut)')+'">QR обязателен</button>'+
+'<button type="button" data-sqpk="'+esc(pk)+'" data-sqv="0" style="border:0;padding:7px 10px;font:600 13px system-ui;cursor:pointer;background:'+(!on?'var(--ac)':'transparent')+';color:'+(!on?'var(--ac2)':'var(--mut)')+'">Без QR</button></span>'}
+function sqRow(nm,sub,right){return'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--bd)"><span style="min-width:0"><b>'+esc(nm)+'</b>'+(sub?'<br><small style="color:var(--mut)">'+esc(sub)+'</small>':'')+'</span>'+right+'</div>'}
+function sqHtml(){
+ if(A.role!=="director"&&A.role!=="admin")return"";
+ var J=TM.all;if(!J||J.err)return"";
+ var h='<div style="margin-top:22px;padding-top:6px;border-top:2px solid var(--bd)"><h3 style="margin:10px 0 4px">📱 Смена по QR</h3>';
+ if(!SQC){setTimeout(sqLoad,0);return h+'<div class="emp">Загружаем настройки…</div></div>'}
+ if(SQC.err)return h+'<div class="qrw">'+(SQC.err==="action"?"Чтобы включить смены по QR, добавьте на сервер чата файл QRSmena (инструкция в чате с Claude).":"Не удалось загрузить: "+esc(SQC.err))+' <button class="btn sm o" data-sqre="1">Ещё раз</button></div></div>';
+ h+='<p class="note" style="margin-top:0">В филиале стоит экран с QR, код меняется каждые 30 секунд. Сотрудник наводит камеру телефона на QR и отмечает начало или конец смены. Фото кода, присланное в мессенджер, через минуту уже не работает.</p>';
+ h+='<h4 style="margin:14px 0 2px">Экраны в филиалах</h4>';
+ var br=J.br||[];
+ if(!br.length)h+='<p class="note">Сначала создайте филиал выше — для каждого филиала будет своя ссылка экрана.</p>';
+ br.forEach(function(b){var k=SQC.kio[b.id];
+  if(!k){h+=sqRow(b.nm,"Экран не подключён",'<button class="btn sm" data-sqkio="'+esc(b.id)+'">Включить экран</button>');return}
+  var u=sqBase()+"kiosk.html#b="+encodeURIComponent(b.id)+"&k="+k;
+  h+='<div style="padding:9px 0;border-top:1px solid var(--bd)"><b>'+esc(b.nm)+'</b> <small style="color:var(--ok)">● экран подключён</small>'+
+  '<input readonly id="squ-'+esc(b.id)+'" value="'+esc(u)+'" style="width:100%;margin:6px 0;font:13px ui-monospace,monospace" onclick="this.select()">'+
+  '<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-sqcp="'+esc(b.id)+'">Копировать ссылку</button><button class="btn sm o" data-sqkio="'+esc(b.id)+'" data-sqnew="1">Сменить ссылку</button><button class="btn sm o" data-sqkio="'+esc(b.id)+'" data-sqoff="1">Отключить</button></div>'+
+  '<p class="note">Откройте эту ссылку на планшете или телефоне, который стоит в филиале. Ссылку никому не пересылайте: если она попала не туда, нажмите «Сменить ссылку».</p></div>'});
+ var RN=J.roles||{},ms=(J.merch||[]).filter(function(m){return m.on!==false}),cs=(J.cour||[]).filter(function(c){return c.on!==false});
+ h+='<h4 style="margin:16px 0 2px">Сотрудники филиалов</h4>';
+ h+=ms.length?ms.map(function(m){return sqRow(m.nm||m.login,(RN[m.role]||"Сотрудник")+" · "+m.login,sqSeg("merch|"+m.login))}).join(""):'<p class="note">Сотрудников пока нет.</p>';
+ h+='<h4 style="margin:16px 0 2px">Курьеры</h4>';
+ h+=cs.length?cs.map(function(c){return sqRow(c.nm||c.login,"Курьер · "+c.login,sqSeg("cour|"+c.login))}).join(""):'<p class="note">Курьеров пока нет.</p>';
+ h+='<p class="note">«Без QR» — для тех, кто работает на складе, в пути или на выезде: они отмечают смену кнопкой в приложении, как раньше. Офис (операторы, бухгалтер, руководство) отмечается в панели без QR.</p></div>';
+ return h}
+var _sqh=TM.html;TM.html=function(){var s=_sqh.apply(this,arguments);try{return s+sqHtml()}catch(e){return s}};
+document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("[data-sqpk],[data-sqkio],[data-sqcp],[data-sqre]");if(!t)return;e.preventDefault();e.stopPropagation();var d=t.dataset;
+ if(d.sqre){SQC=null;sqRd();return}
+ if(d.sqcp){var inp=document.getElementById("squ-"+d.sqcp);if(!inp)return;var v=inp.value;try{navigator.clipboard.writeText(v).then(function(){toast("Ссылка экрана скопирована")}).catch(function(){inp.select();toast("Выделено — нажмите «Копировать»")})}catch(x){inp.select()}return}
+ if(d.sqpk){if(sqReq(d.sqpk)===+d.sqv)return;t.disabled=true;stApi("t_sqset",{pk:d.sqpk,v:+d.sqv}).then(function(j){if(j&&j.ok){SQC=j;toast(+d.sqv?"Теперь отмечается по QR":"Теперь отмечается без QR");sqRd()}else{t.disabled=false;toast("Не сохранилось: "+((j&&j.error)||"нет связи"))}}).catch(function(){t.disabled=false;toast("Нет связи")});return}
+ if(d.sqkio){if((d.sqnew||d.sqoff)&&t.dataset.sure!=="1"){t.dataset.sure="1";t.textContent=d.sqoff?"Точно отключить?":"Точно сменить?";setTimeout(function(){if(t.isConnected){t.dataset.sure="";t.textContent=d.sqoff?"Отключить":"Сменить ссылку"}},4000);return}
+  t.disabled=true;stApi("t_sqkio",d.sqoff?{b:d.sqkio,off:1}:{b:d.sqkio}).then(function(j){if(j&&j.ok){SQC=j;toast(d.sqoff?"Экран отключён":d.sqnew?"Новая ссылка готова. Старая больше не работает":"Экран включён — откройте ссылку на устройстве в филиале");sqRd()}else{t.disabled=false;toast("Не сохранилось: "+((j&&j.error)||"нет связи"))}}).catch(function(){t.disabled=false;toast("Нет связи")})}
+},true);
 })();
 })();
 </script>

@@ -99,7 +99,9 @@ route = function (p) {
     if (!who) return SQ_ROUTE0(p);
     var pk = kind + "|" + who.login, b = "";
     if (p.sqp) { var v = C().get("sqp:" + p.sqp); if (v) { var x = v.split("~"); if (x[0] === pk) b = x[1]; } }
-    if (sqReq(pk, sqCfg()) && !b) return { ok: false, error: "qr" };
+    var need = sqReq(pk, sqCfg());
+    if (need && !b) return { ok: false, error: "qr" };
+    if (!need && !b && String(p.photo || "").length < 2000) return { ok: false, error: "qrph" }; // без QR — тогда обязательно фото
     var r = SQ_ROUTE0(p);
     if (r && r.ok && r.sh && !r.already) {
       if (b) C().remove("sqp:" + p.sqp);

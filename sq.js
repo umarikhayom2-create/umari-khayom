@@ -26,6 +26,7 @@
       if (j && j.ok && (a === "m_me" || a === "k_shst") && j.sq != null) { Q.req = !!j.sq; draw() }
       if (j && shift) {
         if (j.ok) { Q.pass = ""; ss("sq_pass", null) }
+        else if (j.error === "qrph") { j.error = "сделайте фото или отсканируйте QR — одно из двух обязательно"; setTimeout(draw, 50) }
         else if (j.error === "qr") { Q.req = true; j.error = "нужен QR с экрана в магазине — наведите на него камеру телефона"; setTimeout(draw, 50) }
       }
       return j;
@@ -70,6 +71,7 @@
     }, 500);
   }
 
+  function photo() { var i = el("sim") || el("kim2"); return !!(i && !i.hidden && i.getAttribute("src")) }
   /* блок QR внутри окна «Начало / конец смены» */
   function draw() {
     var go = el("sgo") || el("kgo2"); if (!go) return;
@@ -78,7 +80,17 @@
     var box = "border-radius:12px;padding:10px 12px;font:600 14.5px system-ui;";
     if (Q.busy) { d.innerHTML = '<div style="' + box + 'background:#e0f2fe;color:#075985">⏳ Проверяем QR…</div>'; go.disabled = true; return }
     if (live()) { d.innerHTML = '<div style="' + box + 'background:#dcfce7;color:#14532d">✅ QR принят' + (Q.bn ? ' · ' + h(Q.bn) : '') + '</div>'; go.disabled = false; return }
-    if (Q.req !== true) { d.innerHTML = ""; go.disabled = false; return }
+    if (Q.req === null) { d.innerHTML = ""; go.disabled = false; return }
+    if (Q.req === false) {
+      var ph = photo();
+      go.disabled = !ph;
+      d.innerHTML = ph ? '<div style="' + box + 'background:#dcfce7;color:#14532d">✅ Фото есть — можно отмечать смену</div>' :
+        '<div style="' + box + 'background:#fef3c7;color:#78350f">📸 Сделайте фото (кнопка выше) <b>или</b> отсканируйте QR в магазине — одно из двух обязательно.</div>' +
+        '<button class="btn o" id="sqcam" type="button" style="width:100%;margin-top:8px">📷 Сканировать QR</button>' +
+        '<div class="er" id="sqer" style="color:#dc2626;font-size:14px;min-height:18px;margin-top:4px"></div>';
+      if (el("sqcam")) el("sqcam").onclick = function () { scan() };
+      return;
+    }
     go.disabled = true;
     d.innerHTML = '<div style="' + box + 'background:#fef3c7;color:#78350f">📱 Нужен QR с экрана в магазине. Нажмите «Сканировать QR» и наведите камеру на экран.</div>' +
       '<button class="btn g" id="sqcam" type="button" style="width:100%;margin-top:8px">📷 Сканировать QR</button>' +
@@ -87,7 +99,12 @@
     el("sqcam").onclick = function () { scan() };
     el("sqok").onclick = function () { var v = el("sqin").value.trim(); if (v.replace(/\W/g, "").length < 6) { el("sqer").textContent = "В коде 6 символов"; return } Q.raw = v; trade() };
   }
-  new MutationObserver(function () { if ((el("sgo") || el("kgo2")) && !el("sqbox")) draw() }).observe(document.body, { childList: true, subtree: true });
+  var PHS = null;
+  new MutationObserver(function () {
+    if (!(el("sgo") || el("kgo2"))) { PHS = null; return }
+    var p = photo();
+    if (!el("sqbox") || p !== PHS) { PHS = p; draw() }
+  }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "src"] });
 
 
   /* живой сканер: задняя камера, распознаёт QR без снимка */

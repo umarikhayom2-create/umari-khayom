@@ -187,4 +187,98 @@ setInterval(function(){if(S.tok&&!document.hidden)load()},60000);
 if(S.tok)setTimeout(qaLoad,800);document.addEventListener("visibilitychange",function(){if(!document.hidden&&S.tok)load()});
 S.tok?load():login();
 </script><script src="sq.js?v=4"></script>
+<script>
+/* ===== Заявки на сборку между филиалами ===== */
+var ZV={L:[],me:"",br:[],tab:"pick",open:{},at:0,no:0};
+function zvLoad(){if(!S.tok)return;api({a:"m_zv_list",tok:S.tok}).then(function(j){if(!j)return;if(!j.ok){if(j.error==="nobranch"||j.error==="action"){ZV.no=1;zvDraw()}return}ZV.no=0;ZV.L=j.list||[];ZV.me=j.me;ZV.br=j.br||[];ZV.at=Date.now();zvDraw()}).catch(function(){})}
+function zvGot(it){var s=0;(it.g||[]).forEach(function(g){s+=+g.q||0});return Math.round(s*1000)/1000}
+function zvMine(it){return(it.g||[]).filter(function(g){return g.b===ZV.me})}
+function zvPic(id,w){return"https://drive.google.com/thumbnail?id="+encodeURIComponent(id)+"&sz=w"+(w||200)}
+function zvToPick(){return ZV.L.filter(function(o){return o.st==="open"&&o.by.b!==ZV.me})}
+function zvOurs(){return ZV.L.filter(function(o){return o.by.b===ZV.me})}
+function zvUnsent(o){var n=0;o.items.forEach(function(it){zvMine(it).forEach(function(g){if(!g.s&&g.q>0)n++})});return n}
+function zvBrn(id){var b=ZV.br.filter(function(x){return x.id===id})[0];return b?b.nm:"?"}
+function zvWhen(ts){var d=new Date(ts),t=new Date();return(d.toDateString()===t.toDateString()?"сегодня ":d.getDate()+"."+("0"+(d.getMonth()+1)).slice(-2)+" ")+hm(ts)}
+function zvHtml(){if(ZV.no||!ZV.at)return"";var P=zvToPick(),M=zvOurs(),need=P.filter(function(o){return o.items.some(function(it){return zvGot(it)<it.q})}).length;
+var h='<div class="card zv" style="--c:#8b5cf6"><div class="top"><b>📋 Заявки на сборку</b>'+(need?'<span class="chip" style="--c:#e11d48">ждут сборки: '+need+'</span>':'<span class="chip" style="--c:#16a34a">всё собрано</span>')+'</div>';
+h+='<div class="tabs" style="margin-top:10px"><button data-zvt="pick" class="'+(ZV.tab==="pick"?"on":"")+'">Собрать'+(need?'<i>'+need+'</i>':'')+'</button><button data-zvt="our" class="'+(ZV.tab==="our"?"on":"")+'">Наши заявки</button></div>';
+if(ZV.tab==="pick")h+=P.length?P.map(zvCard).join(""):'<p class="its">Сейчас нет заявок для вашего филиала.</p>';
+else h+=M.length?M.slice(0,25).map(zvCard).join(""):'<p class="its">Вы ещё не оставляли заявок.</p>';
+return h+'<button class="btn" data-zvnew="1" style="width:100%;margin-top:8px">+ Новая заявка</button></div>'}
+function zvCard(o){var ours=o.by.b===ZV.me,tot=o.items.length,dn=o.items.filter(function(it){return zvGot(it)>=it.q}).length,op=ZV.open[o.id]!==undefined?ZV.open[o.id]:(o.st==="open"),un=zvUnsent(o);
+var st=o.st==="cancel"?["Закрыта","#6b7280"]:o.st==="done"?["Собрана","#16a34a"]:dn?["Собрано "+dn+" из "+tot,"#f59e0b"]:["Новая","#e11d48"];
+var h='<div class="zvo'+(o.st!=="open"?' off':'')+'"><div class="zvh" data-zvo="'+o.id+'"><div><b>'+esc(o.no)+' · '+(ours?'наша':'от «'+esc(o.by.bn)+'»')+'</b><small>'+esc(o.by.w)+' · '+zvWhen(o.c)+' · '+(o.pub?'🌐 всем филиалам':'для: '+o.to.map(function(x){return esc(zvBrn(x))}).join(", "))+'</small></div><span class="chip" style="--c:'+st[1]+'">'+st[0]+'</span></div>';
+h+='<div class="zvbar"><i style="width:'+Math.round(dn/tot*100)+'%"></i></div>';
+if(!op)return h+'<button class="zvmore" data-zvo="'+o.id+'">Показать '+tot+' поз. ▾</button></div>';
+if(o.cm)h+='<div class="its">💬 '+esc(o.cm)+'</div>';
+h+=o.items.map(function(it,i){var got=zvGot(it),my=zvMine(it),myUn=my.filter(function(g){return!g.s})[0],mySent=my.filter(function(g){return g.s}).length,full=got>=it.q,left=Math.max(0,Math.round((it.q-got)*1000)/1000);
+var cls=myUn?"me":full?"done":got?"part":"";var oth=(it.g||[]).filter(function(g){return g.b!==ZV.me||g.s});
+var note=oth.map(function(g){return esc(g.bn)+': '+g.q+(g.s?' 🚚':' ✓')}).join(" · ");
+var can=!ours&&o.st==="open";
+return'<div class="zvi '+cls+'">'+(it.ph?'<img src="'+zvPic(it.ph)+'" data-zvph="'+esc(it.ph)+'" alt="" loading="lazy">':'<span class="zvn">'+(i+1)+'</span>')+
+'<div class="zvt"><b>'+esc(it.n)+'</b><small>нужно <b>'+it.q+' шт</b>'+(myUn?' · <span style="color:#16a34a">вы собрали '+myUn.q+'</span>':'')+(got&&!full&&!myUn?' · ещё '+left:'')+(note?'<br>'+note:'')+'</small>'+
+(myUn&&can?'<button class="zvq" data-zvq="'+o.id+'|'+i+'">✏️ Изменить кол-во</button>':'')+'</div>'+
+(can?'<button class="zvc'+(myUn?' on':full?' gr':'')+'" data-zvp="'+o.id+'|'+i+'" '+(full&&!myUn?'disabled':'')+'>'+(myUn||full?'✓':'')+'</button>':'<span class="zvc'+(full?' gr':'')+'">'+(full?'✓':'')+'</span>')+'</div>'}).join("");
+(o.packs||[]).forEach(function(p){h+='<div class="its">🚚 '+esc(p.bn)+(p.self?' — собрано у себя':' — отправлено курьеру'+(p.no?' ('+esc(p.no)+')':''))+' · '+p.n+' поз. · '+zvWhen(p.t)+'</div>'});
+if(un&&o.st!=="cancel")h+='<button class="btn g" data-zvs="'+o.id+'" style="width:100%;margin-top:10px">🚚 Готово — вызвать курьера ('+un+' поз.)</button>';
+if(ours)h+='<div class="row" style="display:flex;gap:8px;margin-top:8px">'+(o.st==="open"?'<button class="btn o" data-zvx="close" data-id="'+o.id+'">Закрыть — больше не нужно</button>':'<button class="btn o" data-zvx="open" data-id="'+o.id+'">Открыть снова</button>')+'</div>';
+return h+'<button class="zvmore" data-zvo="'+o.id+'">Свернуть ▴</button></div>'}
+function zvDraw(){var b=$("zvbox");if(b)b.innerHTML=zvHtml()}
+var _zvr=render;render=function(){_zvr();var m=document.querySelector("#app main");if(m&&!$("zvbox")){var d=document.createElement("div");d.id="zvbox";var q=$("qabox");if(q)m.insertBefore(d,q);else m.appendChild(d)}if(!ZV.at&&!ZV.ld){ZV.ld=1;setTimeout(function(){ZV.ld=0},5000);zvLoad()}zvDraw()};
+function zvPick(id,i,q){var o=ZV.L.filter(function(x){return x.id===id})[0];if(!o)return;var it=o.items[i];it.g=(it.g||[]).filter(function(g){return g.b!==ZV.me||g.s});if(q>0)it.g.push({b:ZV.me,bn:zvBrn(ZV.me),q:q,w:(S.me||{}).nm,t:Date.now()});zvDraw();
+api({a:"m_zv_pick",tok:S.tok,id:id,i:i,q:q}).then(function(j){if(!j||!j.ok){toast(j&&j.error==="st"?"Заявка уже закрыта":"Не сохранилось, ещё раз");zvLoad();return}o.items[i]=j.item;zvDraw()}).catch(function(){toast("Нет связи — не сохранилось");zvLoad()})}
+document.addEventListener("click",function(e){var t=e.target.closest("[data-zvt],[data-zvo],[data-zvp],[data-zvq],[data-zvs],[data-zvx],[data-zvph],[data-zvnew]");if(!t)return;var d=t.dataset;
+if(d.zvt){ZV.tab=d.zvt;zvDraw();return}
+if(d.zvph){var v=document.createElement("div");v.className="ov";v.style.alignItems="center";v.innerHTML='<img src="'+zvPic(d.zvph,1200)+'" style="max-width:96vw;max-height:90vh;border-radius:14px">';v.onclick=function(){v.remove()};document.body.appendChild(v);return}
+if(d.zvo){var o=ZV.L.filter(function(x){return x.id===d.zvo})[0];ZV.open[d.zvo]=!(ZV.open[d.zvo]!==undefined?ZV.open[d.zvo]:(o&&o.st==="open"));zvDraw();return}
+if(d.zvp||d.zvq){var a=(d.zvp||d.zvq).split("|"),o2=ZV.L.filter(function(x){return x.id===a[0]})[0];if(!o2)return;var it=o2.items[+a[1]],my=zvMine(it).filter(function(g){return!g.s})[0];
+if(d.zvp&&my){zvPick(a[0],+a[1],0);return}
+var left=Math.max(0,it.q-(zvGot(it)-(my?my.q:0)));
+if(d.zvp){zvPick(a[0],+a[1],left||it.q);return}
+var v2=prompt("Сколько собрали? (нужно "+it.q+" шт)",my?my.q:left);if(v2===null)return;var n=parseFloat(String(v2).replace(",","."));if(!(n>=0)){toast("Введите число");return}zvPick(a[0],+a[1],n);return}
+if(d.zvs){if(!confirm("Сборка готова? Курьеры получат заказ: забрать у вас и отвезти заказчику."))return;t.disabled=true;t.textContent="⏳ Вызываем курьера…";api({a:"m_zv_send",tok:S.tok,id:d.zvs}).then(function(j){if(j&&j.ok){toast(j.no?"Передано курьерам ✓ "+j.no:"Отмечено ✓");zvLoad();if(typeof brLoad==="function")brLoad()}else{t.disabled=false;toast(j&&j.error==="empty"?"Нечего отправлять":"Ошибка: "+(j&&j.error))}}).catch(function(){t.disabled=false;toast("Нет связи")});return}
+if(d.zvx){if(d.zvx==="close"&&!confirm("Закрыть заявку? Её больше не будут собирать."))return;t.disabled=true;api({a:"m_zv_"+d.zvx,tok:S.tok,id:d.id}).then(function(){zvLoad()});return}
+if(d.zvnew)zvNew()});
+function zvNew(){var R=[{n:"",q:"",ph:""}],pub=true,sel={};var d=document.createElement("div");d.className="ov";document.body.appendChild(d);
+function rows(){return R.map(function(r,i){return'<div class="zvr"><label class="zvcam">'+(r.ph?'<img src="'+r.ph+'">':'📷')+'<input type="file" accept="image/*" capture="environment" data-zri="'+i+'" hidden></label><input data-zrn="'+i+'" value="'+esc(r.n)+'" placeholder="Название (или только фото)"><input data-zrq="'+i+'" value="'+esc(r.q)+'" type="number" inputmode="decimal" placeholder="шт"><button data-zrx="'+i+'" aria-label="Убрать">✕</button></div>'}).join("")}
+function brs(){return ZV.br.filter(function(b){return b.id!==ZV.me}).map(function(b){return'<label class="zvck"><input type="checkbox" data-zrb="'+b.id+'" '+(sel[b.id]?"checked":"")+'> '+esc(b.nm)+'</label>'}).join("")||'<p class="its">Других филиалов пока нет.</p>'}
+function draw(){d.innerHTML='<div class="sh"><b style="font-size:19px">📋 Новая заявка на сборку</b><p class="its">Напишите товар или сфотографируйте его и укажите количество.</p><div id="zrows">'+rows()+'</div>'+
+'<div style="display:flex;gap:8px;margin:6px 0 12px"><button class="btn o" id="zadd">+ Ещё позиция</button><label class="btn o" style="cursor:pointer">📷 Много фото<input type="file" accept="image/*" multiple id="zmany" hidden></label></div>'+
+'<label>Кто собирает</label><div class="tabs"><button id="zpub" class="'+(pub?"on":"")+'">🌐 Все филиалы</button><button id="zsel" class="'+(!pub?"on":"")+'">Выбрать</button></div>'+(pub?'<p class="its" style="margin-top:-6px">Заявку увидят все филиалы и склады. Кто собрал — отмечает, остальные видят это серым.</p>':'<div style="margin-bottom:10px">'+brs()+'</div>')+
+'<label>Комментарий</label><input id="zcm" placeholder="Например: срочно, до 15:00"><div class="er" id="zer"></div><button class="btn g" id="zgo" style="width:100%">Отправить заявку</button><button class="btn o" id="zcx" style="width:100%;margin-top:8px">Отмена</button></div>'}
+draw();
+function photo(fl,i){return shrink(fl).then(function(u){R[i].ph=u})}
+d.addEventListener("input",function(e){var t=e.target;if(t.dataset.zrn)R[+t.dataset.zrn].n=t.value;if(t.dataset.zrq)R[+t.dataset.zrq].q=t.value});
+d.addEventListener("change",function(e){var t=e.target;if(t.dataset.zri){var f=t.files&&t.files[0];if(f)photo(f,+t.dataset.zri).then(function(){$("zrows").innerHTML=rows();var q=d.querySelector('[data-zrq="'+t.dataset.zri+'"]');if(q&&!q.value)q.focus()})}
+if(t.id==="zmany"){var fs=[].slice.call(t.files||[]).slice(0,30);if(R.length===1&&!R[0].n&&!R[0].ph)R=[];var p=Promise.resolve();fs.forEach(function(f){p=p.then(function(){R.push({n:"",q:"",ph:""});return photo(f,R.length-1)})});p.then(function(){$("zrows").innerHTML=rows()})}
+if(t.dataset.zrb)sel[t.dataset.zrb]=t.checked});
+d.addEventListener("click",function(e){var t=e.target;if(t.dataset.zrx){R.splice(+t.dataset.zrx,1);if(!R.length)R.push({n:"",q:"",ph:""});$("zrows").innerHTML=rows();return}
+if(t.id==="zadd"){R.push({n:"",q:"",ph:""});$("zrows").innerHTML=rows();var l=d.querySelectorAll("[data-zrn]");l[l.length-1].focus();return}
+if(t.id==="zpub"||t.id==="zsel"){var cm=$("zcm").value;pub=t.id==="zpub";draw();$("zcm").value=cm;return}
+if(t.id==="zcx"){if(R.some(function(r){return r.n||r.ph})&&!confirm("Выйти без сохранения?"))return;d.remove();return}
+if(t.id==="zgo"){var its=R.filter(function(r){return(r.n.trim()||r.ph)}).map(function(r){return{n:r.n.trim(),q:parseFloat(String(r.q).replace(",","."))||0,ph:r.ph}});
+if(!its.length){$("zer").textContent="Добавьте хотя бы одну позицию";return}if(its.some(function(r){return!(r.q>0)})){$("zer").textContent="Укажите количество у каждой позиции";return}
+var to=Object.keys(sel).filter(function(k){return sel[k]});if(!pub&&!to.length){$("zer").textContent="Выберите филиалы или «Все филиалы»";return}
+t.disabled=true;t.textContent=its.some(function(r){return r.ph})?"⏳ Загружаем фото…":"⏳ Отправляем…";
+api({a:"m_zv_new",tok:S.tok,items:its,pub:pub,to:to,cm:$("zcm").value.trim()}).then(function(j){if(j&&j.ok){d.remove();toast("Заявка "+j.no+" отправлена ✓");ZV.tab="our";zvLoad()}else{t.disabled=false;t.textContent="Отправить заявку";$("zer").textContent=pick(j,"")}}).catch(function(){t.disabled=false;t.textContent="Отправить заявку";$("zer").textContent="Нет связи"})}})}
+setInterval(function(){if(S.tok&&!document.hidden)zvLoad()},30000);document.addEventListener("visibilitychange",function(){if(!document.hidden&&S.tok)zvLoad()});
+if(S.tok)setTimeout(zvLoad,600);
+</script>
+<style>
+.zvo{border-top:1px dashed var(--bd);padding:10px 0}.zvo.off{opacity:.7}
+.zvh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;cursor:pointer}.zvh small{display:block;color:var(--mut);font-size:12.5px}
+.zvbar{height:6px;border-radius:9px;background:var(--sf2);margin:8px 0;overflow:hidden}.zvbar i{display:block;height:100%;background:#16a34a}
+.zvi{display:flex;gap:10px;align-items:center;padding:8px;border-radius:14px;margin:6px 0;background:var(--sf2)}
+.zvi img,.zvn{width:56px;height:56px;border-radius:12px;object-fit:cover;flex:none;background:var(--bd)}.zvn{display:flex;align-items:center;justify-content:center;font:700 18px system-ui;color:var(--mut)}
+.zvt{flex:1;min-width:0}.zvt b{display:block;word-break:break-word}.zvt small{color:var(--mut);font-size:13px}.zvt small b{display:inline}
+.zvc{flex:none;width:48px;height:48px;border-radius:14px;border:2.5px solid #8b5cf6;background:var(--sf);color:#fff;font:800 24px system-ui;display:flex;align-items:center;justify-content:center}
+.zvc.on{background:#16a34a;border-color:#16a34a}.zvc.gr{background:#9ca3af;border-color:#9ca3af}
+.zvi.done{opacity:.45;filter:grayscale(1)}.zvi.done .zvt b{text-decoration:line-through}.zvi.me{background:color-mix(in srgb,#16a34a 14%,transparent)}.zvi.part{background:color-mix(in srgb,#f59e0b 16%,transparent)}
+.zvq{border:0;background:none;color:#6d28d9;font:600 13px system-ui;padding:4px 0}
+.zvmore{border:0;background:none;color:var(--mut);font:600 13px system-ui;padding:6px 0;width:100%}
+.zvr{display:flex;gap:6px;align-items:center;margin-bottom:8px}.zvr input{margin:0}.zvr input[data-zrq]{width:72px;flex:none}
+.zvr button{flex:none;border:0;background:var(--sf2);color:var(--mut);border-radius:10px;width:36px;height:44px;font-size:16px}
+.zvcam{flex:none;width:48px;height:48px;border-radius:12px;border:2px dashed var(--bd);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;cursor:pointer}.zvcam img{width:100%;height:100%;object-fit:cover}
+.zvck{display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;background:var(--sf2);margin-bottom:6px;font-weight:600}.zvck input{width:22px;height:22px;margin:0}
+</style>
 </body></html>

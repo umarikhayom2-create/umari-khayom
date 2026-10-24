@@ -3715,4 +3715,19 @@ document.addEventListener("click",function(e){var t=e.target.closest&&e.target.c
 })();
 })();
 </script>
+<script>
+/* ===== Доска достижений: офис присылает очки за работу (контент, торговые, операторы) — раз в 30 минут, только руководитель/администратор ===== */
+(function(){function mstart(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),1).getTime()}
+function mkey(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)}
+function run(){try{if(!A||!A.ok||!(A.role==="director"||A.role==="admin")||!A.rows||!A.rows.length)return;var last=0;try{last=+localStorage.getItem("uh_dsync")||0}catch(e){}if(Date.now()-last<30*6e4)return;
+var a=mstart(),b=Date.now(),rows=[];
+try{var cat=stfCat(a,b).P;Object.keys(cat).forEach(function(k){var p=cat[k];if(p.r!=="content")return;var edu=Object.keys(p.edp||{}).length,pts=p.add*3+(p.qfull||0)*2+edu+(p.sold||0)*2;if(!pts)return;
+rows.push({k:"staff|content:"+k,w:p.w,r:"content",c:"cat",t:"🛒 Работа с каталогом",p:pts,l:"добавил "+p.add+" тов."+(p.qfull?", заполнено полностью "+p.qfull:"")+(edu?", правок по "+edu+" тов.":"")+(p.sold?", уже продаются "+p.sold:"")})})}catch(e){}
+try{var rep=stfRep(a,b);Object.keys(rep).forEach(function(k){var p=rep[k];if(!p.n)return;var pp=p.s?Math.round(p.pd/p.s*100):0,pts=p.n*3+(p.nw||0)*5+Math.round(pp/10);
+rows.push({k:"staff|sales:"+k,w:p.w===k?k.charAt(0).toUpperCase()+k.slice(1):p.w,r:"sales",c:"sales",t:"💼 Заявки клиентов",p:pts,l:"заявок "+p.n+" на "+Math.round(p.s)+" сом., оплачено "+pp+"%"+(p.nw?", новых клиентов "+p.nw:"")})})}catch(e){}
+try{var O={};A.rows.forEach(function(r){(r.log||(r.o&&r.o.log)||[]).forEach(function(e){if(!e||e.r!=="operator"||!e.w||+e.ts<a||+e.ts>b)return;var k=String(e.w).trim().toLowerCase(),x=O[k]||(O[k]={w:String(e.w).trim(),h:{},s:{}});x.h[r.no]=1;if(/собран|готов к отгрузке/i.test(String(e.t||"")))x.s[r.no]=1})});
+Object.keys(O).forEach(function(k){var x=O[k],h=Object.keys(x.h).length,sb=Object.keys(x.s).length;rows.push({k:"staff|operator:"+k,w:x.w,r:"operator",c:"ops",t:"📦 Обработка заказов",p:h+sb*2,l:"обработал "+h+" заказ."+(sb?", собрал "+sb:"")})})}catch(e){}
+stApi("t_ds_sync",{m:mkey(),rows:rows.slice(0,80)}).then(function(j){if(j&&j.ok){try{localStorage.setItem("uh_dsync",String(Date.now()))}catch(e){}}}).catch(function(){})}catch(e){}}
+setTimeout(run,15000);setInterval(run,5*6e4)})();
+</script>
 </body></html>

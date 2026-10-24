@@ -137,7 +137,7 @@ const DOCKINDS=["Справка об инвалидности","Заключен
 const NEED=["","Низкая","Ниже средней","Средняя","Высокая","Критическая"];
 
 function seed(){return{
-  day:1,pool:18450,ops:2050,raised:20500,saved:0,roundUsers:0,subs:0,subsN:0,lastK:1,cashUsers:0,juma:0,jumaN:0,payroll:0,payrollN:0,meals:0,mealsGiven:0,events:[],me:{name:"",pub:false},donations:[{who:"Шерзод Р.",pub:true,a:1000,purpose:"Закят",d:1},{who:"Дилноза К.",pub:false,a:500,purpose:"На лекарства",d:1},{who:"ООО «Нури Субҳ»",pub:true,a:5000,purpose:"Общая помощь",d:1},{who:"Фирӯз А.",pub:true,a:300,purpose:"Садака",d:1}],myGiven:0,match:{left:10000,total:10000,name:"Спонсор месяца"},cert:null,
+  day:1,pool:18450,ops:2050,raised:20500,saved:0,roundUsers:0,subs:0,subsN:0,lastK:1,cashUsers:0,juma:0,jumaN:0,payroll:0,payrollN:0,meals:0,mealsGiven:0,events:[],me:{name:"",pub:false},donations:[{who:"Шерзод Р.",pub:true,a:1000,purpose:"Закят",d:1},{who:"Дилноза К.",pub:false,a:500,purpose:"На лекарства",d:1},{who:"ООО «Нури Субҳ»",pub:true,a:5000,purpose:"Общая помощь",d:1},{who:"Фирӯз А.",pub:true,a:300,purpose:"Садака",d:1}],myGiven:0,mr:{bal:3000,ret:3000,sp:[],used:0},cert:null,
   recipients:[
     {id:"r1",docs:[{kind:"Заключение врача",name:"заключение_эндокринолог.pdf",demo:1,day:1},{kind:"Рецепт",name:"рецепт_инсулин.jpg",demo:1,day:1}],need:5,name:"Зарина М.",city:"Душанбе",cat:"health",note:"Нужен инсулин каждый месяц",daily:40,bal:310,target:600,status:"ok",bank:"Алиф"},
     {id:"r2",docs:[{kind:"Справка об инвалидности",name:"справка_МСЭК.pdf",demo:1,day:1}],need:4,name:"Бахтиёр Н.",city:"Хуҷанд",cat:"disability",note:"Инвалидность I группы",daily:35,bal:120,status:"ok",bank:"Душанбе Сити"},
@@ -155,6 +155,7 @@ function seed(){return{
 let S;
 try{S=JSON.parse(localStorage.getItem("amonat-v3"))}catch(e){}
 if(!S||!S.recipients)S=seed();
+if(!S.mr){S.mr={bal:0,ret:0,sp:[],used:0};delete S.match}
 function save(){try{localStorage.setItem("amonat-v3",JSON.stringify(S))}catch(e){if(!save.warned){save.warned=1;setTimeout(()=>toast("Память браузера заполнена: файлы сохранятся до перезагрузки страницы"),400)}}}
 const $=s=>document.querySelector(s);
 const m=n=>Math.round(n).toLocaleString("ru-RU").replace(/,/g," ")+" смн";
@@ -356,6 +357,17 @@ function vOverview(){
     <div><button class="btn" id="addR">Отправить на проверку</button></div>
   </div>
   <div class="card">
+    <div class="row between"><h2>Резерв удвоения</h2><span class="pill ${S.mr.bal>0?"p-good":"p-warn"}">${S.mr.bal>0?"Удвоение работает":"Пуст: удвоение выключено"}</span></div>
+    <div class="kpis"><div class="kpi"><div class="l">В резерве</div><div class="v">${m(S.mr.bal)}</div></div><div class="kpi"><div class="l">Уже удвоено</div><div class="v">${m(S.mr.used)}</div></div></div>
+    <div class="list">
+      <div class="item"><span>Возвраты партнёров</span><span class="amt">${m(S.mr.ret)}</span></div>
+      ${S.mr.sp.map(x=>`<div class="item"><span>Спонсор: ${esc(x.n)}</span><span class="amt">${m(x.a)}</span></div>`).join("")}
+    </div>
+    <div class="grid2"><label>Спонсор (компания или человек)<input id="spName" placeholder="Например: ООО «Нури Субҳ»"></label><label>Сумма на удвоение, смн<input id="spAmt" type="number" min="1" placeholder="10000"></label></div>
+    <div><button class="btn" id="spAdd">Добавить спонсора</button></div>
+    <div class="note">Удвоение берётся только из этого резерва, а не из общего фонда: деньги нуждающихся не трогаются. Когда резерв пуст, донор вместо удвоения видит, что даст его взнос.</div>
+  </div>
+  <div class="card">
     <div class="row between"><h2>Доноры</h2><span class="pill p-gold">Видно только фонду</span></div>
     <div class="list">${donorTable(S.donations,true).slice(0,15).map(d=>`<div class="item"><div class="who"><div class="name">${esc(d.who)} <span class="pill ${d.pub?"p-good":"p-acc"}">${d.pub?"Публично":"Анонимно"}</span></div><div class="meta">${d.n} пожертв.</div></div><span class="amt">${m(d.a)}</span></div>`).join("")}</div>
     <div class="note">Нужно для бухгалтерии, налоговых документов и проверок. Анонимные доноры в публичном отчёте показаны без имени.</div>
@@ -398,6 +410,8 @@ function bindOverview(){
   $("#nFiles").onchange=async e=>{const fs=[...e.target.files];e.target.value="";for(const f of fs){try{ui.newDocs.push(await readDoc(f,$("#nKind").value))}catch(_){toast(`Не удалось прочитать ${f.name}`)}}$("#nDocs").innerHTML=docsHtml(ui.newDocs,"new");bindDocs($("#nDocs"),ui.newDocs,()=>$("#nDocs").innerHTML=docsHtml(ui.newDocs,"new"))};
   bindDocs($("#nDocs"),ui.newDocs,()=>{$("#nDocs").innerHTML=docsHtml(ui.newDocs,"new");bindDocs($("#nDocs"),ui.newDocs)});
   document.querySelectorAll("[data-docs]").forEach(b=>b.onclick=()=>openDocs(b.dataset.docs));
+  $("#spAdd").onclick=()=>{const n=$("#spName").value.trim(),a=Math.round(+$("#spAmt").value||0);if(!n)return toast("Укажите спонсора");if(a<=0)return toast("Укажите сумму");
+    S.mr.sp.push({n,a,d:S.day});S.mr.bal+=a;S.raised+=a;addDon(a,"На удвоение",n,true);log("don",`${n}: в резерв удвоения`,a);save();render();toast(`${n} добавлен: +${m(a)} в резерв удвоения`)};
   $("#addR").onclick=()=>{
     const name=$("#nName").value.trim();if(!name)return toast("Укажите имя");
     if(!ui.newDocs.length)return toast("Прикрепите хотя бы один документ");
@@ -455,7 +469,7 @@ function bindWatch(){
 function vDonate(){
   const a=ui.donAmt;const ops=Math.round(a*OPS_SHARE);
   const people=S.recipients.filter(r=>r.status==="ok");
-  const mt=S.match,mAdd=Math.min(mt.left,a);
+  const mr=S.mr,mAdd=Math.min(mr.bal,a);
   const goals=people.filter(r=>r.target>0).map(r=>({r,have:r.bal+pend(r)})).filter(g=>g.have<g.r.target);
   const sc=SCALE[ui.scMech],ppl=ui.scPeople,perMonth=sc.per*30,total=perMonth*ppl;
   const zk=ui.zSave&&ui.zGold?(ui.zSave>=85*ui.zGold?ui.zSave*0.025:0):null;
@@ -468,7 +482,7 @@ function vDonate(){
     </div>
     <div class="note">По умолчанию пожертвование анонимное: тайная садака ценится выше. Фонд видит имя всегда, публичный отчёт только с вашего согласия.</div>
     ${daysLeft()<RULE.warn?`<div class="note" style="color:var(--bad);font-weight:600">Фонду срочно нужна помощь: денег осталось на ${Math.floor(daysLeft())} дн.${waiting().length?`, ${waiting().length} чел. ждут в очереди`:""}.</div>`:""}
-    ${mt.left>0?`<div class="row between" style="background:var(--gold-soft);border-radius:12px;padding:10px 12px"><div><b style="color:var(--gold)">×2 Удвоение</b><div class="note">${esc(mt.name)} удваивает каждое пожертвование. Осталось ${m(mt.left)} из ${m(mt.total)}.</div></div></div>`:""}
+    ${mr.bal>0?`<div style="background:var(--gold-soft);border-radius:12px;padding:10px 12px"><b style="color:var(--gold)">×2 Удвоение работает</b><div class="note">Ваш взнос удвоится из резерва удвоения: это деньги, которые партнёры вернули с покупок${mr.sp.length?", и взносы спонсоров ("+mr.sp.slice(0,3).map(x=>esc(x.n)).join(", ")+")":""}. В резерве осталось ${m(mr.bal)}.</div></div>`:`<div style="background:var(--accent-soft);border-radius:12px;padding:10px 12px"><b style="color:var(--accent)">Что даст ваш взнос</b><div class="note" style="color:var(--fg)">${impact(a)}</div><div class="note">Удвоение сейчас не действует: резерв удвоения пуст. Он пополнится, когда партнёры вернут часть оплат или появится спонсор.</div></div>`}
     <div class="chips">${[50,100,500,1000,5000].map(v=>`<button class="chip" aria-pressed="${a===v}" data-amt="${v}">${v} смн</button>`).join("")}</div>
     <label>Другая сумма<input id="dAmt" type="number" min="1" value="${a}"></label>
     <label>Назначение<select id="dPur">${["Общая помощь","На лекарства","Закят","Садака","Семьям с детьми"].map(p=>`<option ${p===ui.donPurpose?"selected":""}>${p}</option>`).join("")}</select></label>
@@ -480,7 +494,7 @@ function vDonate(){
   </div>
   ${S.cert?`<div class="card" style="border:2px solid var(--gold);text-align:center">
     <div class="sub" style="letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--gold)">Сертификат садаки</div>
-    <div class="big">${m(S.cert.a)}</div>
+    <div class="big">${m(S.cert.a)}</div>${S.cert.dbl?`<div style="color:var(--gold);font-weight:600">+ ${m(S.cert.dbl)} удвоено из резерва фонда</div>`:""}
     <div>${S.cert.name?`От имени: <b>${esc(S.cert.name)}</b>`:"Анонимное пожертвование"}</div>
     <div class="note">${esc(S.cert.purpose)} · день ${S.cert.d} · Благотворительный фонд «Амонат»</div>
     <div style="font-weight:600">Пусть Аллах примет вашу садаку</div>
@@ -590,13 +604,15 @@ function vDonate(){
     <div class="note">Сейчас помощь получают ${people.length} человек(а) и семьи.</div>
   </div></div>`;
 }
+function impact(a){const net=a-Math.round(a*OPS_SHARE),days=Math.floor(net/30),meals=Math.floor(net/MEAL);
+  return days>=1?`Ваши ${m(a)} — это ${days} ${days===1?"день":days<5?"дня":"дней"} помощи одному человеку (продукты или лекарства)${meals>=1?` или ${meals} ${meals===1?"горячий обед":meals<5?"горячих обеда":"горячих обедов"}`:""}.`:`Даже ${m(a)} помогают: из маленьких взносов складываются большие суммы.`}
 function donate(a,purpose,name){
-  const ops=Math.round(a*OPS_SHARE),mAdd=Math.min(S.match.left,a);
-  S.pool+=a-ops+mAdd;S.ops+=ops;S.raised+=a+mAdd;S.myGiven+=a;S.match.left-=mAdd;
+  const ops=Math.round(a*OPS_SHARE),mAdd=Math.min(S.mr.bal,a);
+  S.pool+=a-ops+mAdd;S.ops+=ops;S.raised+=a;S.myGiven+=a;S.mr.bal-=mAdd;S.mr.used+=mAdd;
   log("don",`Пожертвование · ${purpose.toLowerCase()}${name?" · от имени: "+name:""}`,a);
-  if(mAdd)log("don",`${S.match.name} удвоил пожертвование`,mAdd);
-  addDon(a,purpose);if(mAdd)addDon(mAdd,"Удвоение",S.match.name,true);
-  S.cert={a:a+mAdd,name,purpose,d:S.day};return mAdd;
+  if(mAdd)log("don","Удвоение из резерва удвоения",mAdd);
+  addDon(a,purpose);
+  S.cert={a,dbl:mAdd,name,purpose,d:S.day};return mAdd;
 }
 function bindDonate(){
   document.querySelectorAll("[data-amt]").forEach(b=>b.onclick=()=>{ui.donAmt=+b.dataset.amt;render()});
@@ -605,7 +621,7 @@ function bindDonate(){
   $("#meName").onchange=e=>{S.me.name=e.target.value.trim();save()};
   $("#mePub").onchange=e=>{S.me.pub=e.target.checked;save();toast(e.target.checked?"Имя будет видно в отчёте":"Вы будете анонимным донором")};
   $("#dName").oninput=e=>ui.donName=e.target.value;
-  $("#donBtn").onclick=()=>{const mAdd=donate(ui.donAmt,ui.donPurpose,ui.donName.trim());ui.donName="";save();render();toast(mAdd?`Джазакаллаху хайран! Спонсор добавил ещё ${m(mAdd)}`:"Джазакаллаху хайран! Пожертвование принято")};
+  $("#donBtn").onclick=()=>{const mAdd=donate(ui.donAmt,ui.donPurpose,ui.donName.trim());ui.donName="";save();render();toast(mAdd?`Джазакаллаху хайран! Ваш взнос удвоен: +${m(mAdd)} из резерва`:"Джазакаллаху хайран! Пожертвование принято")};
   $("#scMech").onchange=e=>{ui.scMech=e.target.value;render()};
   $("#scPeople").oninput=e=>{const v=SCALE_STEPS[+e.target.value];$("#scN").textContent=v.toLocaleString("ru-RU")};
   $("#scPeople").onchange=e=>{ui.scPeople=SCALE_STEPS[+e.target.value];render()};
@@ -717,7 +733,7 @@ function vPartner(){
   <div class="card">
     <h2>Закрытие смены · день ${S.day}</h2>
     ${p.closed?`<div class="note">Смена закрыта. Спасибо за участие: ваш вклад виден в публичном отчёте фонда.</div>`:
-    p.paid?`<div class="note">Сегодня Благотворительный фонд «Амонат» оплатил у вас ${m(p.paid)}. Хотите вернуть часть в фонд как садаку?</div>
+    p.paid?`<div class="note">Сегодня Благотворительный фонд «Амонат» оплатил у вас ${m(p.paid)}. Хотите вернуть часть в фонд как садаку? Эти деньги идут в резерв удвоения: каждый ваш сомони удвоит взнос другого человека.</div>
     <div class="chips">${[0,5,10,15].map(v=>`<button class="chip" data-ret="${v}">${v?v+"% · "+m(p.paid*v/100):"Не сейчас"}</button>`).join("")}</div>`:
     `<div class="note">Сегодня оплат от фонда ещё не было. Проведите покупку во вкладке «Оплата QR».</div>`}
   </div>
@@ -729,7 +745,7 @@ function bindPartner(){
   if($("#giveMeal"))$("#giveMeal").onclick=()=>{S.meals--;S.mealsGiven++;const p=P(ui.pp);p.paid+=MEAL;p.count++;log("pay",`Оплаченный обед · ${p.name}`,MEAL);save();render();toast("Обед выдан. Оплата из запаса обедов")};
   document.querySelectorAll("[data-ret]").forEach(b=>b.onclick=()=>{
     const p=P(ui.pp),v=+b.dataset.ret,a=Math.round(p.paid*v/100);
-    if(a){p.returned+=a;S.pool+=a;log("ret",`${p.name} вернул ${v}%`,a)}
+    if(a){p.returned+=a;S.mr.bal+=a;S.mr.ret+=a;log("ret",`${p.name} вернул ${v}% в резерв удвоения`,a)}
     p.closed=true;save();render();toast(a?`В фонд вернулось ${m(a)}`:"Смена закрыта");
   });
 }

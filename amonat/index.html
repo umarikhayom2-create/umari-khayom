@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Фонд «Амонат»</title>
+<meta name="description" content="Фонд «Амонат» — целевая помощь нуждающимся через единый QR у партнёров">
+<meta name="theme-color" content="#1F4E9C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Амонат">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+</head><body>
+<style>
+/* Layout: одна колонка-приложение, вкладки сверху; телефон-оплата в центре вкладки «Оплата» */
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --sunk:#E8ECF3; --line:#D6DCE7;
+  --fg:#16213A; --muted:#5A6684;
+  --accent:#1F4E9C; --accent-fg:#FFFFFF; --accent-soft:#DDE7F7;
+  --gold:#B07D1A; --gold-soft:#F6ECD6;
+  --good:#1E7A4F; --good-soft:#DDF1E6; --warn:#A8620F; --warn-soft:#FBEBD5; --bad:#B23A48; --bad-soft:#F7DFE2;
+  --display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1424; --surface:#161E33; --sunk:#1D2740; --line:#2B3654;
+  --fg:#E7ECF6; --muted:#9AA6C2; --accent:#7EA6EC; --accent-fg:#0E1424; --accent-soft:#22345A;
+  --gold:#E3B45A; --gold-soft:#3A2F17; --good:#5CC795; --good-soft:#173A2A; --warn:#EAA752; --warn-soft:#3D2C14; --bad:#EE8090; --bad-soft:#3E1D24; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1424; --surface:#161E33; --sunk:#1D2740; --line:#2B3654;
+  --fg:#E7ECF6; --muted:#9AA6C2; --accent:#7EA6EC; --accent-fg:#0E1424; --accent-soft:#22345A;
+  --gold:#E3B45A; --gold-soft:#3A2F17; --good:#5CC795; --good-soft:#173A2A; --warn:#EAA752; --warn-soft:#3D2C14; --bad:#EE8090; --bad-soft:#3E1D24; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px;display:grid;gap:16px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{width:40px;height:40px;border-radius:12px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:18px}
+h1{font-family:var(--display);font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:13px}
+.demo{font-size:12px;background:var(--gold-soft);color:var(--gold);padding:5px 10px;border-radius:999px;font-weight:600}
+nav.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+nav.tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:9px 14px;border-radius:999px;font:600 14px var(--body);cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{display:grid;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px;min-width:0}
+h2{font-family:var(--display);font-size:16px;margin:0;font-weight:500;text-wrap:balance}
+h3{font-size:14px;margin:0;font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.kpi .l{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.kpi .v{font-family:var(--display);font-size:22px;font-weight:500;margin-top:4px}
+.kpi.hl{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.kpi.hl .l{color:inherit;opacity:.8}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.list{display:grid;gap:0}
+.item{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .who{min-width:0}
+.item .name{font-weight:600}
+.item .meta{font-size:12.5px;color:var(--muted)}
+.amt{font-weight:600;white-space:nowrap}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.p-good{background:var(--good-soft);color:var(--good)}.p-warn{background:var(--warn-soft);color:var(--warn)}
+.p-bad{background:var(--bad-soft);color:var(--bad)}.p-acc{background:var(--accent-soft);color:var(--accent)}.p-gold{background:var(--gold-soft);color:var(--gold)}
+.btn{border:0;background:var(--accent);color:var(--accent-fg);font:600 14px var(--body);padding:10px 16px;border-radius:12px;cursor:pointer}
+.btn.ghost{background:var(--sunk);color:var(--fg)}
+.btn.small{padding:6px 10px;font-size:13px;border-radius:9px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+label{font-size:12.5px;color:var(--muted);font-weight:600;display:grid;gap:4px}
+input,select{font:15px var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:7px 12px;border-radius:10px;font:600 14px var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.split{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--sunk)}
+.split i{display:block}
+.note{font-size:13px;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100% - 32px);z-index:20}
+/* телефон */
+.phone{width:100%;max-width:340px;margin:0 auto;border:8px solid var(--fg);border-radius:34px;background:var(--surface);padding:18px 14px;display:grid;gap:12px;min-height:520px;align-content:start}
+.phone .bar{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.bankhead{display:flex;align-items:center;gap:8px;font-weight:700}
+.bankdot{width:26px;height:26px;border-radius:8px;background:var(--good);color:#fff;display:grid;place-items:center;font-size:13px}
+.qr{width:150px;height:150px;margin:4px auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px}
+.payopt{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer}
+.payopt.on{border-color:var(--accent);background:var(--accent-soft)}
+.payopt.off{opacity:.5;cursor:not-allowed}
+.payopt input{width:auto;margin-top:3px}
+.big{font-family:var(--display);font-size:28px;font-weight:500}
+.ok{width:56px;height:56px;border-radius:50%;background:var(--good-soft);color:var(--good);display:grid;place-items:center;font-size:28px;margin:8px auto 0}
+.center{text-align:center}
+.wallet{background:var(--accent);color:var(--accent-fg);border-radius:18px;padding:18px;display:grid;gap:6px}
+.wallet .l{font-size:12px;opacity:.85}
+.feed .item .meta{font-size:12px}
+.docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.doc{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--sunk);display:grid;font-size:11.5px;min-width:0}
+.doc img{width:100%;height:90px;object-fit:cover;display:block;cursor:zoom-in}
+.doc .ph{height:90px;display:grid;place-items:center;color:var(--muted);font-weight:700;font-size:13px}
+.doc .cap{padding:5px 7px;display:grid;gap:1px}.doc .cap b{font-weight:600;color:var(--fg)}.doc .cap span{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upload{border:1.5px dashed var(--line);border-radius:12px;padding:12px;display:grid;gap:8px;background:var(--bg)}
+.upload input[type=file]{border:0;padding:0;background:none}
+.modal{position:fixed;inset:0;background:rgba(10,15,30,.55);z-index:30;display:grid;align-items:end;justify-items:center;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:12px}
+.zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:40;display:grid;place-items:center;padding:16px}
+.zoom img{max-height:90vh;border-radius:8px}
+@media (prefers-reduced-motion:no-preference){.toast{animation:up .25s ease}@keyframes up{from{transform:translate(-50%,10px);opacity:0}}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="mark">А</div><div><h1>Фонд «Амонат»</h1><div class="sub">Целевая помощь через единый QR</div></div></div>
+    <div class="row"><span class="demo">Демо: банк имитируется</span><button class="btn small ghost" id="reset">Сбросить демо</button></div>
+  </header>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+<div class="modal" id="modal" hidden></div>
+<div class="zoom" id="zoom" hidden></div>
+
+<script>
+const TABS=[["overview","Фонд"],["watch","Наблюдение"],["donate","Донору"],["wallet","Получателю"],["pay","Оплата QR"],["partner","Партнёрам"]];
+const CATS={health:"Болезнь / лекарства",disability:"Инвалидность",lowincome:"Малоимущая семья",elderly:"Одинокий пожилой"};
+const PTYPES={pharmacy:"Аптека",shop:"Магазин",canteen:"Столовая"};
+const OPS_SHARE=0.10;
+/* Правила распределения */
+const RULE={tiers:[[14,1],[30,.5],[45,.25]],unlock:1,hold:3,bigMul:5,maxPerDay:3,manual:1000,idle:30,reserve:60,warn:30,roundPer:0.4,maxK:1.2,minKc:.5,minKo:.3};
+const DOCKINDS=["Справка об инвалидности","Заключение врача","Рецепт","Справка о доходах","Справка из махалли","Паспорт","Фото условий жизни","Другое"];
+const NEED=["","Низкая","Ниже средней","Средняя","Высокая","Критическая"];
+
+function seed(){return{
+  day:1,pool:18450,ops:2050,raised:20500,saved:0,roundUsers:0,subs:0,subsN:0,lastK:1,cashUsers:0,juma:0,jumaN:0,payroll:0,payrollN:0,meals:0,mealsGiven:0,events:[],me:{name:"",pub:false},donations:[{who:"Шерзод Р.",pub:true,a:1000,purpose:"Закят",d:1},{who:"Дилноза К.",pub:false,a:500,purpose:"На лекарства",d:1},{who:"ООО «Нури Субҳ»",pub:true,a:5000,purpose:"Общая помощь",d:1},{who:"Фирӯз А.",pub:true,a:300,purpose:"Садака",d:1}],myGiven:0,match:{left:10000,total:10000,name:"Спонсор месяца"},cert:null,
+  recipients:[
+    {id:"r1",docs:[{kind:"Заключение врача",name:"заключение_эндокринолог.pdf",demo:1,day:1},{kind:"Рецепт",name:"рецепт_инсулин.jpg",demo:1,day:1}],need:5,name:"Зарина М.",city:"Душанбе",cat:"health",note:"Нужен инсулин каждый месяц",daily:40,bal:310,target:600,status:"ok",bank:"Алиф"},
+    {id:"r2",docs:[{kind:"Справка об инвалидности",name:"справка_МСЭК.pdf",demo:1,day:1}],need:4,name:"Бахтиёр Н.",city:"Хуҷанд",cat:"disability",note:"Инвалидность I группы",daily:35,bal:120,status:"ok",bank:"Душанбе Сити"},
+    {id:"r3",docs:[{kind:"Справка о доходах",name:"справка_доход.pdf",demo:1,day:1},{kind:"Справка из махалли",name:"махалля.jpg",demo:1,day:1}],need:4,name:"Семья Каримовых",city:"Бохтар",cat:"lowincome",note:"5 детей, мать одна",daily:50,bal:85,status:"ok",bank:"Алиф"},
+    {id:"r4",docs:[{kind:"Справка из махалли",name:"махалля.jpg",demo:1,day:1}],need:3,name:"Мавлуда Р.",city:"Душанбе",cat:"elderly",note:"Пенсионерка, живёт одна",daily:25,bal:420,status:"ok",bank:"Алиф"},
+    {id:"r5",docs:[{kind:"Заключение врача",name:"выписка_операция.pdf",demo:1,day:1}],need:4,name:"Фаррух С.",city:"Кӯлоб",cat:"health",note:"Восстановление после операции",daily:30,bal:0,target:400,status:"check",bank:"Алиф"}
+  ].map(r=>({docs:[],target:0,pending:[],tx:[],paused:false,reviewed:0,hold:0,lastBuy:1,...r})),
+  partners:[
+    {id:"p1",name:"Аптека «Дармон»",type:"pharmacy",paid:0,count:0,returned:0,closed:false},
+    {id:"p2",name:"Маркет «Нону Намак»",type:"shop",paid:0,count:0,returned:0,closed:false},
+    {id:"p3",name:"Ошхона «Дастархон»",type:"canteen",paid:0,count:0,returned:0,closed:false}
+  ],
+  feed:[{k:"don",t:"Пожертвование · закят",a:1000,d:1},{k:"don",t:"Пожертвование · на лекарства",a:500,d:1}]
+}}
+let S;
+try{S=JSON.parse(localStorage.getItem("amonat-v3"))}catch(e){}
+if(!S||!S.recipients)S=seed();
+function save(){try{localStorage.setItem("amonat-v3",JSON.stringify(S))}catch(e){if(!save.warned){save.warned=1;setTimeout(()=>toast("Память браузера заполнена: файлы сохранятся до перезагрузки страницы"),400)}}}
+const $=s=>document.querySelector(s);
+const m=n=>Math.round(n).toLocaleString("ru-RU").replace(/,/g," ")+" смн";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>el.hidden=true,3000)}
+function log(k,t,a,rid){S.feed.unshift({k,t,a,d:S.day,rid});S.feed=S.feed.slice(0,80)}
+const R=id=>S.recipients.find(r=>r.id===id);const P=id=>S.partners.find(p=>p.id===id);
+
+/* ---------- ДВИЖОК ---------- */
+const pend=r=>r.pending.reduce((s,x)=>s+x.a,0);
+const stock=r=>(r.bal+pend(r))/r.daily;
+function tier(r){
+  if(r.status!=="ok")return{k:0,why:"Документы на проверке"};
+  if(r.paused)return{k:0,why:"Пауза до проверки оператором"+(r.pauseWhy?": "+r.pauseWhy:"")};
+  const tot=r.bal+pend(r);
+  if(r.target&&tot<r.target)return{k:1,why:`Копит на лечение: ${m(tot)} из ${m(r.target)}`};
+  const d=stock(r);
+  for(const[lim,k]of RULE.tiers)if(d<=lim)return{k,why:k===1?`Запас ${Math.round(d)} дн.: полная норма`:`Запас ${Math.round(d)} дн.: норма ${k*100}%`};
+  return{k:0,why:`Запас ${Math.round(d)} дн.: начисление остановлено`};
+}
+function risk(r){
+  const from=Math.max(S.day-7,r.reviewed);const w=r.tx.filter(t=>t.d>from);const sig=[];
+  const maxs=w.filter(t=>t.max&&!t.flag&&!t.med&&t.a>=r.daily).length;
+  if(maxs>=3)sig.push([15*maxs,`${maxs} раз(а) за неделю сразу тратил весь баланс`]);
+  const bigs=w.filter(t=>t.big).length;
+  if(bigs)sig.push([20*bigs,`Крупные покупки не по назначению: ${bigs}`]);
+  const by={};w.filter(t=>t.d>S.day-5&&t.pid&&!t.med).forEach(t=>by[t.pid]=(by[t.pid]||0)+1);
+  const top=Math.max(0,...Object.values(by));if(top>=5&&maxs>=3)sig.push([15,`${top} раз за 5 дней в одном месте, всегда на всю сумму`]);
+  const fl=w.filter(t=>t.flag).length;if(fl)sig.push([25*fl,"Попытка оплаты больше 1 000 смн"]);
+  if(r.status==="ok"&&S.day-r.lastBuy>=RULE.idle&&r.bal>0)sig.push([10,"Не пользуется 30+ дней: уточнить, нужна ли помощь"]);
+  const score=Math.min(100,sig.reduce((s,x)=>s+x[0],0));
+  return{score,lvl:score>=60?"high":score>=30?"mid":"low",sig};
+}
+const todayCount=r=>r.tx.filter(t=>t.d===S.day&&!t.flag).length;
+
+const crit=r=>r.cat==="health"||r.cat==="disability";
+const burn=extra=>S.recipients.filter(r=>r.status==="ok"&&!r.paused).reduce((s,r)=>s+r.daily*tier(r).k,0)+(extra||0);
+const MEAL=25;
+const inflowParts=()=>[["Округление покупок",S.roundUsers*RULE.roundPer],["Кэшбэк в фонд",S.cashUsers*0.15],["Джума-садака",S.juma/7],["Подписки",S.subs/30],["1% от зарплаты",S.payroll/30]];
+const inflow=()=>inflowParts().reduce((s,x)=>s+x[1],0);
+function daysLeft(extra){const net=burn(extra)-inflow();return net<=0?Infinity:S.pool/net}
+const canAdmit=r=>daysLeft(r.daily)>=RULE.reserve;
+const waiting=()=>S.recipients.filter(r=>r.status==="wait").sort((a,b)=>b.need-a.need||a.since-b.since);
+function admitWaiting(){let n=0;for(const r of waiting()){if(!canAdmit(r))break;r.status="ok";r.lastBuy=S.day;log("join",`${r.name} подключён из листа ожидания`,0,r.id);n++}return n}
+/* Динамическая норма: бюджет дня = фонд / ${RULE.reserve} дней + постоянный доход.
+   Если денег много, все получают до 120% средней нормы. Если мало: больным не ниже 50%, остальным не ниже 30%. */
+function plan(){
+  const act=S.recipients.filter(r=>r.status==="ok"&&!r.paused);
+  let C=0,O=0;act.forEach(r=>{const w=r.daily*tier(r).k;if(crit(r))C+=w;else O+=w});
+  const budget=S.pool/RULE.reserve+inflow();let Kc,Ko;
+  if(budget>=C+O){Kc=Ko=C+O?Math.min(RULE.maxK,budget/(C+O)):1}
+  else{Kc=budget>=C?1:Math.max(RULE.minKc,C?budget/C:1);Ko=O?Math.min(1,Math.max(RULE.minKo,(budget-C*Kc)/O)):1}
+  return{Kc,Ko,budget,C,O};
+}
+const todayAmt=(r,pl)=>{if(r.status!=="ok")return 0;pl=pl||plan();return Math.floor(r.daily*tier(r).k*(crit(r)?pl.Kc:pl.Ko))};
+const big=n=>n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace(".",",")+" млн смн":m(n);
+const anon=id=>{let h=7;for(const c of String(id))h=(h*31+c.charCodeAt(0))%9000;return h+1000};
+const pct=x=>Math.round(x*100)+"%";
+function accrue(){
+  const inc=Math.round(inflow());if(inc){S.pool+=inc;S.raised+=inc;log("don","Округления и подписки за день",inc)}
+  admitWaiting();
+  const act=S.recipients.filter(r=>r.status==="ok");
+  act.forEach(r=>{const rk=risk(r);if(rk.lvl==="high"&&!r.paused){r.paused=true;r.pauseWhy=rk.sig.map(x=>x[1]).join("; ");log("flag",`${r.name}: начисление на паузе, риск ${rk.score}`,0,r.id)}});
+  const full=act.reduce((s,r)=>s+r.daily,0);
+  const pl=plan();
+  const rows=act.map(r=>({r,want:Math.floor(r.daily*tier(r).k)}));
+  const wantAll=rows.reduce((s,x)=>s+x.want,0);
+  let rem=S.pool,given=0;
+  const give=(r,a)=>{a=Math.min(Math.floor(a),rem);if(a>0){r.pending.push({a,unlock:Math.max(S.day+RULE.unlock,r.hold)});given+=a;rem-=a}};
+  rows.filter(x=>crit(x.r)).sort((a,b)=>stock(a.r)-stock(b.r)).forEach(x=>give(x.r,x.want*pl.Kc));
+  rows.filter(x=>!crit(x.r)).forEach(x=>give(x.r,x.want*pl.Ko));
+  const k=pl.Ko;S.lastK=pl.Ko;S.lastKc=pl.Kc;S.pool-=given;
+  const short=Math.max(0,wantAll-given),kept=Math.max(0,full-wantAll);S.saved+=kept;
+  log("acc",`День ${S.day}: ${act.length} получателей, коэффициент ${Math.round(pl.Kc*100)}% / ${Math.round(pl.Ko*100)}%`+(kept?`, ${m(kept)} оставлено для других`:""),given);
+  S.day++;
+  S.recipients.forEach(r=>{const now=r.pending.filter(x=>x.unlock<=S.day);r.bal+=now.reduce((s,x)=>s+x.a,0);r.pending=r.pending.filter(x=>x.unlock>S.day)});
+  S.partners.forEach(p=>{p.paid=0;p.count=0;p.returned=0;p.closed=false});
+  return{given,kept,short,k,Kc:pl.Kc};
+}
+function stress(){
+  S.pool=2500;
+  [["Нигина А.","health",5,35,500,"Лечение почек, лекарства каждую неделю"],["Семья Раҳимовых","lowincome",4,45,0,"Отец потерял работу, 4 детей"],["Саидали Ш.","disability",4,30,0,"Инвалидность II группы"],["Гулчеҳра Б.","elderly",3,25,0,"Пенсионерка, живёт одна"],["Сомон Т.","lowincome",2,30,0,"Временно без работы"]]
+  .forEach(([name,cat,need,daily,target,note],i)=>S.recipients.push({docs:[{kind:cat==="health"?"Заключение врача":cat==="disability"?"Справка об инвалидности":"Справка из махалли",name:"документ.pdf",demo:1,day:S.day}],id:"w"+i+Date.now(),name,cat,need,daily,target,note,city:"Душанбе",bal:0,status:"wait",since:S.day,bank:"Алиф",pending:[],tx:[],paused:false,reviewed:0,hold:0,lastBuy:S.day}));
+  log("flag","Сценарий: денег мало, 5 новых заявок",0);
+}
+function fundBlock(r){
+  if(r.status!=="ok")return"Кошелёк на проверке";
+  if(r.paused)return"Пауза: фонд проверяет активность";
+  if(todayCount(r)>=RULE.maxPerDay)return`Лимит ${RULE.maxPerDay} покупки в день`;
+  if(r.bal<=0)return pend(r)?`${m(pend(r))} поступит завтра`:"Баланс пуст";
+  return"";
+}
+function purchase(r,p,a,useFund){
+  const fund=useFund&&!fundBlock(r)?Math.min(r.bal,a):0;
+  if(fund>RULE.manual){r.tx.push({d:S.day,a:fund,flag:true});log("flag",`${r.name} · ${p.name}: ждёт подтверждения`,fund,r.id);return{fund:0,own:a,flag:true}}
+  if(fund){
+    const med=p.type==="pharmacy"&&(r.cat==="health"||r.cat==="disability");
+    const big=fund>=RULE.bigMul*r.daily&&!med;
+    r.tx.push({d:S.day,a:fund,pid:p.id,max:fund>=r.bal*0.95,big,med});
+    r.bal-=fund;r.lastBuy=S.day;p.paid+=fund;p.count++;
+    if(big)r.hold=S.day+RULE.hold;
+    S.feed.unshift({k:"pay",t:`${r.name} · ${p.name}`,a:fund,d:S.day,rid:r.id,pid:p.id});
+  }
+  return{fund,own:a-fund,flag:false};
+}
+function simulate(n){
+  let tot={given:0,kept:0};
+  for(let i=0;i<n;i++){
+    const g=accrue();tot.given+=g.given;tot.kept+=g.kept;const d=S.day;
+    const buy=(id,pid,amt)=>{const r=R(id);if(r&&r.bal>=10&&!fundBlock(r))purchase(r,P(pid),Math.min(amt,r.bal),true)};
+    if(d%5===0)buy("r1","p1",320);
+    buy("r2","p2",R("r2").bal);
+    buy("r3",d%2?"p2":"p3",45);
+    if(d%4===0)buy("r4","p2",60);
+    if(d%3===0)buy("r5","p1",80);
+  }
+  return tot;
+}
+
+/* ---------- ИНТЕРФЕЙС ---------- */
+let tab=(location.hash||"").slice(1);if(!TABS.some(t=>t[0]===tab))tab="overview";
+const EVTYPES=["Свадьба","Рождение ребёнка","Хадж / Умра","Рамазан","Выздоровление","День рождения","В память о близком"];
+function addDon(a,purpose,who,pub){S.donations.unshift({who:who||S.me.name||"Гость",pub:who?!!pub:(S.me.name?S.me.pub:false),a:Math.round(a),purpose,d:S.day});S.donations=S.donations.slice(0,300)}
+function donorTable(list,showAll){const by={};list.forEach(x=>{const key=showAll||x.pub?x.who:"Анонимные доноры";by[key]=by[key]||{who:key,a:0,n:0,anon:!(showAll||x.pub),pub:x.pub};by[key].a+=x.a;by[key].n++});
+  return Object.values(by).sort((a,b)=>a.anon-b.anon||b.a-a.a)}
+function monthReport(){
+  const from=S.day-30,f=S.feed.filter(x=>x.d>from);
+  const don=f.filter(x=>x.k==="don").reduce((s,x)=>s+x.a,0);
+  const pays=f.filter(x=>x.k==="pay");
+  const helped=new Set(pays.filter(x=>x.rid).map(x=>x.rid)).size;
+  const byType={pharmacy:0,shop:0,canteen:0};pays.forEach(x=>{const p=P(x.pid);if(p)byType[p.type]+=x.a});
+  const stories=pays.filter(x=>x.rid&&R(x.rid)).slice(0,4).map(x=>{const r=R(x.rid),p=P(x.pid);
+    const what=p.type==="pharmacy"?"купил(а) лекарства":p.type==="canteen"?"пообедал(а)":"купил(а) продукты";
+    return`Получатель №${anon(r.id)} (${CATS[r.cat].toLowerCase()}) ${what} в «${p.name.replace(/^.*«|»$/g,"")}» на ${m(x.a)}.`});
+  const goals=f.filter(x=>x.k==="don"&&x.t.startsWith("Цель")).length;
+  const dl=S.donations.filter(x=>x.d>from);
+  return{don,helped,byType,stories,goals,meals:S.mealsGiven,share:don?Math.min(100,S.myGiven/don*100):0,donors:donorTable(dl,false),donorsN:dl.length};
+}
+const SCALE={round:{name:"Округление покупок",per:RULE.roundPer,how:"Каждая покупка округляется вверх до целого сомони. В среднем человек отдаёт 30–50 дирамов в день и даже не замечает этого."},
+  cash:{name:"Кэшбэк в фонд",per:0.15,how:"Кэшбэк, который банк и так возвращает клиенту, уходит в фонд. Человек ничего не доплачивает."},
+  juma:{name:"Джума-садака 5 смн",per:5/7,how:"Каждую пятницу автоматически списывается 5 смн. Это меньше одной лепёшки в неделю."},
+  sms:{name:"1 смн в день",per:1,how:"Ежедневная садака в 1 сомони. Подключается одной кнопкой в приложении банка."}};
+const SCALE_STEPS=[1000,10000,50000,100000,300000,500000,1000000,2000000];
+let ui={scMech:"round",scPeople:100000,donName:"",zSave:0,zGold:0,newDocs:[],donAmt:100,donPurpose:"Общая помощь",wr:"r1",payR:"r1",payP:"p1",payAmt:120,step:1,useFund:true,receipt:null,pp:"p1"};
+function renderTabs(){$("#tabs").innerHTML=TABS.map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-tab="${k}">${l}</button>`).join("")}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b){tab=b.dataset.tab;history.replaceState(null,"","#"+tab);if(tab==="pay")ui.step=1;render();scrollTo(0,0)}});
+$("#reset").onclick=()=>{S=seed();save();ui.step=1;render();toast("Демо сброшено")};
+const tierPill=t=>`<span class="pill ${t.k===1?"p-good":t.k>0?"p-warn":"p-bad"}">Норма ${Math.round(t.k*100)}%</span>`;
+const riskPill=k=>`<span class="pill ${k.lvl==="high"?"p-bad":k.lvl==="mid"?"p-warn":"p-good"}">Риск ${k.score}</span>`;
+
+function vOverview(){
+  const ver=S.recipients.filter(r=>r.status==="ok");
+  const pl=plan();const need=ver.reduce((s,r)=>s+todayAmt(r,pl),0);const dl=daysLeft();const wl=waiting();
+  const held=S.recipients.reduce((s,r)=>s+r.bal+pend(r),0);
+  return `<div class="panel">
+  ${dl<RULE.warn?`<div class="card" style="border-color:var(--bad);background:var(--bad-soft)"><h2 style="color:var(--bad)">Денег хватит на ${Math.floor(dl)} дн.</h2><div class="note" style="color:var(--fg)">Нужно запустить сбор. ${wl.length?`В листе ожидания ${wl.length} чел.`:""} Больные и люди с инвалидностью получают норму первыми, остальным норма снижается поровну.</div><div class="row"><button class="btn" data-tab="donate">Открыть страницу сбора</button></div></div>`:""}
+  <div class="kpis">
+    <div class="kpi hl"><div class="l">Фонд к распределению</div><div class="v">${m(S.pool)}</div></div>
+    <div class="kpi"><div class="l">На кошельках людей</div><div class="v">${m(held)}</div></div>
+    <div class="kpi"><div class="l">Оставлено для других</div><div class="v">${m(S.saved)}</div></div>
+    <div class="kpi"><div class="l">Хватит на</div><div class="v">${dl===Infinity?"∞":Math.floor(dl)} дн.</div></div>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>День ${S.day}: начисление</h2><span class="pill p-acc">Сегодня ${m(need)}</span></div>
+    ${inflow()?`<div class="note">Постоянный доход (округления и подписки): <b style="color:var(--fg)">${m(inflow())} в день</b></div>`:""}
+    <div class="list">
+      <div class="item"><span>Бюджет дня (фонд ÷ ${RULE.reserve} дн. + доход)</span><span class="amt">${m(pl.budget)}</span></div>
+      <div class="item"><span>Больным и с инвалидностью</span><span class="pill ${pl.Kc>=1?"p-good":"p-warn"}">${pct(pl.Kc)} средней нормы</span></div>
+      <div class="item"><span>Остальным</span><span class="pill ${pl.Ko>=1?"p-good":pl.Ko>.5?"p-warn":"p-bad"}">${pct(pl.Ko)} средней нормы</span></div>
+    </div>
+    <div class="note">Вы задаёте среднюю норму, а система сама пересчитывает её каждый день под бюджет: от 30% до ${pct(RULE.maxK)}. Новые деньги доступны на следующий день.</div>
+    <div class="row"><button class="btn" id="accrue">Начислить за день ${S.day}</button><button class="btn ghost" id="stress">Сценарий: людей больше, денег меньше</button></div>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Получатели</h2><span class="note">Проверка: справки, махалля, хукумат</span></div>
+    <div class="list">${S.recipients.map(r=>{const t=tier(r);return`<div class="item"><div class="who"><div class="name">${esc(r.name)} ${r.status==="ok"?tierPill(t):r.status==="wait"?`<span class="pill p-gold">Ожидание №${wl.indexOf(r)+1}</span>`:`<span class="pill p-warn">На проверке</span>`}</div><div class="meta">Нужда: ${NEED[r.need]} · ${CATS[r.cat]} · ${esc(r.note)} · ${esc(r.city)} · ${r.bank}</div><button class="btn small ghost" style="margin-top:6px" data-docs="${r.id}">Документы: ${r.docs.length}</button></div><div class="center">${r.status==="ok"?`<div class="amt">${m(r.bal)}</div><div class="meta">сегодня ${todayAmt(r,pl)} из ${r.daily}</div>`:r.status==="wait"?`<div class="meta">${r.daily} смн/день</div>`:`<button class="btn small" data-docs="${r.id}">Проверить</button>`}</div></div>`}).join("")}</div>
+    <div class="note">Новый человек подключается, только если фонд потянет его норму минимум ${RULE.reserve} дней. Иначе он ждёт в очереди: первым подключится тот, чья нужда выше.</div>
+  </div>
+  <div class="card">
+    <h2>Добавить нуждающегося</h2>
+    <div class="grid2">
+      <label>Имя<input id="nName" placeholder="Например, Нигина А."></label>
+      <label>Город<input id="nCity" placeholder="Душанбе"></label>
+      <label>Категория<select id="nCat">${Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></label>
+      <label>Средняя норма в день, смн<input id="nDaily" type="number" min="5" value="30"></label>
+      <label>Уровень нужды<select id="nNeed">${NEED.slice(1).map((v,i)=>`<option value="${i+1}" ${i===2?"selected":""}>${v}</option>`).join("")}</select></label>
+      <label>Цель на лечение, смн (если есть)<input id="nTarget" type="number" min="0" value="0"></label>
+      <label style="grid-column:1/-1">Причина нужды<input id="nNote" placeholder="Например: диабет 1 типа, нужен инсулин"></label>
+    </div>
+    <div class="upload">
+      <h3>Документы</h3>
+      <div class="grid2">
+        <label>Тип документа<select id="nKind">${DOCKINDS.map(k=>`<option>${k}</option>`).join("")}</select></label>
+        <label>Фото или файл (можно несколько)<input id="nFiles" type="file" accept="image/*,application/pdf" multiple></label>
+      </div>
+      <div class="docs" id="nDocs">${docsHtml(ui.newDocs,"new")}</div>
+      <div class="note">Без хотя бы одного документа заявку отправить нельзя. Фото сжимаются автоматически.</div>
+    </div>
+    <div><button class="btn" id="addR">Отправить на проверку</button></div>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Доноры</h2><span class="pill p-gold">Видно только фонду</span></div>
+    <div class="list">${donorTable(S.donations,true).slice(0,15).map(d=>`<div class="item"><div class="who"><div class="name">${esc(d.who)} <span class="pill ${d.pub?"p-good":"p-acc"}">${d.pub?"Публично":"Анонимно"}</span></div><div class="meta">${d.n} пожертв.</div></div><span class="amt">${m(d.a)}</span></div>`).join("")}</div>
+    <div class="note">Нужно для бухгалтерии, налоговых документов и проверок. Анонимные доноры в публичном отчёте показаны без имени.</div>
+  </div>
+  <div class="card feed"><h2>Журнал операций</h2>${feedHtml(S.feed.slice(0,12))}</div>
+  </div>`;
+}
+function feedHtml(f){if(!f.length)return `<div class="note">Пока нет операций.</div>`;
+  const ic={join:["p-good","Подключение"],don:["p-good","Пожертвование"],pay:["p-acc","Оплата"],acc:["p-gold","Начисление"],ret:["p-good","Возврат партнёра"],flag:["p-bad","Проверка"]};
+  return `<div class="list">${f.map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">${esc(x.t)}</div><div class="meta"><span class="pill ${ic[x.k][0]}">${ic[x.k][1]}</span> · день ${x.d}</div></div>${x.a?`<div class="amt">${x.k==="pay"?"−":x.k==="flag"?"":"+"}${m(x.a)}</div>`:""}</div>`).join("")}</div>`}
+function verify(r){r.since=S.day;r.lastBuy=S.day;if(canAdmit(r)){r.status="ok";toast(`${r.name}: подключён к кошельку`)}else{r.status="wait";log("flag",`${r.name}: в листе ожидания, не хватает резерва`,0,r.id);toast(`${r.name}: проверен, но фонд пока не потянет. Добавлен в очередь`)}log("join",`${r.name}: документы проверены (${r.docs.length})`,0,r.id);save();render()}
+/* ---------- ДОКУМЕНТЫ ---------- */
+function readDoc(f,kind){return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{
+  if(!f.type.startsWith("image/"))return res({kind,name:f.name,size:f.size,day:S.day});
+  const i=new Image();i.onerror=rej;i.onload=()=>{const sc=Math.min(1,1000/Math.max(i.width,i.height));const c=document.createElement("canvas");c.width=Math.round(i.width*sc);c.height=Math.round(i.height*sc);c.getContext("2d").drawImage(i,0,0,c.width,c.height);res({kind,name:f.name,img:c.toDataURL("image/jpeg",.72),day:S.day})};i.src=fr.result};fr.readAsDataURL(f)})}
+function docsHtml(list,owner){if(!list.length)return`<div class="note">Документов пока нет.</div>`;
+  return list.map((d,i)=>`<div class="doc">${d.img?`<img src="${d.img}" alt="${esc(d.kind)}" data-zoom="${i}">`:`<div class="ph">${(d.name.split(".").pop()||"файл").toUpperCase()}</div>`}<div class="cap"><b>${esc(d.kind)}</b><span>${esc(d.name)}${d.demo?" · пример":""}</span><span>день ${d.day}</span>${owner?`<button class="btn small ghost" data-rm="${i}">Убрать</button>`:""}</div></div>`).join("")}
+function bindDocs(root,list,after){root.querySelectorAll("[data-zoom]").forEach(im=>im.onclick=()=>{const z=$("#zoom");z.innerHTML=`<img src="${list[+im.dataset.zoom].img}" alt="">`;z.hidden=false});
+  root.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{list.splice(+b.dataset.rm,1);save();after&&after()})}
+function openDocs(id){const r=R(id),md=$("#modal");
+  const draw=()=>{md.innerHTML=`<div class="sheet" role="dialog" aria-label="Документы">
+    <div class="row between"><h2>${esc(r.name)}</h2><button class="btn small ghost" id="mClose">Закрыть</button></div>
+    <div class="note">${CATS[r.cat]} · Нужда: ${NEED[r.need]} · ${esc(r.note)}</div>
+    <div class="docs" id="mDocs">${docsHtml(r.docs,r.id)}</div>
+    <div class="upload"><div class="grid2"><label>Тип документа<select id="mKind">${DOCKINDS.map(k=>`<option>${k}</option>`).join("")}</select></label><label>Добавить фото или файл<input id="mFiles" type="file" accept="image/*,application/pdf" multiple></label></div></div>
+    ${r.status==="check"?`<div class="row"><button class="btn" id="mVerify" ${r.docs.length?"":"disabled"}>Документы в порядке, подтвердить</button><button class="btn ghost" id="mReject">Отклонить</button></div>`:`<div class="note">Статус: ${r.status==="ok"?"получает помощь":r.status==="wait"?"в листе ожидания":"на проверке"}. Документы хранятся для повторной проверки.</div>`}
+  </div>`;
+    $("#mClose").onclick=()=>{md.hidden=true;md.innerHTML="";render()};
+    bindDocs($("#mDocs"),r.docs,draw);
+    $("#mFiles").onchange=async e=>{const fs=[...e.target.files];for(const f of fs){try{r.docs.push(await readDoc(f,$("#mKind").value))}catch(_){toast(`Не удалось прочитать ${f.name}`)}}save();draw()};
+    if($("#mVerify"))$("#mVerify").onclick=()=>{md.hidden=true;md.innerHTML="";verify(r)};
+    if($("#mReject"))$("#mReject").onclick=()=>{S.recipients=S.recipients.filter(x=>x!==r);log("flag",`${r.name}: заявка отклонена`,0);md.hidden=true;md.innerHTML="";save();render();toast("Заявка отклонена")};
+  };draw();md.hidden=false;md.onclick=e=>{if(e.target===md){md.hidden=true;md.innerHTML="";render()}}}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("#zoom").hidden=true;}});
+document.getElementById("zoom").onclick=()=>$("#zoom").hidden=true;
+function doAccrue(){const g=accrue();save();render();toast(g.k<1||g.Kc<1?`Денег мало: больным ${pct(g.Kc)}, остальным ${pct(g.k)} нормы`:g.k>1?`Денег хватает: все получили ${pct(g.k)} нормы, ${m(g.given)}`:`Начислено ${m(g.given)}`+(g.kept?`, ${m(g.kept)} оставлено для других`:""))}
+function bindOverview(){
+  $("#accrue").onclick=doAccrue;
+  $("#stress").onclick=()=>{stress();save();render();toast("Денег стало мало, пришли 5 новых заявок. Нажмите «Начислить»")};
+  $("#nFiles").onchange=async e=>{const fs=[...e.target.files];e.target.value="";for(const f of fs){try{ui.newDocs.push(await readDoc(f,$("#nKind").value))}catch(_){toast(`Не удалось прочитать ${f.name}`)}}$("#nDocs").innerHTML=docsHtml(ui.newDocs,"new");bindDocs($("#nDocs"),ui.newDocs,()=>$("#nDocs").innerHTML=docsHtml(ui.newDocs,"new"))};
+  bindDocs($("#nDocs"),ui.newDocs,()=>{$("#nDocs").innerHTML=docsHtml(ui.newDocs,"new");bindDocs($("#nDocs"),ui.newDocs)});
+  document.querySelectorAll("[data-docs]").forEach(b=>b.onclick=()=>openDocs(b.dataset.docs));
+  $("#addR").onclick=()=>{
+    const name=$("#nName").value.trim();if(!name)return toast("Укажите имя");
+    if(!ui.newDocs.length)return toast("Прикрепите хотя бы один документ");
+    S.recipients.push({docs:ui.newDocs,id:"r"+Date.now(),name,city:$("#nCity").value.trim()||"Душанбе",cat:$("#nCat").value,note:$("#nNote").value.trim()||"Документы загружены",daily:Math.max(5,+$("#nDaily").value||30),need:+$("#nNeed").value||3,since:S.day,target:Math.max(0,+$("#nTarget").value||0),bal:0,status:"check",bank:"Алиф",pending:[],tx:[],paused:false,reviewed:0,hold:0,lastBuy:S.day});
+    ui.newDocs=[];save();render();toast("Заявка отправлена на проверку");
+  };
+}
+
+/* ---------- НАБЛЮДЕНИЕ ---------- */
+function vWatch(){
+  const act=S.recipients.filter(r=>r.status==="ok");
+  const paused=act.filter(r=>r.paused).length;
+  const rows=act.map(r=>({r,t:tier(r),k:risk(r)})).sort((a,b)=>b.k.score-a.k.score);
+  return `<div class="panel">
+  <div class="kpis">
+    <div class="kpi hl"><div class="l">Оставлено для других</div><div class="v">${m(S.saved)}</div></div>
+    <div class="kpi"><div class="l">На паузе</div><div class="v">${paused}</div></div>
+    <div class="kpi"><div class="l">День</div><div class="v">${S.day}</div></div>
+  </div>
+  <div class="card">
+    <h2>Проверить на примере</h2>
+    <div class="note">Система прокрутит неделю: люди покупают как обычно, а Бахтиёр каждый день тратит весь баланс в одном магазине. Посмотрите, как система это заметит и остановит.</div>
+    <div class="row"><button class="btn" id="sim7">Прокрутить 7 дней</button><button class="btn ghost" id="sim1">Один день</button></div>
+  </div>
+  <div class="card">
+    <h2>Кто под наблюдением</h2>
+    <div class="list">${rows.map(({r,t,k})=>`<div class="item" style="align-items:flex-start"><div class="who">
+      <div class="name">${esc(r.name)} ${tierPill(t)} ${riskPill(k)}</div>
+      <div class="meta">Доступно ${m(r.bal)}${pend(r)?` · ожидает ${m(pend(r))}`:""}${r.hold>S.day?` · задержка до дня ${r.hold}`:""}</div>
+      <div class="meta">${esc(t.why)}</div>
+      ${k.sig.map(s=>`<div class="meta" style="color:var(--${k.lvl==="high"?"bad":"warn"})">• ${esc(s[1])}</div>`).join("")}
+    </div><div>${r.paused?`<button class="btn small" data-unpause="${r.id}">Проверил, снять паузу</button>`:""}</div></div>`).join("")}</div>
+  </div>
+  <div class="card">
+    <h2>Правила системы</h2>
+    <div class="list">
+      <div class="item"><div class="who"><div class="name">Снижение при большом запасе</div><div class="meta">Запас до ${RULE.tiers[0][0]} дней: 100% нормы. До ${RULE.tiers[1][0]}: 50%. До ${RULE.tiers[2][0]}: 25%. Больше: начисление стоит. Сэкономленное идёт другим.</div></div></div>
+      <div class="item"><div class="who"><div class="name">Цель на лечение</div><div class="meta">Больным можно копить без снижения до суммы курса лекарств (например, инсулин на месяц).</div></div></div>
+      <div class="item"><div class="who"><div class="name">Задержка поступления</div><div class="meta">Новые деньги доступны на следующий день. После крупной покупки не в аптеке (от ${RULE.bigMul} дневных норм) задержка ${RULE.hold} дня.</div></div></div>
+      <div class="item"><div class="who"><div class="name">Лимиты</div><div class="meta">Не больше ${RULE.maxPerDay} покупок в день. Покупка из фонда больше ${m(RULE.manual)} подтверждается вручную.</div></div></div>
+      <div class="item"><div class="who"><div class="name">Оценка риска</div><div class="meta">Следит за признаками обналичивания: трата всего баланса сразу, одно место много раз, крупные покупки не по назначению. Риск от 60: начисление на паузе, пока оператор не проверит.</div></div></div>
+      <div class="item"><div class="who"><div class="name">Динамическая норма</div><div class="meta">Оператор задаёт среднюю норму. Каждый день система делит бюджет (фонд ÷ ${RULE.reserve} дней + постоянный доход) на всех получателей: при большом бюджете до ${pct(RULE.maxK)}, при малом меньше.</div></div></div>
+      <div class="item"><div class="who"><div class="name">Когда денег мало</div><div class="meta">Больные и люди с инвалидностью получают норму первыми, не ниже 50%. Если запаса меньше чем на ${RULE.reserve} дней, остальным норма снижается поровну, но не ниже 30%, чтобы деньги растянулись. Новых подключаем, только если хватает резерва на ${RULE.reserve} дней, иначе лист ожидания по уровню нужды. При запасе меньше ${RULE.warn} дней фонд получает предупреждение.</div></div></div>
+    </div>
+    <div class="note">Сейчас это правила и оценка риска. Когда пилот накопит реальные случаи, на них обучается модель, и она начнёт замечать новые схемы обмана сама.</div>
+  </div></div>`;
+}
+function bindWatch(){
+  $("#sim7").onclick=()=>{const t=simulate(7);save();render();toast(`Неделя прошла: начислено ${m(t.given)}, оставлено для других ${m(t.kept)}`)};
+  $("#sim1").onclick=()=>{const t=simulate(1);save();render();toast(`День прошёл: начислено ${m(t.given)}`)};
+  document.querySelectorAll("[data-unpause]").forEach(b=>b.onclick=()=>{const r=R(b.dataset.unpause);r.paused=false;r.pauseWhy="";r.reviewed=S.day;save();render();toast(`${r.name}: пауза снята`)});
+}
+
+/* ---------- ДОНОР ---------- */
+function vDonate(){
+  const a=ui.donAmt;const ops=Math.round(a*OPS_SHARE);
+  const people=S.recipients.filter(r=>r.status==="ok");
+  const mt=S.match,mAdd=Math.min(mt.left,a);
+  const goals=people.filter(r=>r.target>0).map(r=>({r,have:r.bal+pend(r)})).filter(g=>g.have<g.r.target);
+  const sc=SCALE[ui.scMech],ppl=ui.scPeople,perMonth=sc.per*30,total=perMonth*ppl;
+  const zk=ui.zSave&&ui.zGold?(ui.zSave>=85*ui.zGold?ui.zSave*0.025:0):null;
+  return `<div class="panel">
+  <div class="card">
+    <h2>Пожертвовать</h2>
+    <div class="grid2">
+      <label>Ваше имя или компания<input id="meName" placeholder="Например: Умар Х." value="${esc(S.me.name)}"></label>
+      <label style="display:flex;gap:8px;align-items:center;align-self:end;color:var(--fg);font-weight:500"><input id="mePub" type="checkbox" style="width:auto" ${S.me.pub?"checked":""}>Показывать моё имя в отчёте</label>
+    </div>
+    <div class="note">По умолчанию пожертвование анонимное: тайная садака ценится выше. Фонд видит имя всегда, публичный отчёт только с вашего согласия.</div>
+    ${daysLeft()<RULE.warn?`<div class="note" style="color:var(--bad);font-weight:600">Фонду срочно нужна помощь: денег осталось на ${Math.floor(daysLeft())} дн.${waiting().length?`, ${waiting().length} чел. ждут в очереди`:""}.</div>`:""}
+    ${mt.left>0?`<div class="row between" style="background:var(--gold-soft);border-radius:12px;padding:10px 12px"><div><b style="color:var(--gold)">×2 Удвоение</b><div class="note">${esc(mt.name)} удваивает каждое пожертвование. Осталось ${m(mt.left)} из ${m(mt.total)}.</div></div></div>`:""}
+    <div class="chips">${[50,100,500,1000,5000].map(v=>`<button class="chip" aria-pressed="${a===v}" data-amt="${v}">${v} смн</button>`).join("")}</div>
+    <label>Другая сумма<input id="dAmt" type="number" min="1" value="${a}"></label>
+    <label>Назначение<select id="dPur">${["Общая помощь","На лекарства","Закят","Садака","Семьям с детьми"].map(p=>`<option ${p===ui.donPurpose?"selected":""}>${p}</option>`).join("")}</select></label>
+    <label>От чьего имени (необязательно)<input id="dName" placeholder="Например: в память об отце, за здоровье мамы" value="${esc(ui.donName)}"></label>
+    <div class="split"><i style="width:90%;background:var(--accent)"></i><i style="width:10%;background:var(--gold)"></i></div>
+    <div class="row between note"><span>Нуждающимся: <b style="color:var(--fg)">${m(a-ops+mAdd)}</b>${mAdd?` (с удвоением)`:""}</span><span>Работа фонда: <b style="color:var(--fg)">${m(ops)}</b></span></div>
+    <button class="btn" id="donBtn">Оплатить ${m(a)} через Алиф</button>
+    <div class="note">Деньги не попадают на чужую карту. Они тратятся только у проверенных аптек, магазинов и столовых.</div>
+  </div>
+  ${S.cert?`<div class="card" style="border:2px solid var(--gold);text-align:center">
+    <div class="sub" style="letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--gold)">Сертификат садаки</div>
+    <div class="big">${m(S.cert.a)}</div>
+    <div>${S.cert.name?`От имени: <b>${esc(S.cert.name)}</b>`:"Анонимное пожертвование"}</div>
+    <div class="note">${esc(S.cert.purpose)} · день ${S.cert.d} · Благотворительный фонд «Амонат»</div>
+    <div style="font-weight:600">Пусть Аллах примет вашу садаку</div>
+    <div class="note">Сохраните скриншот и отправьте близким вместо подарка или в память о родных.</div>
+  </div>`:""}
+  <div class="card">
+    <h2>Копейки для одного, миллионы для многих</h2>
+    <div class="note">Помощь, которую человек почти не замечает, но вместе это огромные суммы. Посчитайте сами:</div>
+    <label>Способ<select id="scMech">${Object.entries(SCALE).map(([k,v])=>`<option value="${k}" ${k===ui.scMech?"selected":""}>${v.name}</option>`).join("")}</select></label>
+    <label>Сколько людей участвует: <b style="color:var(--fg)" id="scN">${ppl.toLocaleString("ru-RU")}</b><input id="scPeople" type="range" min="0" max="${SCALE_STEPS.length-1}" step="1" value="${SCALE_STEPS.indexOf(ppl)}"></label>
+    <div class="list">
+      <div class="item"><span>Один человек в месяц</span><span class="amt">${m(perMonth)}</span></div>
+      <div class="item"><span>Все вместе в месяц</span><span class="amt" style="color:var(--accent);font-size:17px">${big(total)}</span></div>
+      <div class="item"><span>Хватит в месяц на</span><span class="amt">${Math.floor(total/(30*30)).toLocaleString("ru-RU")} чел. по 30 смн в день</span></div>
+    </div>
+    <div class="note">${sc.how}</div>
+  </div>
+  <div class="card">
+    <h2>Помогать постоянно</h2>
+    <div class="list">
+      ${[["myRound","Округлять покупки","Покупка за 47,60 смн спишется как 48, разница уйдёт в фонд."],
+         ["myCash","Кэшбэк в фонд","Кэшбэк банка за покупки автоматически уходит в «Амонат»."],
+         ["myJuma","Джума-садака","Каждую пятницу автоматически 5 смн."]].map(([id,t,d])=>`<div class="item"><div class="who"><div class="name">${t}</div><div class="meta">${d}</div></div><button class="chip" id="${id}" aria-pressed="${!!S[id]}">${S[id]?"Включено":"Включить"}</button></div>`).join("")}
+    </div>
+    <h3>Ежемесячная подписка</h3>
+    <div class="chips">${[10,20,50,100].map(v=>`<button class="chip" data-sub="${v}">${v} смн в месяц</button>`).join("")}</div>
+    <h3>Для компаний</h3>
+    <div class="note">Сотрудник соглашается отдавать 1% зарплаты, бухгалтерия перечисляет автоматически. Компания получает публичное «спасибо» в отчёте фонда.</div>
+    <div class="row"><button class="btn small ghost" id="payroll">Демо: компания на 200 сотрудников подключила 1%</button></div>
+    <div class="row"><button class="btn small ghost" id="round1k">Демо: ещё 1 000 клиентов включили округление</button><button class="btn small ghost" id="cash1k">Демо: ещё 1 000 отдают кэшбэк</button></div>
+    <div class="list">${inflowParts().filter(x=>x[1]>0).map(([n,v])=>`<div class="item"><span>${n}</span><span class="amt">${m(v)} в день</span></div>`).join("")||`<div class="note">Пока никто не подключён.</div>`}
+      <div class="item"><span><b>Постоянный доход фонда</b></span><span class="amt">${m(inflow())} в день</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Закрыть чью-то цель</h2>
+    <div class="note">Помогите конкретному человеку собрать на курс лечения. Имена скрыты, деньги можно потратить только в аптеке-партнёре.</div>
+    ${goals.length?`<div class="list">${goals.map(({r,have})=>`<div class="item" style="display:grid;gap:6px"><div class="row between"><div class="name">Получатель №${anon(r.id)} · ${CATS[r.cat]}</div><span class="amt">${m(have)} из ${m(r.target)}</span></div>
+      <div class="split"><i style="width:${Math.min(100,have/r.target*100)}%;background:var(--good)"></i></div>
+      <div class="chips"><button class="chip" data-goal="${r.id}" data-ga="50">50 смн</button><button class="chip" data-goal="${r.id}" data-ga="100">100 смн</button><button class="chip" data-goal="${r.id}" data-ga="${r.target-have}">Закрыть цель · ${m(r.target-have)}</button></div></div>`).join("")}</div>`:`<div class="note">Сейчас все цели на лечение собраны. Альхамдулиллах!</div>`}
+  </div>
+  <div class="card">
+    <h2>Оплаченный обед</h2>
+    <div class="note">Оплатите обед заранее в столовой-партнёре. Любой нуждающийся получит его бесплатно. Один обед: ${m(MEAL)}.</div>
+    <div class="chips">${[1,5,10,30].map(n=>`<button class="chip" data-meal="${n}">${n} ${n===1?"обед":n<5?"обеда":"обедов"} · ${m(n*MEAL)}</button>`).join("")}</div>
+    <div class="note">Ждут в столовой: <b style="color:var(--fg)">${S.meals}</b> · уже выдано: <b style="color:var(--fg)">${S.mealsGiven}</b></div>
+  </div>
+  <div class="card">
+    <h2>Калькулятор закята</h2>
+    <div class="grid2">
+      <label>Сбережения (наличные, карты, вклады), смн<input id="zSave" type="number" min="0" value="${ui.zSave||""}" placeholder="0"></label>
+      <label>Цена 1 г золота сегодня, смн<input id="zGold" type="number" min="0" value="${ui.zGold||""}" placeholder="узнайте в банке"></label>
+    </div>
+    ${zk===null?`<div class="note">Нисаб = 85 г золота. Введите обе суммы, и система посчитает закят 2,5%.</div>`:
+      zk>0?`<div class="row between"><span>Нисаб ${m(85*ui.zGold)}. Ваш закят:</span><span class="big" style="font-size:22px">${m(zk)}</span></div><button class="btn" id="zPay">Выплатить закят через «Амонат»</button>`:
+      `<div class="note">Сбережения меньше нисаба (${m(85*ui.zGold)}). Закят не обязателен, но садака всегда приветствуется.</div>`}
+    <div class="note">Это примерный расчёт. В сложных случаях уточните у имама.</div>
+  </div>
+  <div class="card">
+    <h2>Сбор в честь события</h2>
+    <div class="note">Вместо подарков на свадьбу, рождение ребёнка или после хаджа гости жертвуют в «Амонат» от имени виновника торжества. Каждый гость получает сертификат.</div>
+    <div class="grid2">
+      <label>Событие<select id="evType">${EVTYPES.map(t=>`<option>${t}</option>`).join("")}</select></label>
+      <label>В честь кого<input id="evWho" placeholder="Например: Фаридун и Мадина"></label>
+      <label>Цель сбора, смн<input id="evTarget" type="number" min="100" value="3000"></label>
+    </div>
+    <div><button class="btn" id="evCreate">Создать сбор</button></div>
+    ${S.events.length?`<div class="list">${S.events.map(e=>`<div class="item" style="display:grid;gap:6px">
+      <div class="row between"><div><div class="name">${esc(e.type)} · ${esc(e.who)}</div><div class="meta">${e.guests} гостей пожертвовали · с дня ${e.d}</div></div><span class="amt">${m(e.raised)} из ${m(e.target)}</span></div>
+      <div class="split"><i style="width:${Math.min(100,e.raised/e.target*100)}%;background:var(--gold)"></i></div>
+      <div class="chips"><button class="chip" data-ev="${e.id}" data-eva="50">Гость: 50 смн</button><button class="chip" data-ev="${e.id}" data-eva="100">Гость: 100 смн</button><button class="chip" data-ev="${e.id}" data-eva="500">Гость: 500 смн</button></div>
+      ${e.raised>=e.target?`<div class="note" style="color:var(--good);font-weight:600">Цель собрана! Баракаллаху лакум.</div>`:""}</div>`).join("")}</div>`:""}
+  </div>
+  <div class="card">
+    <h2>Отчёт донору за месяц</h2>
+    <div class="note">Каждый месяц донор получает в приложении банка короткий отчёт с историями без имён: кому и как помогли его деньги.</div>
+    ${ui.showReport?(()=>{const rp=monthReport();return`<div style="border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px;background:var(--bg)">
+      <div class="sub" style="text-transform:uppercase;letter-spacing:.08em;font-weight:600">«Амонат» · отчёт за последние 30 дней</div>
+      <div class="kpis">
+        <div class="kpi"><div class="l">Собрано</div><div class="v">${m(rp.don)}</div></div>
+        <div class="kpi"><div class="l">Получили помощь</div><div class="v">${rp.helped} чел.</div></div>
+        <div class="kpi"><div class="l">Выдано обедов</div><div class="v">${rp.meals}</div></div>
+      </div>
+      <div class="list">
+        <div class="item"><span>Лекарства в аптеках</span><span class="amt">${m(rp.byType.pharmacy)}</span></div>
+        <div class="item"><span>Продукты в магазинах</span><span class="amt">${m(rp.byType.shop)}</span></div>
+        <div class="item"><span>Обеды в столовых</span><span class="amt">${m(rp.byType.canteen)}</span></div>
+        ${rp.goals?`<div class="item"><span>Пожертвований на цели лечения</span><span class="amt">${rp.goals}</span></div>`:""}
+      </div>
+      <h3>Кто пожертвовал</h3>
+      <div class="list">${rp.donors.map(d=>`<div class="item"><div class="who"><div class="name" style="${d.anon?"color:var(--muted);font-weight:500":""}">${esc(d.who)}</div><div class="meta">${d.n} ${d.n===1?"пожертвование":d.n<5?"пожертвования":"пожертвований"}</div></div><span class="amt">${m(d.a)}</span></div>`).join("")}</div>
+      <div class="note">Имя видно, только если донор сам разрешил. Остальные суммы объединены в строку «Анонимные доноры».</div>
+      <h3>Истории</h3>
+      ${rp.stories.length?rp.stories.map(t=>`<div class="note" style="color:var(--fg)">• ${esc(t)}</div>`).join(""):`<div class="note">Покупок пока не было. Проведите оплату во вкладке «Оплата QR» или прокрутите дни во вкладке «Наблюдение».</div>`}
+      ${S.myGiven?`<div style="font-weight:600">Ваш вклад: ${m(S.myGiven)}${rp.share?` · ${rp.share.toFixed(1).replace(".",",")}% всех пожертвований месяца`:""}. Джазакаллаху хайран!</div>`:""}
+    </div>`})():""}
+    <div><button class="btn ${ui.showReport?"ghost":""}" id="repBtn">${ui.showReport?"Скрыть отчёт":"Показать отчёт за месяц"}</button></div>
+  </div>
+  <div class="card">
+    <h2>Ваша помощь</h2>
+    ${S.myGiven?`<div class="big">${m(S.myGiven)}</div><div class="note">Это примерно ${Math.floor(S.myGiven/MEAL)} обедов или ${Math.floor(S.myGiven/30)} дней помощи одному человеку.</div>`:`<div class="note">Здесь появится, скольким людям вы помогли.</div>`}
+  </div>
+  <div class="card">
+    <h2>Куда ушли деньги</h2>
+    <div class="note">Публичный отчёт без имён.</div>
+    ${feedHtml(S.feed.filter(x=>x.k!=="flag").slice(0,8).map(x=>x.k==="pay"?{...x,t:"Получатель · "+(P(x.pid)||{name:""}).name}:x))}
+    <div class="note">Сейчас помощь получают ${people.length} человек(а) и семьи.</div>
+  </div></div>`;
+}
+function donate(a,purpose,name){
+  const ops=Math.round(a*OPS_SHARE),mAdd=Math.min(S.match.left,a);
+  S.pool+=a-ops+mAdd;S.ops+=ops;S.raised+=a+mAdd;S.myGiven+=a;S.match.left-=mAdd;
+  log("don",`Пожертвование · ${purpose.toLowerCase()}${name?" · от имени: "+name:""}`,a);
+  if(mAdd)log("don",`${S.match.name} удвоил пожертвование`,mAdd);
+  addDon(a,purpose);if(mAdd)addDon(mAdd,"Удвоение",S.match.name,true);
+  S.cert={a:a+mAdd,name,purpose,d:S.day};return mAdd;
+}
+function bindDonate(){
+  document.querySelectorAll("[data-amt]").forEach(b=>b.onclick=()=>{ui.donAmt=+b.dataset.amt;render()});
+  $("#dAmt").onchange=e=>{ui.donAmt=Math.max(1,+e.target.value||1);render()};
+  $("#dPur").onchange=e=>ui.donPurpose=e.target.value;
+  $("#meName").onchange=e=>{S.me.name=e.target.value.trim();save()};
+  $("#mePub").onchange=e=>{S.me.pub=e.target.checked;save();toast(e.target.checked?"Имя будет видно в отчёте":"Вы будете анонимным донором")};
+  $("#dName").oninput=e=>ui.donName=e.target.value;
+  $("#donBtn").onclick=()=>{const mAdd=donate(ui.donAmt,ui.donPurpose,ui.donName.trim());ui.donName="";save();render();toast(mAdd?`Джазакаллаху хайран! Спонсор добавил ещё ${m(mAdd)}`:"Джазакаллаху хайран! Пожертвование принято")};
+  $("#scMech").onchange=e=>{ui.scMech=e.target.value;render()};
+  $("#scPeople").oninput=e=>{const v=SCALE_STEPS[+e.target.value];$("#scN").textContent=v.toLocaleString("ru-RU")};
+  $("#scPeople").onchange=e=>{ui.scPeople=SCALE_STEPS[+e.target.value];render()};
+  const tog=(id,field,step,msg)=>$("#"+id).onclick=()=>{S[id]=!S[id];S[field]+=S[id]?step:-step;if(field==="juma")S.jumaN+=S[id]?1:-1;save();render();toast(S[id]?msg:"Выключено")};
+  tog("myRound","roundUsers",1,"Округление включено");tog("myCash","cashUsers",1,"Кэшбэк будет уходить в фонд");tog("myJuma","juma",5,"Джума-садака: 5 смн каждую пятницу");
+  $("#round1k").onclick=()=>{S.roundUsers+=1000;save();render();toast(`Постоянный доход фонда: ${m(inflow())} в день`)};
+  $("#cash1k").onclick=()=>{S.cashUsers+=1000;save();render();toast(`Постоянный доход фонда: ${m(inflow())} в день`)};
+  $("#payroll").onclick=()=>{S.payroll+=200*3000*0.01;S.payrollN++;addDon(6000,"1% от зарплаты","ООО «Сомон Тех» (200 сотрудников)",true);log("don","Компания подключила 1% от зарплаты (200 сотрудников)",200*3000*0.01);save();render();toast("Компания подключена: +6 000 смн в месяц")};
+  document.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>{S.subs+=+b.dataset.sub;S.subsN++;save();render();toast("Подписка оформлена. Джазакаллаху хайран!")});
+  document.querySelectorAll("[data-goal]").forEach(b=>b.onclick=()=>{const r=R(b.dataset.goal),a=Math.round(+b.dataset.ga);addDon(a,"Цель на лечение");r.bal+=a;S.raised+=a;S.myGiven+=a;log("don",`Цель на лечение получателя №${anon(r.id)}`,a,r.id);save();render();toast(r.bal+pend(r)>=r.target?"Цель закрыта! Человек может купить лекарства":"Спасибо! Деньги уже на кошельке получателя")});
+  document.querySelectorAll("[data-meal]").forEach(b=>b.onclick=()=>{const n=+b.dataset.meal;addDon(n*MEAL,"Оплаченные обеды");S.meals+=n;S.raised+=n*MEAL;S.myGiven+=n*MEAL;log("don",`Оплачено обедов: ${n}`,n*MEAL);save();render();toast(`${n} обед(ов) ждут нуждающихся в столовой`)});
+  const zs=$("#zSave"),zg=$("#zGold");zs.onchange=()=>{ui.zSave=+zs.value||0;render()};zg.onchange=()=>{ui.zGold=+zg.value||0;render()};
+  $("#evCreate").onclick=()=>{const who=$("#evWho").value.trim();if(!who)return toast("Укажите, в честь кого сбор");S.events.unshift({id:"e"+Date.now(),type:$("#evType").value,who,target:Math.max(100,+$("#evTarget").value||3000),raised:0,guests:0,d:S.day});save();render();toast("Сбор создан. Отправьте ссылку гостям")};
+  document.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>{const e=S.events.find(x=>x.id===b.dataset.ev),a=+b.dataset.eva;const mAdd=donate(a,`${e.type}: в честь ${e.who}`,e.who);e.raised+=a+mAdd;e.guests++;save();render();toast(`Гость пожертвовал ${m(a)} в честь ${e.who}`)});
+  $("#repBtn").onclick=()=>{ui.showReport=!ui.showReport;render()};
+  if($("#zPay"))$("#zPay").onclick=()=>{ui.donAmt=Math.round(ui.zSave*0.025);ui.donPurpose="Закят";save();render();scrollTo(0,0);toast("Сумма закята подставлена. Нажмите «Оплатить»")};
+}
+
+/* ---------- ПОЛУЧАТЕЛЬ ---------- */
+function vWallet(){
+  const r=R(ui.wr)||S.recipients[0];const t=tier(r);
+  const my=S.feed.filter(x=>x.rid===r.id&&x.k==="pay");
+  return `<div class="panel">
+  <label>Чей кошелёк показать<select id="wSel">${S.recipients.map(x=>`<option value="${x.id}" ${x.id===r.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
+  <div class="wallet">
+    <div class="l">Кошелёк «Амонат» · ${r.bank} Банк</div>
+    <div class="big">${m(r.bal)}</div>
+    <div class="l">${pend(r)?`Ещё ${m(pend(r))} поступит ${r.hold>S.day?`в день ${r.hold}`:"завтра"}. `:""}${r.status==="ok"?`Сегодня начислится около ${m(todayAmt(r))} (средняя норма ${r.daily}). `+esc(t.why)+".":r.status==="wait"?`Документы проверены. Вы в очереди, место №${waiting().indexOf(r)+1}. Подключим, как только у фонда появятся деньги.`:"Кошелёк откроется после проверки документов."}</div>
+  </div>
+  ${r.target?`<div class="card"><h2>Цель на лечение</h2><div class="split"><i style="width:${Math.min(100,(r.bal+pend(r))/r.target*100)}%;background:var(--good)"></i></div><div class="note">${m(r.bal+pend(r))} из ${m(r.target)}. Пока цель не достигнута, норма не снижается.</div></div>`:""}
+  <div class="card">
+    <h2>Как платить</h2>
+    <div class="note">В аптеке, магазине или столовой-партнёре отсканируйте единый QR в приложении банка. Перед оплатой появится способ «Фонд Амонат». Снять наличные или перевести эти деньги нельзя.</div>
+    <div><button class="btn" data-tab="pay">Попробовать оплату</button></div>
+  </div>
+  <div class="card"><h2>Мои покупки</h2>${my.length?`<div class="list">${my.map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">${esc((P(x.pid)||{name:""}).name)}</div><div class="meta">день ${x.d}</div></div><div class="amt">−${m(x.a)}</div></div>`).join("")}</div>`:`<div class="note">Покупок пока нет.</div>`}</div>
+  </div>`;
+}
+function bindWallet(){$("#wSel").onchange=e=>{ui.wr=e.target.value;render()}}
+
+/* ---------- ОПЛАТА ---------- */
+function qrSvg(seedStr){let h=0;for(const c of seedStr)h=(h*31+c.charCodeAt(0))>>>0;
+  const n=21;let s=`<svg viewBox="0 0 ${n} ${n}" width="100%" height="100%" shape-rendering="crispEdges"><rect width="${n}" height="${n}" fill="var(--surface)"/>`;
+  const fin=(x,y)=>`<rect x="${x}" y="${y}" width="7" height="7" fill="var(--fg)"/><rect x="${x+1}" y="${y+1}" width="5" height="5" fill="var(--surface)"/><rect x="${x+2}" y="${y+2}" width="3" height="3" fill="var(--fg)"/>`;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if((x<8&&y<8)||(x>12&&y<8)||(x<8&&y>12))continue;h=(h*1103515245+12345)>>>0;if(h&0x10000)s+=`<rect x="${x}" y="${y}" width="1" height="1" fill="var(--fg)"/>`}
+  return s+fin(0,0)+fin(14,0)+fin(0,14)+"</svg>"}
+function vPay(){
+  const r=R(ui.payR)||S.recipients[0],p=P(ui.payP)||S.partners[0],a=ui.payAmt;
+  const block=fundBlock(r),canFund=!block;
+  const on=ui.useFund&&canFund;
+  const fundPart=on?Math.min(r.bal,a):0,own=a-fundPart;
+  let screen="";
+  if(ui.step===1)screen=`<div class="center"><div class="note">Единый QR кассы</div><div class="qr">${qrSvg(p.id+a)}</div><div style="font-weight:600">${esc(p.name)}</div><div class="note">${PTYPES[p.type]} · сумма ${m(a)}</div></div><button class="btn" id="scan">Отсканировать QR</button>`;
+  else if(ui.step===2)screen=`<div><div class="note">Оплата по QR</div><div style="font-weight:600">${esc(p.name)}</div></div><div class="big center">${m(a)}</div>
+    <div class="note">Способ оплаты</div>
+    <label class="payopt ${on?"on":""} ${canFund?"":"off"}"><input type="radio" name="pm" value="fund" ${on?"checked":""} ${canFund?"":"disabled"}><div><div style="color:var(--fg);font-weight:600">Фонд «Амонат»</div><div class="note">${block||`Доступно ${m(r.bal)}`}</div></div></label>
+    <label class="payopt ${!on?"on":""}"><input type="radio" name="pm" value="own" ${!on?"checked":""}><div><div style="color:var(--fg);font-weight:600">Мой кошелёк</div><div class="note">Обычная оплата</div></div></label>
+    ${fundPart?`<div class="note">Фонд оплатит <b style="color:var(--fg)">${m(fundPart)}</b>${own?`, вы доплатите <b style="color:var(--fg)">${m(own)}</b>`:""}.</div>`:""}
+    <div class="row"><button class="btn ghost" id="back">Назад</button><button class="btn" id="confirm" style="flex:1">Оплатить</button></div>`;
+  else{const rc=ui.receipt;screen=`<div class="ok">✓</div><div class="center"><div style="font-weight:600">${rc.flag?"Покупка отправлена на проверку":"Оплачено"}</div><div class="note">${esc(rc.p)}</div></div>
+    <div class="list"><div class="item"><span>Из фонда «Амонат»</span><span class="amt">${m(rc.fund)}</span></div><div class="item"><span>Из своих</span><span class="amt">${m(rc.own)}</span></div><div class="item"><span>Остаток в фонде</span><span class="amt">${m(rc.left)}</span></div></div>
+    ${rc.flag?`<div class="note">Сумма больше 1 000 смн: фонд подтвердит её вручную, чтобы исключить обман.</div>`:rc.hold?`<div class="note">Крупная покупка не в аптеке: новые начисления придут с задержкой до дня ${rc.hold}.</div>`:""}
+    <button class="btn" id="again">Новая покупка</button>`}
+  return `<div class="panel">
+  <div class="card">
+    <h2>Настройка примера</h2>
+    <div class="grid2">
+      <label>Кто платит<select id="pR">${S.recipients.map(x=>`<option value="${x.id}" ${x.id===r.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
+      <label>Где покупка<select id="pP">${S.partners.map(x=>`<option value="${x.id}" ${x.id===p.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
+      <label>Сумма покупки<input id="pA" type="number" min="1" value="${a}"></label>
+    </div>
+  </div>
+  <div class="phone" aria-label="Экран телефона">
+    <div class="bar"><span>День ${S.day}</span><span>${r.bank} Банк</span></div>
+    <div class="bankhead"><span class="bankdot">${r.bank[0]}</span>${r.bank} · ${esc(r.name)}</div>
+    ${screen}
+  </div></div>`;
+}
+function bindPay(){
+  const reset=()=>{ui.step=1;render()};
+  $("#pR").onchange=e=>{ui.payR=e.target.value;ui.useFund=true;reset()};
+  $("#pP").onchange=e=>{ui.payP=e.target.value;reset()};
+  $("#pA").onchange=e=>{ui.payAmt=Math.max(1,+e.target.value||1);reset()};
+  if(ui.step===1)$("#scan").onclick=()=>{ui.step=2;ui.useFund=true;render()};
+  if(ui.step===2){
+    document.querySelectorAll('input[name="pm"]').forEach(i=>i.onchange=()=>{ui.useFund=i.value==="fund";render()});
+    $("#back").onclick=reset;
+    $("#confirm").onclick=()=>{
+      const r=R(ui.payR),p=P(ui.payP);const before=r.hold;
+      const res=purchase(r,p,ui.payAmt,ui.useFund);
+      ui.receipt={p:p.name,fund:res.fund,own:res.own,left:r.bal,flag:res.flag,hold:r.hold>before?r.hold:0};ui.step=3;save();render();
+    };
+  }
+  if(ui.step===3)$("#again").onclick=reset;
+}
+
+/* ---------- ПАРТНЁР ---------- */
+function vPartner(){
+  const p=P(ui.pp)||S.partners[0];
+  const tx=S.feed.filter(x=>x.k==="pay"&&x.d===S.day&&x.pid===p.id);
+  return `<div class="panel">
+  <label>Партнёр<select id="ppSel">${S.partners.map(x=>`<option value="${x.id}" ${x.id===p.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
+  <div class="kpis">
+    <div class="kpi hl"><div class="l">Оплачено фондом сегодня</div><div class="v">${m(p.paid)}</div></div>
+    <div class="kpi"><div class="l">Покупок</div><div class="v">${p.count}</div></div>
+    <div class="kpi"><div class="l">Возвращено в фонд</div><div class="v">${m(p.returned)}</div></div>
+  </div>
+  ${p.type==="canteen"?`<div class="card"><h2>Оплаченные обеды</h2><div class="note">Добрые люди заранее оплатили обеды. Выдайте обед нуждающемуся: он покажет QR кошелька «Амонат».</div><div class="row between"><span>В запасе: <b>${S.meals}</b> · выдано: <b>${S.mealsGiven}</b></span><button class="btn small" id="giveMeal" ${S.meals?"":"disabled"}>Выдать обед</button></div></div>`:""}
+  <div class="card">
+    <h2>Закрытие смены · день ${S.day}</h2>
+    ${p.closed?`<div class="note">Смена закрыта. Спасибо за участие: ваш вклад виден в публичном отчёте фонда.</div>`:
+    p.paid?`<div class="note">Сегодня Благотворительный фонд «Амонат» оплатил у вас ${m(p.paid)}. Хотите вернуть часть в фонд как садаку?</div>
+    <div class="chips">${[0,5,10,15].map(v=>`<button class="chip" data-ret="${v}">${v?v+"% · "+m(p.paid*v/100):"Не сейчас"}</button>`).join("")}</div>`:
+    `<div class="note">Сегодня оплат от фонда ещё не было. Проведите покупку во вкладке «Оплата QR».</div>`}
+  </div>
+  <div class="card"><h2>Оплаты фонда сегодня</h2>${tx.length?`<div class="list">${tx.map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">Получатель №${anon(x.rid)}</div><div class="meta">личные данные скрыты</div></div><div class="amt">${m(x.a)}</div></div>`).join("")}</div>`:`<div class="note">Пусто.</div>`}</div>
+  </div>`;
+}
+function bindPartner(){
+  $("#ppSel").onchange=e=>{ui.pp=e.target.value;render()};
+  if($("#giveMeal"))$("#giveMeal").onclick=()=>{S.meals--;S.mealsGiven++;const p=P(ui.pp);p.paid+=MEAL;p.count++;log("pay",`Оплаченный обед · ${p.name}`,MEAL);save();render();toast("Обед выдан. Оплата из запаса обедов")};
+  document.querySelectorAll("[data-ret]").forEach(b=>b.onclick=()=>{
+    const p=P(ui.pp),v=+b.dataset.ret,a=Math.round(p.paid*v/100);
+    if(a){p.returned+=a;S.pool+=a;log("ret",`${p.name} вернул ${v}%`,a)}
+    p.closed=true;save();render();toast(a?`В фонд вернулось ${m(a)}`:"Смена закрыта");
+  });
+}
+
+const V={overview:[vOverview,bindOverview],watch:[vWatch,bindWatch],donate:[vDonate,bindDonate],wallet:[vWallet,bindWallet],pay:[vPay,bindPay],partner:[vPartner,bindPartner]};
+function render(){renderTabs();$("#view").innerHTML=V[tab][0]();V[tab][1]()}
+render();
+</script>
+
+<div id="inst" hidden style="position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--accent);color:var(--accent-fg);border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;font:600 14px var(--body);box-shadow:0 8px 24px rgba(0,0,0,.25)"><span id="instT">Установить «Амонат» на телефон</span><span style="display:flex;gap:6px"><button id="instGo" style="border:0;border-radius:10px;padding:8px 12px;font:700 14px var(--body);background:#fff;color:#1F4E9C">Установить</button><button id="instX" aria-label="Закрыть" style="border:0;background:none;color:inherit;font-size:18px">✕</button></span></div>
+<script>
+(function(){
+if("serviceWorker"in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{scope:"./"}).catch(function(){})});
+var st=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone,dp=null,b=document.getElementById("inst");
+var off=function(){try{return localStorage.getItem("amonat-inst-x")==="1"}catch(e){return false}};
+document.getElementById("instX").onclick=function(){b.hidden=true;try{localStorage.setItem("amonat-inst-x","1")}catch(e){}};
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e;if(!st&&!off())b.hidden=false});
+document.getElementById("instGo").onclick=function(){if(dp){dp.prompt();dp.userChoice.then(function(){b.hidden=true;dp=null})}else{alert("На iPhone: нажмите «Поделиться» внизу Safari → «На экран \u00abДомой\u00bb».")}};
+if(!st&&!off()&&/iphone|ipad/i.test(navigator.userAgent)){document.getElementById("instGo").textContent="Как?";b.hidden=false}
+window.addEventListener("appinstalled",function(){b.hidden=true});
+})();
+</script>
+</body></html>

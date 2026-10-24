@@ -43,7 +43,7 @@ function dsMonth(ts) { return Utilities.formatDate(new Date(ts), "Asia/Dushanbe"
 function dsView(o, pk) {
   var s = dsPts(o);
   return { id: o.id, c: o.c, by: { w: o.by.w, rn: o.by.rn, br: o.by.br, me: o.by.pk === pk }, t: o.t, ph: o.ph || [], task: o.task || null,
-    up: s.up, dn: s.dn, pts: s.pts, st: s.st, my: (o.v || {})[pk] || 0, why: o.why || [], boss: o.boss || null };
+    up: s.up, dn: s.dn, pts: s.pts, st: s.st, my: (o.v || {})[pk] || 0, why: (o.why || []).map(function (x) { return { w: x.w, t: x.t }; }), boss: o.boss || null };
 }
 
 function dsAct(act, u, p) {

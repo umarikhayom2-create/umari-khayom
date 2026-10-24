@@ -52,21 +52,8 @@ function dsAct(act, u, p) {
   if (act === "list") {
     var A = dsAll(), mon = /^\d{4}-\d{2}$/.test(String(p.m || "")) ? p.m : dsMonth(Date.now());
     var feed = A.L.filter(function (o) { return o.st !== "hide" && o.c > Date.now() - 62 * 864e5; }).sort(function (a, b) { return b.c - a.c; }).slice(0, 120).map(function (o) { return dsView(o, pk); });
-    var by = {};
-    A.L.forEach(function (o) {
-      if (o.st === "hide" || dsMonth(o.c) !== mon) return;
-      var s = dsPts(o), r = by[o.by.pk] || (by[o.by.pk] = { w: o.by.w, rn: o.by.rn, br: o.by.br, pts: 0, n: 0, st: 0, top: 0, me: o.by.pk === pk });
-      r.pts += s.pts; r.n++; r.st += s.st; if (o.boss && o.boss.lvl === 3) r.top++;
-    });
-    Object.keys(by).forEach(function (k) { by[k].pp = by[k].pts; by[k].wp = 0; by[k].lines = []; });
-    var W = dsWork(mon);
-    Object.keys(W).forEach(function (k) {
-      var x = W[k], r = by[k] || (by[k] = { w: x.w, rn: x.rn, br: x.br || "", pts: 0, pp: 0, wp: 0, n: 0, st: 0, top: 0, lines: [], me: k === pk });
-      if (!r.rn) r.rn = x.rn; r.wp = x.pts; r.pts += x.pts; r.lines = x.lines; r.cat = x.cat;
-    });
-    var top = Object.keys(by).map(function (k) { return by[k]; }).filter(function (r) { return r.pts > 0 || r.me; }).sort(function (a, b) { return b.pts - a.pts || b.st - a.st || b.n - a.n; }).slice(0, 60);
-    var best = {}; top.forEach(function (r) { (r.cat || []).forEach(function (c) { if (!best[c.k] || c.p > best[c.k].p) best[c.k] = { k: c.k, t: c.t, w: r.w, p: c.p }; }); });
-    return { ok: true, feed: feed, top: top, best: Object.keys(best).map(function (k) { return best[k]; }), m: mon, me: { w: u.w, boss: boss, pk: pk } };
+    var T = dsTop(mon, pk, A);
+    return { ok: true, feed: feed, top: T.top, best: T.best, m: mon, me: { w: u.w, boss: boss, pk: pk } };
   }
   if (act === "new") {
     var t = clean(p.t, 600); if (t.length < 5) return { ok: false, error: "text" };
@@ -78,6 +65,12 @@ function dsAct(act, u, p) {
       var A = dsAll(), o = { id: "d" + Date.now() + Math.floor(Math.random() * 1000), c: Date.now(), by: { pk: pk, w: u.w, r: u.r, rn: DS.RN[u.r] || u.r, br: dsBr(u) }, t: t, ph: ph, task: task, v: {}, why: [], boss: null, st: "ok" };
       dsPut(A.sh, o); return { ok: true, post: dsView(o, pk) };
     });
+  }
+  if (act === "digest") {
+    if (!boss) return { ok: false, error: "role" };
+    if (typeof puReg !== "function" || !puTok()) return { ok: false, error: "notg" };
+    var me2 = puReg()[pk]; if (!me2) return { ok: false, error: "nolink" };
+    var mon2 = dsMonth(Date.now()); puSend(me2.c, dsDigestText(mon2, pk, true)); return { ok: true };
   }
   if (act === "sync") {
     if (u.k !== "staff" || !(u.r === "director" || u.r === "admin")) return { ok: false, error: "role" };
@@ -188,3 +181,52 @@ function dsWork(mon) {
   try { C().put(ck, JSON.stringify(W), 300); } catch (x) {}
   return W;
 }
+
+// ---------- рейтинг месяца (общий для страницы и рассылки) ----------
+function dsTop(mon, pk, A) {
+  A = A || dsAll(); var by = {};
+  A.L.forEach(function (o) {
+    if (o.st === "hide" || dsMonth(o.c) !== mon) return;
+    var s = dsPts(o), r = by[o.by.pk] || (by[o.by.pk] = { w: o.by.w, rn: o.by.rn, br: o.by.br, pts: 0, n: 0, st: 0, top: 0, me: o.by.pk === pk, pk: o.by.pk });
+    r.pts += s.pts; r.n++; r.st += s.st; if (o.boss && o.boss.lvl === 3) r.top++;
+  });
+  Object.keys(by).forEach(function (k) { by[k].pp = by[k].pts; by[k].wp = 0; by[k].lines = []; });
+  var W = dsWork(mon);
+  Object.keys(W).forEach(function (k) {
+    var x = W[k], r = by[k] || (by[k] = { w: x.w, rn: x.rn, br: x.br || "", pts: 0, pp: 0, wp: 0, n: 0, st: 0, top: 0, lines: [], me: k === pk, pk: k });
+    if (!r.rn) r.rn = x.rn; r.wp = x.pts; r.pts += x.pts; r.lines = x.lines; r.cat = x.cat;
+  });
+  var all = Object.keys(by).map(function (k) { return by[k]; }).filter(function (r) { return r.pts > 0 || r.me; }).sort(function (a, b) { return b.pts - a.pts || b.st - a.st || b.n - a.n; });
+  var best = {}; all.forEach(function (r) { (r.cat || []).forEach(function (c) { if (c.p > 0 && !best[c.k] || c.p > 0 && best[c.k] && c.p > best[c.k].p) best[c.k] = { k: c.k, t: c.t, w: r.w, p: c.p }; }); });
+  var top = all.slice(0, 60).map(function (r) { var x = JSON.parse(JSON.stringify(r)); delete x.pk; return x; });
+  return { top: top, all: all, best: Object.keys(best).map(function (k) { return best[k]; }) };
+}
+
+// ---------- рассылка итогов месяца в Telegram ----------
+var DS_MON = ["январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
+var DS_URL = "https://umari-khayom.vercel.app/top.html";
+function dsDigestText(mon, pk, preview) {
+  var T = dsTop(mon, pk), L = T.all, md = ["🥇", "🥈", "🥉"], name = DS_MON[+mon.slice(5, 7) - 1] + " " + mon.slice(0, 4);
+  var t = (preview ? "👀 Так будет выглядеть рассылка (данные на сегодня)\n\n" : "") + "🏆 Итоги месяца: " + name + "\n";
+  if (!L.length) return t + "\nВ этом месяце пока нет очков.";
+  t += "\n" + L.slice(0, 3).map(function (r, i) { return md[i] + " " + r.w + " — " + r.pts + " очк." + (r.rn ? " (" + r.rn + (r.br ? ", " + r.br : "") + ")" : ""); }).join("\n");
+  t += "\n\n👑 Сотрудник месяца — " + L[0].w + "! Поздравляем!";
+  if (T.best.length) t += "\n\n🏅 Лучшие по направлениям:\n" + T.best.map(function (b) { return b.t + " — " + b.w; }).join("\n");
+  var i = -1; L.forEach(function (r, j) { if (r.pk === pk) i = j; });
+  if (pk) t += i > -1 ? "\n\n📊 Ваш результат: " + (i + 1) + " место из " + L.length + ", " + L[i].pts + " очк." : "\n\n📊 В этом месяце у вас пока нет очков — всё впереди!";
+  return t + "\n\nПодробно: " + DS_URL;
+}
+// 1-го числа в 10:00 по Душанбе — итоги прошлого месяца всем, кто подключил Telegram
+function dsDigest() {
+  if (typeof puReg !== "function" || !puTok()) return;
+  var now = new Date(), day = +Utilities.formatDate(now, "Asia/Dushanbe", "d"), h = +Utilities.formatDate(now, "Asia/Dushanbe", "H");
+  if (day !== 1 || h < 10) return;
+  var y = +Utilities.formatDate(now, "Asia/Dushanbe", "yyyy"), m = +Utilities.formatDate(now, "Asia/Dushanbe", "M") - 1;
+  if (m === 0) { m = 12; y--; }
+  var mon = y + "-" + ("0" + m).slice(-2), pr = PropertiesService.getScriptProperties(), key = "dsdig:" + mon;
+  if (pr.getProperty(key)) return; pr.setProperty(key, String(Date.now()));
+  C().remove("dswork:" + mon);
+  var R = puReg(); Object.keys(R).forEach(function (pk) { try { puSend(R[pk].c, dsDigestText(mon, pk, false)); } catch (x) {} });
+}
+// подключаемся к напоминаниям, которые уже работают каждые 5 минут (pushTick из Push.gs)
+if (typeof pushTick === "function") { var DS_TICK0 = pushTick; pushTick = function () { DS_TICK0(); try { dsDigest(); } catch (x) {} }; }

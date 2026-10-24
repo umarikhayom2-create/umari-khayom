@@ -40,7 +40,7 @@ label{display:block;font:600 13px system-ui;color:var(--mut);margin:10px 0 4px}t
 .emp{text-align:center;color:var(--mut);padding:30px 10px}.note{font-size:13px;color:var(--mut)}
 .rules div{display:flex;gap:10px;padding:6px 0}.rules i{font-style:normal;width:28px;text-align:center;font-size:18px}
 </style></head><body>
-<div id="app"><div class="emp">Загружаем…</div></div>
+<div id="app"></div><script src="ld.js?v=2" data-kind="top"></script>
 <script>
 var CHAT_URL="https://script.google.com/macros/s/AKfycbzxbho2rc1WmpPRcsMGcKcbxdjH4AgJzxaOU_4R8PvEi5_x45vfRO2vP2nXRR5QKojg/exec";
 function $(i){return document.getElementById(i)}
@@ -61,7 +61,7 @@ function col(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%997;
 function stars(n){var h="";for(var i=0;i<5;i++)h+=i<n?"★":"<i>★</i>";return'<span class="stars">'+h+'</span>'}
 function mon(d){return["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"][d.getMonth()]}
 function load(m){return api("ds_list",{m:m||S.m}).then(function(j){if(!j||!j.ok){$("app").innerHTML='<div class="emp">'+(j&&j.error==="action"?"Сервер ещё не обновлён — сообщите руководителю.":j&&(j.error==="tok"||j.error==="auth")?'Войдите заново. <a href="'+AU.back+'">Открыть вход</a>':"Не удалось загрузить: "+esc(j&&j.error||"нет связи"))+'</div>';return}
-S.feed=j.feed;S.top=j.top;S.me=j.me;S.m=j.m;S.at=Date.now();draw()}).catch(function(){if(!S.at)$("app").innerHTML='<div class="emp">Нет связи. Попробуйте ещё раз.</div>'})}
+S.feed=j.feed;S.top=j.top;S.me=j.me;S.m=j.m;S.at=Date.now();try{if(!m)localStorage.setItem("uh_top_c"+AU.p,JSON.stringify({feed:j.feed,top:j.top,me:j.me,m:j.m}))}catch(e){}draw()}).catch(function(){if(!S.at)$("app").innerHTML='<div class="emp">Нет связи. Попробуйте ещё раз.</div>'})}
 function postHtml(o){var b=o.boss,g=b&&GR[b.lvl];
 var h='<div class="card" id="p_'+o.id+'"><div class="au"><span class="av" style="background:'+col(o.by.w)+'">'+esc((o.by.w||"?").trim().charAt(0).toUpperCase())+'</span><div style="flex:1;min-width:0"><b>'+esc(o.by.w)+'</b><small>'+esc(o.by.rn||"")+(o.by.br?" · "+esc(o.by.br):"")+" · "+when(o.c)+'</small></div></div>';
 if(o.task)h+='<div style="margin-top:8px"><span class="tk">📋 Поручение: '+esc(o.task.t)+'</span></div>';
@@ -108,7 +108,7 @@ api("qlist",{}).then(function(j){if(!j||!j.ok)return;TK=(j.L||[]).filter(functio
 $("nph").onchange=function(){var fs=[].slice.call(this.files||[]).slice(0,3-PH.length);Promise.all(fs.map(shrink)).then(function(L){PH=PH.concat(L).slice(0,3);$("nth").innerHTML=PH.map(function(u){return'<img src="'+u+'">'}).join("")})};
 $("ngo").onclick=function(){var t=$("nt").value.trim();if(t.length<5){$("ner").textContent="Напишите пару слов о том, что сделали";return}var k=$("ntk").value,tk=k!==""&&TK[+k]?{id:TK[+k].id,t:TK[+k].t}:null;var b=this;b.disabled=true;b.textContent=PH.length?"⏳ Загружаем фото…":"⏳ Публикуем…";
 api("ds_new",{t:t,ph:PH,task:tk}).then(function(j){if(j&&j.ok){d.remove();S.tab="feed";S.feed.unshift(j.post);draw();toast("Опубликовано! Теперь коллеги могут проголосовать")}else{b.disabled=false;b.textContent="Опубликовать";$("ner").textContent=j&&j.error==="limit"?"Не больше 3 постов в день":j&&j.error==="action"?"Сервер ещё не обновлён — сообщите руководителю":"Не получилось: "+(j&&j.error)}}).catch(function(){b.disabled=false;b.textContent="Опубликовать";$("ner").textContent="Нет связи"})}}
-if(!AU)$("app").innerHTML='<div class="emp">Сначала войдите как сотрудник.<br><br><a class="btn" href="team.html" style="display:inline-block;text-decoration:none">Войти</a></div>';else load();
+if(!AU)$("app").innerHTML='<div class="emp">Сначала войдите как сотрудник.<br><br><a class="btn" href="team.html" style="display:inline-block;text-decoration:none">Войти</a></div>';else{try{var cc=JSON.parse(localStorage.getItem("uh_top_c"+AU.p)||"null");if(cc&&cc.me){S.feed=cc.feed;S.top=cc.top;S.me=cc.me;S.m=cc.m;draw()}}catch(e){}load()}
 setInterval(function(){if(AU&&!document.hidden&&!document.querySelector(".ov"))load()},60000);
 </script>
 </body></html>

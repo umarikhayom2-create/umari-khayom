@@ -85,7 +85,8 @@ function dsAct(act, u, p) {
     var rows = (Array.isArray(p.rows) ? p.rows : []).slice(0, 80).map(function (x) {
       return { k: clean(x.k, 90), w: clean(x.w, 60), r: clean(x.r, 20), c: clean(x.c, 20), t: clean(x.t, 40), p: Math.max(0, Math.min(5000, Math.round(+x.p || 0))), l: clean(x.l, 200) };
     }).filter(function (x) { return x.k && x.w; });
-    PropertiesService.getScriptProperties().setProperty("dsync:" + mm, JSON.stringify({ ts: Date.now(), rows: rows }).slice(0, 8900));
+    var js = JSON.stringify({ ts: Date.now(), rows: rows }); while (js.length > 8900 && rows.length) { rows.pop(); js = JSON.stringify({ ts: Date.now(), rows: rows }); }
+    PropertiesService.getScriptProperties().setProperty("dsync:" + mm, js);
     C().remove("dswork:" + mm); return { ok: true, n: rows.length };
   }
   return locked(function () {

@@ -37,7 +37,7 @@ button{font:600 15px system-ui;border:1px solid #2f2f33;background:var(--sf);col
     <ol class="steps"><li>Откройте камеру телефона</li><li>Наведите на QR и нажмите на ссылку</li><li>Нажмите «Начать смену» или «Завершить смену»</li></ol>
     <div><div class="cl">Код с экрана</div><div class="code" id="code">— — —</div></div>
     <div class="bar"><i id="bar" style="width:100%"></i></div>
-    <div class="tk" id="tk">Код обновляется каждые 30 секунд</div>
+    <div class="tk" id="tk">Код обновляется каждые 20 секунд</div>
     <div class="st" id="st">Подключаемся…</div>
     <button id="fs" type="button">⛶ На весь экран</button>
   </div>
@@ -45,7 +45,7 @@ button{font:600 15px system-ui;border:1px solid #2f2f33;background:var(--sf);col
 <script>
 var CHAT_URL="https://script.google.com/macros/s/AKfycbzxbho2rc1WmpPRcsMGcKcbxdjH4AgJzxaOU_4R8PvEi5_x45vfRO2vP2nXRR5QKojg/exec";
 function $(i){return document.getElementById(i)}
-var K={b:"",k:""},S={w:-1,win:30,off:0,code:"",ok:0,t:null},qr=null;
+var K={b:"",k:""},S={w:-1,win:20,off:0,code:"",ok:0,t:null},qr=null;
 /* ссылка экрана: kiosk.html#b=ФИЛИАЛ&k=КЛЮЧ — запоминаем и убираем из адреса */
 (function(){var h=location.hash.slice(1),p={};h.split("&").forEach(function(x){var i=x.indexOf("=");if(i>0)p[x.slice(0,i)]=decodeURIComponent(x.slice(i+1))});
 if(p.b&&p.k){K={b:p.b,k:p.k};try{localStorage.setItem("sq_kiosk",JSON.stringify(K))}catch(e){}try{history.replaceState(null,"",location.pathname)}catch(e){}}
@@ -62,7 +62,7 @@ function pull(){clearTimeout(S.t);var t0=Date.now();
 api({a:"z_sqk",b:K.b,k:K.k}).then(function(j){
  if(!j||!j.ok){if(j&&j.error==="kiosk"){try{localStorage.removeItem("sq_kiosk")}catch(e){}setup("Ссылка этого экрана отключена или заменена. Откройте новую ссылку из панели руководителя: «Команда» → «Смена по QR».");return}
   dim(j&&j.error==="action"?"Сервер ещё не обновлён":"Ошибка сервера");status("<b>Ошибка:</b> "+((j&&j.error)||"нет ответа"),1);S.t=setTimeout(pull,8000);return}
- var rt=Date.now()-t0;S.off=j.now+rt/2-Date.now();S.win=j.win||30;S.w=j.w;S.code=j.code;S.ok=1;
+ var rt=Date.now()-t0;S.off=j.now+rt/2-Date.now();S.win=j.win||20;S.w=j.w;S.code=j.code;S.ok=1;
  $("brn").textContent=j.nm||"Филиал";show();status("<b>●</b> Работает · обновлено "+new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit",second:"2-digit"}));
  var next=(S.w+1)*S.win*1000-now()+400;S.t=setTimeout(pull,Math.max(1000,next))
 }).catch(function(){dim("Нет интернета. Ждём связь…");status("<b>●</b> Нет связи с сервером, повторяем",1);S.t=setTimeout(pull,5000)})}

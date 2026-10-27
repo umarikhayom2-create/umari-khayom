@@ -208,4 +208,9 @@ if(S.tok)setTimeout(qaLoad,800);document.addEventListener("visibilitychange",fun
 document.addEventListener("click",function(e){var l=e.target.closest('a[href="./"]');if(l)$("navld").className="on"});addEventListener("pageshow",function(){$("navld").className=""});
 S.tok?load():login();
 </script><script src="sq.js?v=4"></script>
+<script src="news.js?v=1"></script>
+<script>
+NEWS.init({url:CHAT_URL,auth:function(){return S.tok?{tok:S.tok}:null},box:function(){return $("nwbox")},ping:function(o){toast("📢 Новость: "+String(o.t||"").slice(0,80));try{beep(1)}catch(x){}}});
+var _nwr=render;render=function(){_nwr();var m=document.querySelector("#app main");if(m&&!$("nwbox")){var d=document.createElement("div");d.id="nwbox";m.insertBefore(d,m.firstChild)}NEWS.draw()};
+</script>
 </body></html>

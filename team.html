@@ -201,7 +201,7 @@ function zvWhen(ts){var d=new Date(ts),t=new Date();return(d.toDateString()===t.
 function zvHtml(){if(ZV.no||!ZV.at)return"";var P=zvToPick(),M=zvOurs(),need=P.filter(function(o){return o.items.some(function(it){return zvGot(it)<it.q})}).length;
 var h='<div class="card zv" style="--c:#8b5cf6"><div class="top"><b>📋 Заявки на сборку</b>'+(need?'<span class="chip" style="--c:#e11d48">ждут сборки: '+need+'</span>':'<span class="chip" style="--c:#16a34a">всё собрано</span>')+'</div>';
 h+='<div class="tabs" style="margin-top:10px"><button data-zvt="pick" class="'+(ZV.tab==="pick"?"on":"")+'">Собрать'+(need?'<i>'+need+'</i>':'')+'</button><button data-zvt="our" class="'+(ZV.tab==="our"?"on":"")+'">Наши заявки</button></div>';
-if(ZV.tab==="pick")h+=P.length?P.map(zvCard).join(""):'<p class="its">Сейчас нет заявок для вашего филиала.</p>';
+if(ZV.tab==="pick"){var RD=P.filter(function(o){return zvUnsent(o)>0&&!zvLeft(o)}),RN=0;RD.forEach(function(o){RN+=zvUnsent(o)});if(RD.length>1)h+='<button class="btn g" data-zvall="1" style="width:100%;margin:10px 0 4px">🚚 Вызвать курьера по всем собранным заявкам ('+RD.length+' заявки · '+RN+' поз.)</button><p class="its" style="margin:0 0 6px">Один курьер на каждый филиал-получатель — нажмите один раз.</p>';h+=P.length?P.map(zvCard).join(""):'<p class="its">Сейчас нет заявок для вашего филиала.</p>'}
 else h+=M.length?M.slice(0,25).map(zvCard).join(""):'<p class="its">Вы ещё не оставляли заявок.</p>';
 return h+'<button class="btn" data-zvnew="1" style="width:100%;margin-top:8px">+ Новая заявка</button></div>'}
 function zvCard(o){var ours=o.by.b===ZV.me,tot=o.items.length,dn=o.items.filter(function(it){return zvGot(it)>=it.q}).length,op=ZV.open[o.id]!==undefined?ZV.open[o.id]:(o.st==="open"),un=zvUnsent(o);
@@ -211,22 +211,26 @@ h+='<div class="zvbar"><i style="width:'+Math.round(dn/tot*100)+'%"></i></div>';
 if(!op)return h+'<button class="zvmore" data-zvo="'+o.id+'">Показать '+tot+' поз. ▾</button></div>';
 if(o.cm)h+='<div class="its">💬 '+esc(o.cm)+'</div>';
 h+=o.items.map(function(it,i){var got=zvGot(it),my=zvMine(it),myUn=my.filter(function(g){return!g.s})[0],mySent=my.filter(function(g){return g.s}).length,full=got>=it.q,left=Math.max(0,Math.round((it.q-got)*1000)/1000);
-var cls=myUn?"me":full?"done":got?"part":"";var oth=(it.g||[]).filter(function(g){return g.b!==ZV.me||g.s});
-var note=oth.map(function(g){return esc(g.bn)+': '+g.q+(g.s?' 🚚':' ✓')}).join(" · ");
+var myNo=myUn&&myUn.no,myGot=myUn&&!myUn.no;var cls=myGot?"me":myNo?"no":full?"done":got?"part":"";var oth=(it.g||[]).filter(function(g){return g.b!==ZV.me||g.s});
+var note=oth.map(function(g){return esc(g.bn)+': '+(g.no?'❌ нет':g.q+(g.s?' 🚚':' ✓'))}).join(" · ");
 var can=!ours&&o.st==="open";
-return'<div class="zvi '+cls+'">'+(it.ph?'<img src="'+zvPic(it.ph)+'" data-zvph="'+esc(it.ph)+'" alt="" loading="lazy">':'<span class="zvn">'+(i+1)+'</span>')+
-'<div class="zvt"><b>'+esc(it.n)+'</b><small>нужно <b>'+it.q+' шт</b>'+(myUn?' · <span style="color:#16a34a">вы собрали '+myUn.q+'</span>':'')+(got&&!full&&!myUn?' · ещё '+left:'')+(note?'<br>'+note:'')+'</small>'+
-(myUn&&can?'<button class="zvq" data-zvq="'+o.id+'|'+i+'">✏️ Изменить кол-во</button>':'')+'</div>'+
-(can?'<button class="zvc'+(myUn?' on':full?' gr':'')+'" data-zvp="'+o.id+'|'+i+'" '+(full&&!myUn?'disabled':'')+'>'+(myUn||full?'✓':'')+'</button>':'<span class="zvc'+(full?' gr':'')+'">'+(full?'✓':'')+'</span>')+'</div>'}).join("");
+return'<div class="zvi '+cls+(it.ph?' hp':'')+'">'+(it.ph?'<img src="'+zvPic(it.ph,640)+'" data-zvph="'+esc(it.ph)+'" alt="" loading="lazy" decoding="async">':'<span class="zvn">'+(i+1)+'</span>')+
+'<div class="zvt"><b>'+(it.ph?(i+1)+'. ':'')+esc(it.n)+'</b><small>нужно <b>'+it.q+' шт</b>'+(myGot?' · <span style="color:#16a34a">вы собрали '+myUn.q+'</span>':'')+(myNo?' · <span style="color:#e11d48">вы отметили: нет в наличии</span>':'')+(got&&!full&&!myUn?' · ещё '+left:'')+(note?'<br>'+note:'')+'</small>'+
+(can?'<span class="zvbt">'+(myGot?'<button class="zvq" data-zvq="'+o.id+'|'+i+'">✏️ Изменить кол-во</button>':'')+(!myUn&&!full?'<button class="zvq zvno" data-zvno="'+o.id+'|'+i+'|1">❌ Нет в наличии</button>':'')+(myNo?'<button class="zvq" data-zvno="'+o.id+'|'+i+'|0">↩ Всё-таки есть</button>':'')+'</span>':'')+'</div>'+
+(can?'<button class="zvc'+(myGot?' on':full?' gr':'')+'" data-zvp="'+o.id+'|'+i+'" '+((full&&!myUn)||myNo?'disabled':'')+'>'+(myGot||full?'✓':myNo?'✕':'')+'</button>':'<span class="zvc'+(full?' gr':'')+'">'+(full?'✓':'')+'</span>')+'</div>'}).join("");
 (o.packs||[]).forEach(function(p){h+='<div class="its">🚚 '+esc(p.bn)+(p.self?' — собрано у себя':' — отправлено курьеру'+(p.no?' ('+esc(p.no)+')':''))+' · '+p.n+' поз. · '+zvWhen(p.t)+'</div>'});
-if(un&&o.st!=="cancel")h+='<button class="btn g" data-zvs="'+o.id+'" style="width:100%;margin-top:10px">🚚 Готово — вызвать курьера ('+un+' поз.)</button>';
+if(un&&o.st!=="cancel"){var lf=zvLeft(o);h+=lf?'<button class="btn o" disabled style="width:100%;margin-top:10px;opacity:.75">Курьера можно вызвать, когда соберёте всё · осталось '+lf+' поз.<br><small>Чего нет — отметьте «❌ Нет в наличии»</small></button>':'<button class="btn g" data-zvs="'+o.id+'" style="width:100%;margin-top:10px">🚚 Всё собрано — вызвать курьера ('+un+' поз.)</button>'}
 if(ours)h+='<div class="row" style="display:flex;gap:8px;margin-top:8px">'+(o.st==="open"?'<button class="btn o" data-zvx="close" data-id="'+o.id+'">Закрыть — больше не нужно</button>':'<button class="btn o" data-zvx="open" data-id="'+o.id+'">Открыть снова</button>')+'</div>';
 return h+'<button class="zvmore" data-zvo="'+o.id+'">Свернуть ▴</button></div>'}
+function zvLeft(o){var n=0;o.items.forEach(function(it){if(zvGot(it)>=it.q)return;if(zvMine(it).some(function(g){return!g.s}))return;n++});return n}
+function zvNo(id,i,on){var o=ZV.L.filter(function(x){return x.id===id})[0];if(!o)return;var it=o.items[i];it.g=(it.g||[]).filter(function(g){return g.b!==ZV.me||g.s});if(on)it.g.push({b:ZV.me,bn:zvBrn(ZV.me),q:0,no:1,w:(S.me||{}).nm,t:Date.now()});zvDraw();
+api({a:"m_zv_no",tok:S.tok,id:id,i:i,on:on?1:0}).then(function(j){if(!j||!j.ok){toast(j&&j.error==="action"?"Сервер ещё не обновлён — сообщите руководителю":"Не сохранилось, ещё раз");zvLoad();return}o.items[i]=j.item;zvDraw()}).catch(function(){toast("Нет связи — не сохранилось");zvLoad()})}
+function zvSendRes(t,j,txt){if(j&&j.ok){toast("Курьер вызван ✓ "+(j.no||""));zvLoad();if(typeof brLoad==="function")brLoad()}else{t.disabled=false;t.textContent=txt;toast(j&&j.error==="notall"?"Сначала соберите всё в заявке "+((j.no||[])[0]||"")+": осталось "+j.left+" поз. Чего нет — отметьте «Нет в наличии»":j&&j.error==="empty"?"Нечего отправлять":"Ошибка: "+(j&&j.error))}}
 function zvDraw(){var b=$("zvbox");if(b)b.innerHTML=zvHtml()}
 var _zvr=render;render=function(){_zvr();var m=document.querySelector("#app main");if(m&&!$("zvbox")){var d=document.createElement("div");d.id="zvbox";var q=$("qabox");if(q)m.insertBefore(d,q);else m.appendChild(d)}if(!ZV.at&&!ZV.ld){ZV.ld=1;setTimeout(function(){ZV.ld=0},5000);zvLoad()}zvDraw()};
 function zvPick(id,i,q){var o=ZV.L.filter(function(x){return x.id===id})[0];if(!o)return;var it=o.items[i];it.g=(it.g||[]).filter(function(g){return g.b!==ZV.me||g.s});if(q>0)it.g.push({b:ZV.me,bn:zvBrn(ZV.me),q:q,w:(S.me||{}).nm,t:Date.now()});zvDraw();
 api({a:"m_zv_pick",tok:S.tok,id:id,i:i,q:q}).then(function(j){if(!j||!j.ok){toast(j&&j.error==="st"?"Заявка уже закрыта":"Не сохранилось, ещё раз");zvLoad();return}o.items[i]=j.item;zvDraw()}).catch(function(){toast("Нет связи — не сохранилось");zvLoad()})}
-document.addEventListener("click",function(e){var t=e.target.closest("[data-zvt],[data-zvo],[data-zvp],[data-zvq],[data-zvs],[data-zvx],[data-zvph],[data-zvnew]");if(!t)return;var d=t.dataset;
+document.addEventListener("click",function(e){var t=e.target.closest("[data-zvt],[data-zvo],[data-zvp],[data-zvq],[data-zvs],[data-zvall],[data-zvno],[data-zvx],[data-zvph],[data-zvnew]");if(!t)return;var d=t.dataset;
 if(d.zvt){ZV.tab=d.zvt;zvDraw();return}
 if(d.zvph){var v=document.createElement("div");v.className="ov";v.style.alignItems="center";v.innerHTML='<img src="'+zvPic(d.zvph,1200)+'" style="max-width:96vw;max-height:90vh;border-radius:14px">';v.onclick=function(){v.remove()};document.body.appendChild(v);return}
 if(d.zvo){var o=ZV.L.filter(function(x){return x.id===d.zvo})[0];ZV.open[d.zvo]=!(ZV.open[d.zvo]!==undefined?ZV.open[d.zvo]:(o&&o.st==="open"));zvDraw();return}
@@ -235,7 +239,8 @@ if(d.zvp&&my){zvPick(a[0],+a[1],0);return}
 var left=Math.max(0,it.q-(zvGot(it)-(my?my.q:0)));
 if(d.zvp){zvPick(a[0],+a[1],left||it.q);return}
 var v2=prompt("Сколько собрали? (нужно "+it.q+" шт)",my?my.q:left);if(v2===null)return;var n=parseFloat(String(v2).replace(",","."));if(!(n>=0)){toast("Введите число");return}zvPick(a[0],+a[1],n);return}
-if(d.zvs){if(!confirm("Сборка готова? Курьеры получат заказ: забрать у вас и отвезти заказчику."))return;t.disabled=true;t.textContent="⏳ Вызываем курьера…";api({a:"m_zv_send",tok:S.tok,id:d.zvs}).then(function(j){if(j&&j.ok){toast(j.no?"Передано курьерам ✓ "+j.no:"Отмечено ✓");zvLoad();if(typeof brLoad==="function")brLoad()}else{t.disabled=false;toast(j&&j.error==="empty"?"Нечего отправлять":"Ошибка: "+(j&&j.error))}}).catch(function(){t.disabled=false;toast("Нет связи")});return}
+if(d.zvs||d.zvall){var tx=t.innerHTML;t.disabled=true;t.textContent="⏳ Вызываем курьера…";api(d.zvall?{a:"m_zv_sendall",tok:S.tok}:{a:"m_zv_send",tok:S.tok,id:d.zvs}).then(function(j){zvSendRes(t,j,"Ещё раз")}).catch(function(){t.disabled=false;t.innerHTML=tx;toast("Нет связи")});return}
+if(d.zvno){var a3=d.zvno.split("|");zvNo(a3[0],+a3[1],a3[2]==="1");return}
 if(d.zvx){if(d.zvx==="close"&&!confirm("Закрыть заявку? Её больше не будут собирать."))return;t.disabled=true;api({a:"m_zv_"+d.zvx,tok:S.tok,id:d.id}).then(function(){zvLoad()});return}
 if(d.zvnew)zvNew()});
 function zvNew(){var R=[{n:"",q:"",ph:""}],pub=true,sel={};var d=document.createElement("div");d.className="ov";document.body.appendChild(d);
@@ -246,7 +251,7 @@ function draw(){d.innerHTML='<div class="sh"><b style="font-size:19px">📋 Но
 '<label>Кто собирает</label><div class="tabs"><button id="zpub" class="'+(pub?"on":"")+'">🌐 Все филиалы</button><button id="zsel" class="'+(!pub?"on":"")+'">Выбрать</button></div>'+(pub?'<p class="its" style="margin-top:-6px">Заявку увидят все филиалы и склады. Кто собрал — отмечает, остальные видят это серым.</p>':'<div style="margin-bottom:10px">'+brs()+'</div>')+
 '<label>Комментарий</label><input id="zcm" placeholder="Например: срочно, до 15:00"><div class="er" id="zer"></div><button class="btn g" id="zgo" style="width:100%">Отправить заявку</button><button class="btn o" id="zcx" style="width:100%;margin-top:8px">Отмена</button></div>'}
 draw();
-function photo(fl,i){return shrink(fl).then(function(u){R[i].ph=u})}
+function photo(fl,i){return NEWS.shrink(fl).then(function(u){R[i].ph=u})}
 d.addEventListener("input",function(e){var t=e.target;if(t.dataset.zrn)R[+t.dataset.zrn].n=t.value;if(t.dataset.zrq)R[+t.dataset.zrq].q=t.value});
 d.addEventListener("change",function(e){var t=e.target;if(t.dataset.zri){var f=t.files&&t.files[0];if(f)photo(f,+t.dataset.zri).then(function(){$("zrows").innerHTML=rows();var q=d.querySelector('[data-zrq="'+t.dataset.zri+'"]');if(q&&!q.value)q.focus()})}
 if(t.id==="zmany"){var fs=[].slice.call(t.files||[]).slice(0,30);if(R.length===1&&!R[0].n&&!R[0].ph)R=[];var p=Promise.resolve();fs.forEach(function(f){p=p.then(function(){R.push({n:"",q:"",ph:""});return photo(f,R.length-1)})});p.then(function(){$("zrows").innerHTML=rows()})}
@@ -272,6 +277,8 @@ if(S.tok)setTimeout(zvLoad,600);
 .zvt{flex:1;min-width:0}.zvt b{display:block;word-break:break-word}.zvt small{color:var(--mut);font-size:13px}.zvt small b{display:inline}
 .zvc{flex:none;width:48px;height:48px;border-radius:14px;border:2.5px solid #8b5cf6;background:var(--sf);color:#fff;font:800 24px system-ui;display:flex;align-items:center;justify-content:center}
 .zvc.on{background:#16a34a;border-color:#16a34a}.zvc.gr{background:#9ca3af;border-color:#9ca3af}
+.zvi.hp{flex-wrap:wrap;align-items:flex-start}.zvi.hp img{width:100%;height:auto;max-height:420px;object-fit:contain;flex:0 0 100%;background:#0003;border-radius:12px;cursor:zoom-in}.zvi.hp .zvt{flex:1}
+.zvbt{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.zvbt .zvq{margin:0}.zvq.zvno{color:#e11d48}.zvi.no{background:color-mix(in srgb,#e11d48 12%,transparent)}.zvi.no .zvt b{text-decoration:line-through;opacity:.7}
 .zvi.done{opacity:.45;filter:grayscale(1)}.zvi.done .zvt b{text-decoration:line-through}.zvi.me{background:color-mix(in srgb,#16a34a 14%,transparent)}.zvi.part{background:color-mix(in srgb,#f59e0b 16%,transparent)}
 .zvq{border:0;background:none;color:#6d28d9;font:600 13px system-ui;padding:4px 0}
 .zvmore{border:0;background:none;color:var(--mut);font:600 13px system-ui;padding:6px 0;width:100%}
@@ -317,4 +324,12 @@ t.disabled=false;t.textContent="Передать курьерам";er(j&&j.error
 .dlb{border:1px solid var(--bd);border-radius:12px;padding:10px;margin-top:8px}.dlb.on{border-color:#16a34a;background:color-mix(in srgb,#16a34a 8%,transparent)}.dlb textarea{width:100%;box-sizing:border-box;margin:8px 0 0;border:1px solid var(--bd);border-radius:10px;padding:10px;font:15px system-ui;background:var(--sf);color:var(--tx)}
 .dlck{display:flex;gap:10px;align-items:center;font-weight:700}.dlck input{width:22px;height:22px;margin:0}
 </style>
+<script src="news.js?v=1"></script>
+<script>
+/* 📢 новости + 📦 заказы сайта для операторов/администраторов из рабочего персонала */
+NEWS.init({url:CHAT_URL,auth:function(){return S.tok?{tok:S.tok}:null},box:function(){return $("nwbox")},ping:function(o){toast("📢 Новость: "+String(o.t||"").slice(0,80))}});
+function offHtml(){var m=S.me||{};if(!m.off)return"";return'<a class="btn" data-offgo="1" href="./#admin" style="display:block;text-align:center;text-decoration:none;margin:0 0 12px;background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff">📦 Заказы с сайта · оплаты · документы<br><small style="font-weight:500;opacity:.9">вход как «'+esc(m.offn||"Оператор")+'» под вашим именем</small></a>'}
+var _nwr=render;render=function(){_nwr();var m=document.querySelector("#app main");if(m&&!$("nwbox")){var d=document.createElement("div");d.id="nwbox";m.insertBefore(d,m.firstChild);var o=document.createElement("div");o.id="offbox";m.insertBefore(o,d.nextSibling)}NEWS.draw();var ob=$("offbox");if(ob)ob.innerHTML=offHtml()};
+document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("[data-offgo]");if(!t)return;var m=S.me||{};if(!m.off||!S.tok)return;try{localStorage.setItem("uh_adm",JSON.stringify({role:m.off,who:m.nm,key:"T:"+S.tok,tm:1}))}catch(x){}});
+</script>
 </body></html>

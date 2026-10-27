@@ -2454,3 +2454,125 @@ function dcAct(a, p) {
 }
 var DC_ROUTE0 = route;
 route = function (p) { var a = String(p.a || ""); if (a.indexOf("dc_") === 0) return dcAct(a, p); return DC_ROUTE0(p); };
+
+// ==================== 21. Приход товаров: курс валют на дату прихода, себестоимость и цены
+// Формула (как в таблице «Установка и обновление цен»):
+//   себестоимость за 1 шт = цена × курс + (м³ всего ÷ штук всего) × тариф за м³ + (кг всего ÷ штук всего) × тариф за кг
+//   оптовая = себестоимость × (1 + % опт);  розничная = оптовая × (1 + % розн);  офисная = оптовая × (1 + % офис)
+// Курс фиксируется в каждом приходе на дату прихода: если курс изменится, старые приходы не пересчитываются, новые идут по новому курсу.
+var PR = { SEE: { director: 1, admin: 1, accountant: 1 }, ED: { director: 1, admin: 1 }, CUR: ["CNY", "USD", "RUB", "EUR", "TJS"], PART: 45000 };
+function prSh() { return sheet("prihod", ["id", "part", "ts", "json"]); }
+function kursSh() { return sheet("kurs", ["date", "cur", "rate", "src", "ts", "who"]); }
+function prN(v, d) { v = Math.round((+v || 0) * Math.pow(10, d == null ? 4 : d)) / Math.pow(10, d == null ? 4 : d); return isFinite(v) ? v : 0; }
+function prD(s) { s = String(s || ""); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : Utilities.formatDate(new Date(), "Asia/Dushanbe", "yyyy-MM-dd"); }
+function prCfg() {
+  var v = PropertiesService.getScriptProperties().getProperty("pr:cfg"), o = v ? JSON.parse(v) : {};
+  return { m3t: o.m3t != null ? o.m3t : 1900, kgt: o.kgt != null ? o.kgt : 9, tcur: o.tcur || "TJS", cur: o.cur || "CNY", po: o.po != null ? o.po : 0.5, pr: o.pr != null ? o.pr : 0.4, pf: o.pf != null ? o.pf : 0.2 };
+}
+function prRates() { var v = PropertiesService.getScriptProperties().getProperty("pr:rates"); return v ? JSON.parse(v) : {}; }
+function prRateSet(cur, v, src, who, d) {
+  if (PR.CUR.indexOf(cur) < 0 || cur === "TJS" || !(v > 0) || v > 100000) return false;
+  var R = prRates(); R[cur] = { v: prN(v, 4), d: d || prD(""), src: src, ts: Date.now(), w: who || "" };
+  PropertiesService.getScriptProperties().setProperty("pr:rates", JSON.stringify(R));
+  kursSh().appendRow([R[cur].d, cur, R[cur].v, src, Date.now(), who || ""]);
+  return true;
+}
+// курс Национального банка Таджикистана на дату (если сайт НБТ недоступен — курс вводится вручную)
+function prNbt(d) {
+  var key = "nbt:" + d, c = C().get(key); if (c) return JSON.parse(c);
+  var out = {};
+  try {
+    var r = UrlFetchApp.fetch("https://nbt.tj/ru/kurs/export_xml.php?date=" + d + "&export=xmlout", { muteHttpExceptions: true, followRedirects: true });
+    var x = r.getContentText() || "", re = /<CharCode>\s*([A-Z]{3})\s*<\/CharCode>[\s\S]*?<Nominal>\s*([\d.,]+)\s*<\/Nominal>[\s\S]*?<Value>\s*([\d.,]+)\s*<\/Value>/g, m;
+    while ((m = re.exec(x))) { var nm = parseFloat(m[2].replace(",", ".")) || 1, val = parseFloat(m[3].replace(",", ".")); if (val > 0) out[m[1]] = prN(val / nm, 4); }
+  } catch (e) { out = {}; }
+  if (Object.keys(out).length) C().put(key, JSON.stringify(out), 21600);
+  return out;
+}
+// пересчёт позиции (на сервере — чтобы цифры в базе были одни и те же у всех)
+function prCalc(it, h) {
+  var box = Math.max(0, +it.box || 0), qpb = Math.max(0, +it.qpb || 0), qty = +it.qty > 0 ? +it.qty : box * qpb;
+  var trate = h.tcur === "TJS" ? 1 : (+h.trate || 0);
+  var m3 = Math.max(0, +it.m3 || 0), kg = Math.max(0, +it.kg || 0);
+  var log = qty > 0 ? (m3 / qty) * (+h.m3t || 0) * trate + (kg / qty) * (+h.kgt || 0) * trate : 0;
+  var fx = Math.max(0, +it.fx || 0); // себестоимость, введённая вручную в сомони (местная закупка) — без курса и доставки
+  var cost = fx > 0 ? fx : (+it.pr || 0) * (h.cur === "TJS" ? 1 : (+h.rate || 0)) + log;
+  var po = +it.po || 0, prr = +it.prr || 0, pf = +it.pf || 0, opt = cost * (1 + po);
+  return {
+    nm: clean(it.nm, 120), code: clean(it.code, 40), bc: clean(it.bc, 60), grp: clean(it.grp, 60), note: clean(it.note, 200),
+    pr: prN(it.pr, 4), fx: prN(fx, 4), box: prN(box, 3), qpb: prN(qpb, 3), qty: prN(qty, 3), m3: prN(m3, 4), kg: prN(kg, 3),
+    po: prN(po, 4), prr: prN(prr, 4), pf: prN(pf, 4),
+    cost: prN(cost, 4), opt: prN(opt, 2), rozn: prN(opt * (1 + prr), 2), ofis: prN(opt * (1 + pf), 2), sum: prN(cost * qty, 2)
+  };
+}
+function prAll(withItems) {
+  var sh = prSh(), n = sh.getLastRow(), M = {}, order = [];
+  if (n < 2) return [];
+  sh.getRange(2, 1, n - 1, 4).getValues().forEach(function (r) {
+    var id = String(r[0]); if (!id) return;
+    var o = M[id] || (M[id] = { parts: [] }); if (order.indexOf(id) < 0) order.push(id);
+    if (+r[1] === 0) { try { o.h = JSON.parse(r[3]); } catch (x) {} } else if (withItems) o.parts[+r[1]] = String(r[3]);
+  });
+  return order.map(function (id) { var o = M[id]; if (!o.h) return null; if (withItems) { try { o.h.items = JSON.parse(o.parts.join("") || "[]"); } catch (x) { o.h.items = []; } } return o.h; }).filter(Boolean);
+}
+function prDelRows(id) { var sh = prSh(), n = sh.getLastRow(); if (n < 2) return; var v = sh.getRange(2, 1, n - 1, 1).getValues(); for (var i = v.length - 1; i >= 0; i--) if (String(v[i][0]) === id) sh.deleteRow(i + 2); }
+function prAct(a, p) {
+  var me = staff(p); if (!me || !PR.SEE[me.role]) return { ok: false, error: "role" };
+  var pr = PropertiesService.getScriptProperties();
+  if (a === "pr_get") {
+    var d = prD(p.d), R = prRates(), nb = p.nbt ? prNbt(d) : {};
+    return { ok: true, cfg: prCfg(), rates: R, nbt: nb, d: d, ed: !!PR.ED[me.role], list: prAll(false).reverse().slice(0, 300) };
+  }
+  if (a === "pr_nbt") { var d1 = prD(p.d), nb1 = prNbt(d1); return { ok: true, d: d1, nbt: nb1 }; }
+  if (a === "pr_hist") {
+    var sh = kursSh(), n = sh.getLastRow(), L = [];
+    if (n > 1) sh.getRange(Math.max(2, n - 299), 1, Math.min(300, n - 1), 6).getValues().forEach(function (r) { L.push({ d: r[0] instanceof Date ? Utilities.formatDate(r[0], "Asia/Dushanbe", "yyyy-MM-dd") : String(r[0]), cur: r[1], v: +r[2], src: r[3], w: r[5] }); });
+    return { ok: true, list: L.reverse() };
+  }
+  if (a === "pr_one") { var id = String(p.id || ""), hit = prAll(true).filter(function (x) { return x.id === id; })[0]; return hit ? { ok: true, doc: hit } : { ok: false, error: "none" }; }
+  if (a === "pr_price") {
+    // последний приход по каждому коду = действующая себестоимость и цены
+    var P = {};
+    prAll(true).forEach(function (h) { (h.items || []).forEach(function (it) {
+      var k = (String(it.nm || "").trim() + "|" + String(it.code || "").trim()).toLowerCase(); if (k === "|") return;
+      var x = P[k], cand = { nm: it.nm, grp: it.grp, code: it.code, bc: it.bc, cost: it.cost, opt: it.opt, rozn: it.rozn, ofis: it.ofis, d: h.d, no: h.no, cur: h.cur, rate: h.rate, pr: it.pr };
+      if (!x) { cand.prev = null; P[k] = cand; return; }
+      if (h.d >= x.d) { cand.prev = x.no === h.no ? x.prev : { cost: x.cost, d: x.d, rate: x.rate }; P[k] = cand; }
+    }); });
+    return { ok: true, list: Object.keys(P).map(function (k) { return P[k]; }) };
+  }
+  if (a === "pr_rate") { if (!prRateSet(String(p.cur || ""), +p.v, p.src === "nbt" ? "НБТ" : "вручную", me.who, prD(p.d))) return { ok: false, error: "bad" }; return { ok: true, rates: prRates() }; }
+  if (a === "pr_cfg") {
+    if (!PR.ED[me.role]) return { ok: false, error: "role" };
+    var c = prCfg(), q = p.cfg || {};
+    ["m3t", "kgt", "po", "pr", "pf"].forEach(function (k) { if (q[k] != null && isFinite(+q[k]) && +q[k] >= 0) c[k] = prN(q[k], 4); });
+    if (PR.CUR.indexOf(q.tcur) > -1) c.tcur = q.tcur; if (PR.CUR.indexOf(q.cur) > -1) c.cur = q.cur;
+    pr.setProperty("pr:cfg", JSON.stringify(c)); return { ok: true, cfg: c };
+  }
+  if (a === "pr_save") {
+    var h = p.h || {}, items = (p.items || []).slice(0, 3000);
+    var cur = PR.CUR.indexOf(h.cur) > -1 ? h.cur : "CNY", tcur = PR.CUR.indexOf(h.tcur) > -1 ? h.tcur : "TJS";
+    var H = { id: clean(h.id, 20), d: prD(h.d), sup: clean(h.sup, 120), note: clean(h.note, 300), cur: cur, rate: cur === "TJS" ? 1 : prN(h.rate, 4), tcur: tcur, trate: tcur === "TJS" ? 1 : prN(h.trate, 4), m3t: prN(h.m3t, 4), kgt: prN(h.kgt, 4), rsrc: clean(h.rsrc, 20) };
+    if (!(H.rate > 0) || !(H.trate > 0)) return { ok: false, error: "rate" };
+    if (!items.length) return { ok: false, error: "empty" };
+    var IT = items.map(function (it) { return prCalc(it, H); }).filter(function (it) { return it.nm || it.code; });
+    var tq = 0, ts = 0; IT.forEach(function (it) { tq += it.qty; ts += it.sum; });
+    H.n = IT.length; H.qty = prN(tq, 2); H.sum = prN(ts, 2);
+    return locked(function () {
+      var old = H.id ? prAll(false).filter(function (x) { return x.id === H.id; })[0] : null;
+      if (H.id && !old) return { ok: false, error: "none" };
+      if (old) { if (!PR.ED[me.role]) return { ok: false, error: "role" }; H.no = old.no; H.ts = old.ts; H.w = old.w; H.ew = me.who; H.et = Date.now(); prDelRows(H.id); }
+      else { var y = H.d.slice(0, 4), nk = "pr:n:" + y, nn = (+pr.getProperty(nk) || 0) + 1; pr.setProperty(nk, String(nn)); H.id = "pr" + rnd(10); H.no = "ПР-" + nn + "/" + y.slice(2); H.ts = Date.now(); H.w = me.who; }
+      // курс, по которому оприходовали, попадает в историю курсов
+      if (H.cur !== "TJS") kursSh().appendRow([H.d, H.cur, H.rate, "приход " + H.no, Date.now(), me.who]);
+      var js = JSON.stringify(IT), rows = [[H.id, 0, H.ts, JSON.stringify(H)]];
+      for (var i = 0, k = 1; i < js.length; i += PR.PART, k++) rows.push([H.id, k, H.ts, js.slice(i, i + PR.PART)]);
+      var sh2 = prSh(); sh2.getRange(sh2.getLastRow() + 1, 1, rows.length, 4).setValues(rows);
+      H.items = IT; return { ok: true, doc: H };
+    });
+  }
+  if (a === "pr_del") { if (me.role !== "director") return { ok: false, error: "role" }; return locked(function () { prDelRows(String(p.id || "")); return { ok: true }; }); }
+  return { ok: false, error: "action" };
+}
+var PR_ROUTE0 = route;
+route = function (p) { var a = String(p.a || ""); if (a.indexOf("pr_") === 0) return prAct(a, p); return PR_ROUTE0(p); };

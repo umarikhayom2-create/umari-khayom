@@ -2196,6 +2196,7 @@ function upZvCtx(p) {
 }
 // мой филиал прошёл всю заявку: каждая позиция либо собрана целиком, либо я её собрал/отметил «нет»
 function upZvReady(o, bid) {
+  if (o.pub || (o.to || []).length > 1) return 0; // заявка нескольким филиалам — каждый филиал отправляет свою часть сам
   var left = 0;
   o.items.forEach(function (it) { if (zvGot(it) >= it.q) return; if ((it.g || []).some(function (g) { return g.b === bid && !g.s; })) return; left++; });
   return left;

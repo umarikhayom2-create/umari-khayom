@@ -2375,3 +2375,72 @@ route = function (p) {
   if (a === "t_devst" || a === "t_devset" || a.indexOf("dv_") === 0) return devAct(a, p);
   return DEV_ROUTE0(p);
 };
+
+// ==================== 20. Документы: реквизиты компаний, печати (закрыто), журнал и нумерация документов
+// Доступ: только руководитель и администратор. Печати хранятся в закрытой папке Google Диска (без общего доступа).
+var DC = { ADM: { director: 1, admin: 1 }, ST: ["muh_main", "muh_nak", "tj_main"], PFX: { labor: "ШМ", supply: "ШТ", sale: "ДКП", coop: "ШҲ", letter: "", cert: "МН", pay: "" } };
+function dcFolder() {
+  var pr = PropertiesService.getScriptProperties(), id = pr.getProperty("dcf"), f = null;
+  if (id) { try { f = DriveApp.getFolderById(id); } catch (x) { f = null; } }
+  if (!f) { f = DriveApp.createFolder("Умари Хайём — печати и документы (закрыто)"); pr.setProperty("dcf", f.getId()); }
+  return f;
+}
+function dcSh() { return sheet("docs", ["id", "ts", "json"]); }
+function dcAct(a, p) {
+  var me = staff(p); if (!me || !DC.ADM[me.role]) return { ok: false, error: "role" };
+  var pr = PropertiesService.getScriptProperties();
+  if (a === "dc_get") {
+    var rk = pr.getProperty("dc:rekv"), st = {};
+    DC.ST.forEach(function (k) { st[k] = !!pr.getProperty("dc:st:" + k); });
+    return { ok: true, rekv: rk ? JSON.parse(rk) : null, st: st, dir: me.role === "director" };
+  }
+  if (a === "dc_stamp") {
+    var k = String(p.k || ""); if (DC.ST.indexOf(k) < 0) return { ok: false, error: "bad" };
+    var fid = pr.getProperty("dc:st:" + k); if (!fid) return { ok: false, error: "none" };
+    var b = DriveApp.getFileById(fid).getBlob();
+    return { ok: true, data: "data:" + b.getContentType() + ";base64," + Utilities.base64Encode(b.getBytes()) };
+  }
+  if (a === "dc_list") {
+    var sh = dcSh(), n = sh.getLastRow(), L = [];
+    if (n > 1) sh.getRange(Math.max(2, n - 199), 1, Math.min(200, n - 1), 3).getValues().forEach(function (r) { try { var o = JSON.parse(r[2]); delete o.d; L.push(o); } catch (x) {} });
+    return { ok: true, list: L.reverse() };
+  }
+  if (a === "dc_one") {
+    var sh1 = dcSh(), n1 = sh1.getLastRow(), id = String(p.id || ""), hit = null;
+    if (n1 > 1) sh1.getRange(2, 1, n1 - 1, 3).getValues().forEach(function (r) { if (String(r[0]) === id) hit = r[2]; });
+    return hit ? { ok: true, doc: JSON.parse(hit) } : { ok: false, error: "none" };
+  }
+  if (a === "dc_save") {
+    var t = String(p.t || ""), co = String(p.co || ""); if (!(t in DC.PFX) || !/^(muh|tj)$/.test(co)) return { ok: false, error: "bad" };
+    var js = JSON.stringify(p.d || {}); if (js.length > 40000) return { ok: false, error: "big" };
+    return locked(function () {
+      var no = clean(p.no, 40);
+      if (!no) {
+        var y = Utilities.formatDate(new Date(), "Asia/Dushanbe", "yyyy"), key = "dc:n:" + co + ":" + t + ":" + (t === "pay" ? "all" : y), n2 = (+pr.getProperty(key) || 0) + 1;
+        pr.setProperty(key, String(n2));
+        no = t === "pay" ? String(n2) : (DC.PFX[t] ? DC.PFX[t] + "-" : "") + n2 + "/" + y;
+      }
+      var o = { id: "dc" + Date.now() + rnd(4), ts: Date.now(), t: t, co: co, no: no, ti: clean(p.ti, 160), w: me.who, r: me.role, st: !!p.st, d: p.d || {} };
+      dcSh().appendRow(["'" + o.id, o.ts, JSON.stringify(o)]);
+      return { ok: true, no: no, id: o.id };
+    });
+  }
+  if (me.role !== "director") return { ok: false, error: "role" };
+  if (a === "dc_set") {
+    var s = String(p.rekv || ""); if (s.length > 8800) return { ok: false, error: "big" };
+    var obj; try { obj = JSON.parse(s); } catch (x) { return { ok: false, error: "json" }; }
+    if (!obj || !obj.muh) return { ok: false, error: "json" };
+    pr.setProperty("dc:rekv", JSON.stringify(obj)); return { ok: true, rekv: obj };
+  }
+  if (a === "dc_stup") {
+    var k2 = String(p.k || ""); if (DC.ST.indexOf(k2) < 0) return { ok: false, error: "bad" };
+    var m = String(p.data || "").match(/^data:(image\/(?:png|jpeg|webp));base64,(.+)$/); if (!m || m[2].length > 900000) return { ok: false, error: "img" };
+    var file = dcFolder().createFile(Utilities.newBlob(Utilities.base64Decode(m[2]), m[1], "stamp_" + k2 + "_" + Date.now()));
+    var old = pr.getProperty("dc:st:" + k2); if (old) { try { DriveApp.getFileById(old).setTrashed(true); } catch (x) {} }
+    pr.setProperty("dc:st:" + k2, file.getId()); return { ok: true };
+  }
+  if (a === "dc_stdel") { var k3 = String(p.k || ""), o3 = pr.getProperty("dc:st:" + k3); if (o3) { try { DriveApp.getFileById(o3).setTrashed(true); } catch (x) {} pr.deleteProperty("dc:st:" + k3); } return { ok: true }; }
+  return { ok: false, error: "action" };
+}
+var DC_ROUTE0 = route;
+route = function (p) { var a = String(p.a || ""); if (a.indexOf("dc_") === 0) return dcAct(a, p); return DC_ROUTE0(p); };

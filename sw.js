@@ -1,7 +1,7 @@
 // Умари Хайём — сервис-воркер.
 // Страница: всегда пытаемся взять свежую из сети; если сеть не ответила за 3 секунды — показываем сохранённую копию.
 // Фото, миниатюры, иконки, шрифты: качаются один раз и дальше берутся из памяти телефона.
-var CACHE = "uh-app-v11", IMG = "uh-img-v1";
+var CACHE = "uh-app-v12", IMG = "uh-img-v1";
 var CORE = ["manifest.json", "favicon.ico", "icon-32.png", "icon-16.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "logo.png"];
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(CORE); }).catch(function () {}).then(function () { return self.skipWaiting(); }));

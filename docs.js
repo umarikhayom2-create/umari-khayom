@@ -235,9 +235,22 @@ function logHtml() {
   if (!S.log.length) return h + "<div class=emp>Документов пока нет</div>";
   return h + S.log.map(function (x) { var d = new Date(x.ts); return "<div class=c3r><div><b>" + ((T[x.t] || {}).i || "📄") + " " + esc((T[x.t] || {}).n || x.t) + " № " + esc(x.no) + "</b><small>" + esc(CO_N[x.co] || x.co) + " · " + esc(x.ti || "") + " · " + d.toLocaleDateString("ru-RU") + " · " + esc(x.w) + (x.st ? " · 🔵 с печатью" : "") + "</small></div><button class='btn sm o' data-dre='" + esc(x.id) + "'>🖨 Открыть</button></div>"; }).join("");
 }
+var RF = [["name_tj", "Название кратко (тоҷ.)", "ҶДММ «…»"], ["full_tj", "Полное название (тоҷ.)", "Ҷамъияти дорои масъулияти маҳдуди «…»"], ["name_ru", "Название кратко (рус.)", "ООО «…»"], ["full_ru", "Полное название (рус.)", "Общество с ограниченной ответственностью «…»"],
+  ["inn", "ИНН (РМА)"], ["ern", "ЕРН (РЯМ)"], ["addr_jur_tj", "Юр. адрес (тоҷ.)"], ["addr_fact_tj", "Факт. адрес (тоҷ.)"], ["addr_jur_ru", "Юр. адрес (рус.)"], ["addr_fact_ru", "Факт. адрес (рус.)"],
+  ["dir_tj", "Директор ФИО (тоҷ.)"], ["dir_ru", "Директор ФИО (рус.)"], ["dir_gen_ru", "Директор в род. падеже (рус.)", "Рахимова Диловара Холмуродовича"], ["dir_short_tj", "Директор кратко (тоҷ.)", "Раҳимов Д. Х."], ["dir_short_ru", "Директор кратко (рус.)", "Рахимов Д. Х."], ["phone", "Телефон"], ["email", "E-mail"]];
+var BF = [["bank_tj", "Банк (тоҷ.)"], ["bank_ru", "Банк (рус.)"], ["acc", "Расчётный счёт (сомони)"], ["corr", "Корр. счёт"], ["bik", "БИК (РМБ)"], ["binn", "ИНН банка"], ["acc_usd", "Счёт USD"], ["acc_eur", "Счёт EUR"], ["acc_rub", "Счёт RUB"], ["swift", "SWIFT"]];
+function edHtml() {
+  var c = S.ed, x = (S.edo = S.edo || JSON.parse(JSON.stringify(((U.DCR.rekv || {})[c]) || { banks: [] }))), inp = function (k, l, ph, v, at) { return "<div class=fl><label>" + esc(l) + "</label><input class=pin " + at + "='" + k + "' value='" + esc(v || "") + "'" + (ph ? " placeholder='" + esc(ph) + "'" : "") + "></div>"; };
+  var h = "<div class=row style='margin-bottom:8px'><button class='btn sm o' data-dv2='set'>← Назад</button></div><div class=pq><b style='font-size:18px'>✏️ Реквизиты: " + CO_N[c] + "</b></div><div class=c3bar>" + ["muh", "tj"].map(function (k) { return "<button class='c3chip" + (k === c ? " on" : "") + "' data-dred='" + k + "'>" + CO_N[k] + "</button>"; }).join("") + "</div>";
+  h += "<div class=dcf><div class=dcsec>Компания</div>" + RF.map(function (f) { return inp(f[0], f[1], f[2], x[f[0]], "data-rk"); }).join("") + "</div>";
+  (x.banks || []).forEach(function (b, i) { h += "<div class=pq><div class=row style='justify-content:space-between;align-items:center'><b>🏦 Счёт " + (i + 1) + (b.bank_ru ? " — " + esc(b.bank_ru) : "") + "</b><button class='btn sm o' data-dbd='" + i + "'>Удалить счёт</button></div><div class=dcf>" + BF.map(function (f) { return inp(i + ":" + f[0], f[1], "", b[f[0]], "data-rb"); }).join("") + "</div></div>"; });
+  h += "<div class=row style='gap:6px;margin-top:8px'><button class='btn o' data-dba=1>+ Добавить банковский счёт</button><button class=btn data-dsv=1 style='flex:1'>💾 Сохранить реквизиты</button></div><p class=note>Первый счёт в списке подставляется в документы по умолчанию. Счета в валюте видны в карточке компании и в письмах.</p>";
+  return h;
+}
+function edCollect() { if (!BOX || !S.edo) return; BOX.querySelectorAll("[data-rk]").forEach(function (el) { S.edo[el.dataset.rk] = el.value.trim(); }); BOX.querySelectorAll("[data-rb]").forEach(function (el) { var a = el.dataset.rb.split(":"); (S.edo.banks[+a[0]] = S.edo.banks[+a[0]] || {})[a[1]] = el.value.trim(); }); }
 function setHtml() {
   var D = U.DCR, R0 = D.rekv, h = "<div class=row style='margin-bottom:8px'><button class='btn sm o' data-dv2='home'>← Все документы</button></div><div class=pq><b style='font-size:18px'>⚙️ Реквизиты и печати</b><p class=note style='margin:4px 0 0'>Хранятся на вашем сервере в закрытом виде и видны только руководителю и администратору. В коде сайта их нет.</p></div>";
-  h += "<div class=pq><b>Реквизиты компаний</b>" + (R0 ? ["muh", "tj"].map(function (c) { var x = R0[c] || {}; return "<div class=c3r><div><b>" + esc(x.name_ru || CO_N[c]) + "</b><small>ИНН " + esc(x.inn || "—") + " · директор " + esc(x.dir_short_ru || "—") + " · счетов: " + ((x.banks || []).length) + "</small></div></div>"; }).join("") : "<div class=emp>Не загружены</div>") +
+  h += "<div class=pq><b>Реквизиты компаний</b>" + (R0 ? ["muh", "tj"].map(function (c) { var x = R0[c] || {}; return "<div class=c3r><div><b>" + esc(x.name_ru || CO_N[c]) + "</b><small>ИНН " + esc(x.inn || "—") + " · директор " + esc(x.dir_short_ru || "—") + " · счетов: " + ((x.banks || []).length) + "</small></div><button class='btn sm' data-dred='" + c + "'>✏️ Изменить</button></div>"; }).join("") : "<div class=emp>Не загружены</div><button class='btn sm' data-dred='muh'>✏️ Заполнить вручную</button>") +
     "<div class=row style='gap:6px;margin-top:8px'><label class='btn sm' style='cursor:pointer'>📥 Загрузить файл реквизитов<input type=file accept='.json,application/json' id=dcrk hidden></label>" + (R0 ? "<button class='btn sm o' data-dvk=1>💾 Скачать текущие</button>" : "") + "</div></div>";
   h += "<div class=pq><b>Печати</b>" + [["muh_main", "Молҳои Умари Хайём — основная"], ["muh_nak", "Молҳои Умари Хайём — для накладных"], ["tj_main", "Тоҷири Ҷавон — основная"]].map(function (s) {
     var on = (D.st || {})[s[0]], im = U.STP.img[s[0]];
@@ -246,7 +259,7 @@ function setHtml() {
   return h;
 }
 var BOX = null;
-function draw() { BOX = document.getElementById("admC") || BOX; if (!BOX) return; BOX.innerHTML = "<div data-dcroot>" + (S.v === "form" ? form() : S.v === "log" ? logHtml() : S.v === "set" ? setHtml() : home()) + "</div>"; }
+function draw() { BOX = document.getElementById("admC") || BOX; if (!BOX) return; BOX.innerHTML = "<div data-dcroot>" + (S.v === "edit" ? edHtml() : S.v === "form" ? form() : S.v === "log" ? logHtml() : S.v === "set" ? setHtml() : home()) + "</div>"; }
 function mount(c) { css(); logoLoad(); BOX = c; c.innerHTML = "<div class=emp>Загружаем…</div>"; U.dcLoad(true).then(function () { if (U.DCR.dir && S.v === "set") ["muh_main", "muh_nak", "tj_main"].forEach(function (k) { if (U.DCR.st[k]) U.stLoad(k).then(function () { if (S.v === "set") draw(); }); }); draw(); }); }
 function collect() { if (!BOX) return; BOX.querySelectorAll("[data-dk]").forEach(function (el) { S.d[el.dataset.dk] = el.value; }); var st = document.getElementById("dcst"); if (st) S.stamp = st.checked && !st.disabled; }
 function missing() { var t = T[S.t]; return t.f.filter(function (f) { return f[3] && !String(S.d[f[0]] || "").trim(); }).map(function (f) { return f[1]; }); }
@@ -269,8 +282,12 @@ function make(prev) {
   });
 }
 document.addEventListener("click", function (e) {
-  BOX = document.getElementById("admC") || BOX; if (!BOX || !BOX.contains(e.target) || !BOX.querySelector("[data-dcroot]")) return; var t = e.target.closest("[data-dt],[data-dv2],[data-dco],[data-dgo],[data-dprev],[data-dre],[data-dvk],[data-dsd]"); if (!t) return; e.preventDefault();
+  BOX = document.getElementById("admC") || BOX; if (!BOX || !BOX.contains(e.target) || !BOX.querySelector("[data-dcroot]")) return; var t = e.target.closest("[data-dt],[data-dv2],[data-dco],[data-dgo],[data-dprev],[data-dre],[data-dvk],[data-dsd],[data-dred],[data-dba],[data-dbd],[data-dsv]"); if (!t) return; e.preventDefault();
   var x = t.dataset;
+  if (x.dred) { if (S.v === "edit") edCollect(); if (S.v === "edit" && S.ed !== x.dred && S.edo) { var all0 = JSON.parse(JSON.stringify(U.DCR.rekv || {})); all0[S.ed] = S.edo; U.DCR.rekv = all0; } S.ed = x.dred; S.edo = null; S.v = "edit"; draw(); return; }
+  if (x.dba) { edCollect(); S.edo.banks = S.edo.banks || []; S.edo.banks.push({}); draw(); return; }
+  if (x.dbd) { edCollect(); if (!confirm("Удалить этот счёт?")) return; S.edo.banks.splice(+x.dbd, 1); draw(); return; }
+  if (x.dsv) { edCollect(); var all = JSON.parse(JSON.stringify(U.DCR.rekv || {})); all[S.ed] = S.edo; if (!all.muh) all.muh = {}; if (!all.tj) all.tj = {}; t.disabled = true; U.api("dc_set", { rekv: JSON.stringify(all) }).then(function (j) { t.disabled = false; if (j && j.ok) { toast("Реквизиты сохранены ✓"); S.edo = null; U.dcLoad(true).then(function () { S.v = "set"; draw(); }); } else toast(j && j.error === "big" ? "Слишком много данных" : "Не получилось: " + ((j && j.error) || "")); }); return; }
   if (x.dco) { collect(); S.co = x.dco; draw(); return; }
   if (x.dt) { S.t = x.dt; S.v = "form"; S.d = { date: today(), p_basis: "Оиннома", months: "6", lang: "tj" }; draw(); return; }
   if (x.dv2) { S.v = x.dv2; draw(); if (x.dv2 === "set") ["muh_main", "muh_nak", "tj_main"].forEach(function (k) { if ((U.DCR.st || {})[k]) U.stLoad(k).then(function () { if (S.v === "set") draw(); }); }); return; }

@@ -1,13 +1,4 @@
-// Умари Хайём — сервер чата, «кто в сети», аккаунты клиентов, бонусы, курьеры, маркетплейс и счётчик посетителей.
-// ⚠ ВСТАВЛЯТЬ ТОЛЬКО в проект чата (идентификатор развёртывания начинается с AKfycbxH7G72).
-// ⚠ НЕ вставлять в основной сервер сайта (идентификатор AKfycbxGssdY) — иначе перестанет работать вход и заказы.
-// Отдельный проект Apps Script. Установка:
-// 1) script.google.com → «Новый проект» → удалите всё → вставьте этот файл целиком → Сохранить.
-// 2) «Начать развёртывание» → «Новое развёртывание» → тип «Веб-приложение»:
-// «Запуск от имени» — Я, «У кого есть доступ» — Все → Развернуть → разрешить доступ.
-// 3) Скопируйте ссылку веб-приложения (…/exec) и пришлите её Claude.
-// Таблица для переписки создаётся сама при первом сообщении (в вашем Google Диске: «Умари Хайём — чат»).
-//
+// Умари Хайём · Чат — Сервер: чат, кто в сети, аккаунты клиентов, бонусы, курьеры, маркетплейс, счётчик. ⚠ Только в проект «Server» (чат), не в основной сервер сайта. Файлы держать в этом порядке.
 var MAIN_API = "https://script.google.com/macros/s/AKfycbxGssdYbn5tGiCuyyphhqVggnTh8htbdRkQBB-LB68DVWPCN54gveCYn5ysgWrSzNeM0g/exec";
 var CHAT_ROLES = { operator: "Оператор", admin: "Администратор", director: "Руководитель" };
 var ALL_ROLES = { operator: "Оператор", admin: "Администратор", accountant: "Бухгалтер", director: "Руководитель", content: "Контент-менеджер", partner: "Партнёр" };
@@ -158,7 +149,7 @@ function staffAct(a, p, me) {
     var g = gv(), res = { ok: true, me: me, pres: on, gv: g };
     if (String(p.gv || "") !== g && CHAT_ROLES[me.role]) {
       res.list = allD().filter(function (m) { return m.st !== "closed" || Date.now() - (m.ts || 0) < 3 * 864e5; })
-        .map(function (m) { return sum(m, me); }).sort(function (x, y) { return y.ts - x.ts; }).slice(0, 80);
+      .map(function (m) { return sum(m, me); }).sort(function (x, y) { return y.ts - x.ts; }).slice(0, 80);
     }
     return res;
   }
@@ -419,7 +410,7 @@ function pordList(own, nos) {
   var lim = Date.now() - 90 * 864e5, want = nos ? {} : null, cfg = own ? pcfgGet(own) : null;
   if (nos) (nos || []).forEach(function (n) { want[String(n)] = 1; });
   return pordAll().L.filter(function (o) { if (want) return want[o.no]; return (!own || o.own === String(own).toLowerCase()) && o.ts > lim; })
-    .map(function (o) { delete o.row; if (own && cfg && cfg.mode !== "self" && o.to) o.to = { dm: o.to.dm, cty: o.to.cty }; return o; }).sort(function (a, b) { return b.ts - a.ts; }).slice(0, 300);
+  .map(function (o) { delete o.row; if (own && cfg && cfg.mode !== "self" && o.to) o.to = { dm: o.to.dm, cty: o.to.cty }; return o; }).sort(function (a, b) { return b.ts - a.ts; }).slice(0, 300);
 }
 function pordSet(me, p) {
   var no = String(p.no || ""), st = String(p.st || ""), own = me.role === "partner" ? me.who.toLowerCase() : String(p.own || "").toLowerCase();

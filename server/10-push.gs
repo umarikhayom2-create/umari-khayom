@@ -1,6 +1,4 @@
-// Пуш-уведомления через Telegram-бота: новые доставки, поручения, оплаты по QR, чат, заказы, просрочки, напоминания о смене.
-// Отдельный файл Push.gs в проекте ЧАТА — самым последним, после Branch.gs.
-// После вставки: выберите функцию pushSetup → «Выполнить» (один раз) — включит напоминания каждые 5 минут.
+// Умари Хайём · Push — Telegram-уведомления. Один раз: функция pushSetup → «Выполнить» (напоминания каждые 5 мин). Файлы держать в этом порядке.
 var PU = { OFFICE: { operator: 1, admin: 1, director: 1 }, BOSS: { admin: 1, director: 1 } };
 function puProp() { return PropertiesService.getScriptProperties(); }
 function puTok() { return puProp().getProperty("tgtok") || ""; }
@@ -10,7 +8,7 @@ function tg(method, body) {
   var t = puTok(); if (!t) return null;
   try { var r = UrlFetchApp.fetch("https://api.telegram.org/bot" + t + "/" + method, { method: "post", contentType: "application/json", payload: JSON.stringify(body || {}), muteHttpExceptions: true }); return JSON.parse(r.getContentText() || "{}"); } catch (x) { return null; }
 }
-function puSend(chat, text) { return tg("sendMessage", { chat_id: chat, text: text, disable_web_page_preview: true }); }
+// puSend — в файле Push2
 // кто сейчас на смене
 function puOnShift() { var on = {}; try { shAll().L.forEach(function (s) { if (!s.out) on[s.pk] = 1; }); } catch (x) {} return on; }
 // отправить тем, кто подходит под фильтр; onlyShift — только тем, кто на смене (если таких нет — всем подходящим)
@@ -32,23 +30,7 @@ function puLink(u) {
   var code = rnd(10), w = puWho(u); puProp().setProperty("pl:" + code, JSON.stringify(w));
   return { ok: true, url: "https://t.me/" + bot + "?start=" + code, bot: bot };
 }
-function puPoll() {
-  var off = +(puProp().getProperty("tgoff") || 0), r = tg("getUpdates", { offset: off, timeout: 0, allowed_updates: ["message"] });
-  if (!r || !r.ok) return;
-  var R = null;
-  (r.result || []).forEach(function (up) {
-    off = Math.max(off, up.update_id + 1);
-    var m = up.message; if (!m || !m.text) return;
-    var mt = String(m.text).match(/^\/start\s+([A-Za-z0-9]+)/);
-    if (!mt) { if (/^\/start/.test(m.text)) puSend(m.chat.id, "Здравствуйте! Чтобы получать уведомления, нажмите «🔔 Подключить уведомления» в приложении Умари Хайём."); return; }
-    var v = puProp().getProperty("pl:" + mt[1]); if (!v) { puSend(m.chat.id, "Ссылка устарела. Нажмите «Подключить уведомления» в приложении ещё раз."); return; }
-    var w = JSON.parse(v); puProp().deleteProperty("pl:" + mt[1]);
-    R = R || puReg(); R[w.pk] = { c: m.chat.id, k: w.k, r: w.r, w: w.w, lg: w.lg, ts: Date.now() };
-    puSend(m.chat.id, "✅ " + w.w + ", уведомления Умари Хайём подключены.\nСюда будут приходить новые заказы, доставки, поручения и напоминания.");
-  });
-  puProp().setProperty("tgoff", String(off));
-  if (R) puRegSet(R);
-}
+// puPoll — в файле Push2
 function puState(u) { var w = puWho(u), R = puReg(); return { ok: true, on: !!R[w.pk], has: !!puTok() }; }
 function puAct(act, u, p) {
   if (act === "link") return puLink(u);

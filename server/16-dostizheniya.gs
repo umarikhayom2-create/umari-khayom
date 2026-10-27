@@ -1,12 +1,4 @@
-// Умари Хайём — ДОСКА ДОСТИЖЕНИЙ: сотрудники делятся лучшими результатами, все голосуют, руководство ставит оценку.
-// Отдельный файл «Достижения» в проекте «Server» — САМЫМ ПОСЛЕДНИМ в списке файлов.
-// Установка: «+» → «Скрипт» → имя «Достижения» → вставить → Сохранить → «Начать развёртывание» →
-// «Управление развёртываниями» → ✏️ → «Новая версия» → «Начать развёртывание».
-//
-// Очки: каждый 👍 = +1, каждый 👎 = −1 (не ниже нуля); оценка руководства: 👌 Удовлетворительно +5, ⭐ Отлично +15, 💎 Гениально +40.
-// Звёзды поста: ★ от 5 очков, ★★ от 15, ★★★ от 30, ★★★★ от 50, ★★★★★ от 80.
-// Рейтинг месяца: очки за посты + очки за работу (считаются сами): смены и приход вовремя, поручения, доставки курьеров,
-// сборка заявок между филиалами, а для офиса (контент, торговые, операторы) — данные, которые присылает панель руководителя.
+// Умари Хайём · Достижения — Доска достижений, очки за работу, итоги месяца в Telegram. Файлы держать в этом порядке.
 
 var DS = { BOSS: { director: 1, admin: 1, badmin: 1 }, BP: [0, 5, 15, 40], STARS: [5, 15, 30, 50, 80], PER_DAY: 3,
   RN: { director: "Руководитель", admin: "Администратор", accountant: "Бухгалтер", operator: "Оператор", sales: "Торговый представитель", content: "Контент-менеджер", courier: "Курьер", merch: "Мерчандайзер", badmin: "Администратор филиала", manager: "Менеджер", seller: "Продавец-консультант", cashier: "Кассир", store: "Кладовщик" } };
@@ -123,7 +115,6 @@ function dsWork(mon) {
     var x = W[k] || (W[k] = { w: w, rn: rn || "", br: br || "", pts: 0, lines: [], cat: [] });
     pts = Math.max(0, Math.round(pts)); x.pts += pts; x.lines.push({ t: title, l: line, p: pts }); x.cat.push({ k: cat, t: title, p: pts });
   };
-  // 1) смены: часы на работе и приход вовремя (если руководитель указал график, например «09:00-18:00»)
   try {
     var S = setGet(), sh = shAll().L.filter(function (o) { return o.in >= a && o.in < b; }), per = {};
     sh.forEach(function (o) {
@@ -140,40 +131,36 @@ function dsWork(mon) {
       var p = per[k], h = p.min / 60, d = Object.keys(p.days).length, on = Object.keys(p.on).length, lt = Object.keys(p.late).length;
       var pts = h / 2 + on * 2 - lt * 2;
       add(k, p.w, DS.RN[p.r] || p.r, p.br, "time", "⏱ Время на работе", pts,
-        Math.round(h) + " ч за " + d + " дн." + (on + lt ? ", вовремя " + on + " из " + (on + lt) + " дн." : ""));
+      Math.round(h) + " ч за " + d + " дн." + (on + lt ? ", вовремя " + on + " из " + (on + lt) + " дн." : ""));
     });
   } catch (x) {}
-  // 2) поручения: выполнены, вовремя, с фото
   try {
     qRating(a, b).forEach(function (r) {
       if (!r.n) return;
       add(r.pk, r.w, DS.RN[r.r] || r.r, "", "tasks", "📋 Поручения", r.earned / 4,
-        "выполнено " + r.done + " из " + r.n + (r.ontime ? ", вовремя " + r.ontime : "") + (r.late ? ", просрочено " + r.late : ""));
+      "выполнено " + r.done + " из " + r.n + (r.ontime ? ", вовремя " + r.ontime : "") + (r.late ? ", просрочено " + r.late : ""));
     });
   } catch (x) {}
-  // 3) курьеры: качество доставки
   try {
     var J = jobAll().L;
     courList().forEach(function (c) {
       var s = kScore(J, { login: c.login, nm: c.nm }, a, b); if (!s.n && !s.fail) return;
       add("cour|" + c.login, c.nm, "Курьер", "", "dlv", "🚚 Доставки", s.earned / 3,
-        "доставил " + s.n + (s.ontime ? ", вовремя " + s.ontime : "") + (s.photo ? ", с фото " + s.photo : "") + (s.late ? ", опоздал " + s.late : "") + (s.pct != null ? " · качество " + s.pct + "%" : ""));
+      "доставил " + s.n + (s.ontime ? ", вовремя " + s.ontime : "") + (s.photo ? ", с фото " + s.photo : "") + (s.late ? ", опоздал " + s.late : "") + (s.pct != null ? " · качество " + s.pct + "%" : ""));
     });
   } catch (x) {}
-  // 4) сборка заявок между филиалами (файл «Заявки»)
   try {
     if (typeof zvAll === "function") {
       var Z = {}, ms = typeof mList === "function" ? mList() : [], nm2 = {};
       ms.forEach(function (m) { nm2[String(m.nm || "").toLowerCase()] = m; });
       zvAll().L.forEach(function (o) { (o.items || []).forEach(function (it) { (it.g || []).forEach(function (g) {
-        if (!g.t || g.t < a || g.t >= b || !g.w) return; var z = Z[g.w] || (Z[g.w] = { n: 0, q: 0, br: g.bn }); z.n++; z.q += +g.q || 0; }); }); });
+            if (!g.t || g.t < a || g.t >= b || !g.w) return; var z = Z[g.w] || (Z[g.w] = { n: 0, q: 0, br: g.bn }); z.n++; z.q += +g.q || 0; }); }); });
       Object.keys(Z).forEach(function (w) {
         var m = nm2[w.toLowerCase()], k = m ? "merch|" + m.login : "merch|?:" + w.toLowerCase();
         add(k, w, m ? (DS.RN[m.role] || m.role) : "", Z[w].br, "pick", "🧺 Сборка заявок", Z[w].n, "собрал " + Z[w].n + " поз. (" + Math.round(Z[w].q) + " шт)");
       });
     }
   } catch (x) {}
-  // 5) офис: контент-менеджеры, торговые представители, операторы — присылает панель руководителя
   try {
     var sy = JSON.parse(PropertiesService.getScriptProperties().getProperty("dsync:" + mon) || "null");
     (sy && sy.rows || []).forEach(function (r) { add(r.k, r.w, DS.RN[r.r] || r.r, "", r.c, r.t, r.p, r.l); });
@@ -216,7 +203,6 @@ function dsDigestText(mon, pk, preview) {
   if (pk) t += i > -1 ? "\n\n📊 Ваш результат: " + (i + 1) + " место из " + L.length + ", " + L[i].pts + " очк." : "\n\n📊 В этом месяце у вас пока нет очков — всё впереди!";
   return t + "\n\nПодробно: " + DS_URL;
 }
-// 1-го числа в 10:00 по Душанбе — итоги прошлого месяца всем, кто подключил Telegram
 function dsDigest() {
   if (typeof puReg !== "function" || !puTok()) return;
   var now = new Date(), day = +Utilities.formatDate(now, "Asia/Dushanbe", "d"), h = +Utilities.formatDate(now, "Asia/Dushanbe", "H");
@@ -228,5 +214,4 @@ function dsDigest() {
   C().remove("dswork:" + mon);
   var R = puReg(); Object.keys(R).forEach(function (pk) { try { puSend(R[pk].c, dsDigestText(mon, pk, false)); } catch (x) {} });
 }
-// подключаемся к напоминаниям, которые уже работают каждые 5 минут (pushTick из Push.gs)
 if (typeof pushTick === "function") { var DS_TICK0 = pushTick; pushTick = function () { DS_TICK0(); try { dsDigest(); } catch (x) {} }; }

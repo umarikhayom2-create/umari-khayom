@@ -1,11 +1,9 @@
-// Кнопки в Telegram: «Открыть в приложении» под каждым уведомлением и «✅ Беру в работу» под новыми поручениями.
-// Отдельный файл Push2.gs в проекте ЧАТА — самым последним, после Push.gs.
-// После вставки: выберите функцию pushSetup2 → «Выполнить» (один раз) — бот будет проверять нажатия каждую минуту.
+// Умари Хайём · Push2 — Telegram: кнопки «Открыть в приложении» и «Беру в работу». Один раз: pushSetup2 → «Выполнить». Файлы держать в этом порядке.
 var P2 = { SITE: "https://umarikhayom2-create.github.io/umari-khayom/" };
 function p2App(k) { return P2.SITE + (k === "cour" ? "courier.html" : k === "staff" ? "index.html#admin" : "team.html"); }
 function p2ByChat(chat) { var R = puReg(), f = null; Object.keys(R).forEach(function (pk) { if (String(R[pk].c) === String(chat)) f = { pk: pk, e: R[pk] }; }); return f; }
 // каждое уведомление — с кнопкой «Открыть в приложении»
-puSend = function (chat, text, kb) {
+function puSend(chat, text, kb) {
   var who = p2ByChat(chat), url = p2App(who ? who.e.k : "merch");
   var mk = kb || { inline_keyboard: [[{ text: "📲 Открыть в приложении", url: url }]] };
   return tg("sendMessage", { chat_id: chat, text: text, disable_web_page_preview: true, reply_markup: mk });
@@ -24,7 +22,7 @@ puAfter = function (a, p, r) {
   return P2_AFTER0(a, p, r);
 };
 // приём нажатий и /start
-puPoll = function () {
+function puPoll() {
   var mx = CacheService.getScriptCache(); if (mx.get("tgpoll")) return; mx.put("tgpoll", "1", 30);
   try { p2Poll(); } finally { mx.remove("tgpoll"); }
 };

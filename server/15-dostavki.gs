@@ -1,8 +1,4 @@
-// Умари Хайём — ДОСТАВКА ИЗ ФИЛИАЛА (новая): клиенту, в другие филиалы (можно сразу в несколько) или другому получателю.
-// Фото товара/накладной, сумма и оплата — необязательно.
-// Отдельный файл «Доставки» в проекте «Server» — САМЫМ ПОСЛЕДНИМ в списке файлов (после Branch).
-// Перехватывает только запрос "m_dl_new2"; всё остальное идёт дальше как раньше.
-
+// Умари Хайём · Доставки — Доставка из филиала: клиенту, в филиалы, другое. Файлы держать в этом порядке.
 var DL2_ROUTE0 = route;
 route = function (p) {
   if (String(p.a || "") !== "m_dl_new2") return DL2_ROUTE0(p);
@@ -25,7 +21,6 @@ function dl2New(u, b, B, p) {
   var kind = ["client", "branch", "other"].indexOf(p.kind) > -1 ? p.kind : "client";
   var to = p.to || {}, cm = clean(to.cm, 300);
   var sum = Math.max(0, Math.round((+p.sum || 0) * 100) / 100), cod = Math.max(0, Math.min(sum || 1e9, Math.round((+p.cod || 0) * 100) / 100));
-  // куда везём — список получателей; для филиалов каждый филиал = отдельная доставка
   var dests = [];
   if (kind === "branch") {
     (Array.isArray(p.brs) ? p.brs : []).slice(0, 20).forEach(function (x) {
@@ -40,7 +35,6 @@ function dl2New(u, b, B, p) {
     if (kind === "other" && !clean(to.nm, 60)) return { ok: false, error: "nm" };
     dests.push({ to: { nm: clean(to.nm, 60), ph: clean(to.ph, 30), ad: clean(to.ad, 200), cty: "Душанбе", pay: clean(to.pay, 60) || (kind === "client" ? "" : "Без оплаты"), cm: cm }, items: dl2Items(p.items) });
   }
-  // фото сохраняем до блокировки
   var phs = (Array.isArray(p.ph) ? p.ph : []).slice(0, 5).map(function (d, i) { try { return kSavePhoto(d, "dlv_" + b.id + "_" + Date.now() + "_" + i); } catch (x) { return ""; } }).filter(String);
   return locked(function () {
     var pr = PropertiesService.getScriptProperties(), k = "brn:" + b.id, idx = B.map(function (x) { return x.id; }).indexOf(b.id) + 1, nos = [];

@@ -2249,7 +2249,9 @@ function upKey(r) { return PropertiesService.getScriptProperties().getProperty("
 function upKeys() { var o = {}; Object.keys(UP_OFF).forEach(function (r) { o[r] = !!upKey(r); }); return o; }
 // "T:<токен сотрудника>" вместо пароля роли → настоящий пароль роли, имя сотрудника
 function upResolve(q) {
-  var k = String(q.key || ""); if (k.indexOf("T:") !== 0) return true;
+  var k = String(q.key || "");
+  if (k.indexOf("D:") === 0) return devResolve(q, k.slice(2));
+  if (k.indexOf("T:") !== 0) return true;
   var mm = mTok(k.slice(2)); if (!mm || !mm.off || !UP_OFF[mm.off]) return false;
   var real = upKey(mm.off); if (!real) return false;
   q.key = real; q.role = mm.off; q.who = mm.nm; return true;
@@ -2300,17 +2302,76 @@ var UP_DP0 = doPost;
 doPost = function (e) {
   var p = null;
   try { p = JSON.parse((e && e.postData && e.postData.contents) || "{}"); } catch (x) { p = null; }
+  if (p && (p.dev != null || (p.q && p.q.dev != null))) { delete p.dev; if (p.q) delete p.q.dev; e = { parameter: (e && e.parameter) || {}, postData: { contents: JSON.stringify(p), type: "text/plain" } }; }
   if (p && p.a === "o_px") {
     // заказы сайта для сотрудника, вошедшего через «Рабочий персонал»
-    var q = p.q || {}; if (String(q.key || "").indexOf("T:") !== 0 || !upResolve(q)) return out({ ok: false, error: "auth" });
+    var q = p.q || {}; if (!/^[TD]:/.test(String(q.key || "")) || !upResolve(q)) return out({ ok: false, error: "auth" }); delete q.dev;
     try {
       var r = UrlFetchApp.fetch(MAIN_API, { method: "post", contentType: "text/plain;charset=utf-8", payload: JSON.stringify(q), muteHttpExceptions: true, followRedirects: true });
       return ContentService.createTextOutput(r.getContentText() || "{}").setMimeType(ContentService.MimeType.JSON);
     } catch (x) { return out({ ok: false, error: "main" }); }
   }
-  if (p && String(p.key || "").indexOf("T:") === 0) {
+  if (p && /^[TD]:/.test(String(p.key || ""))) {
     if (!upResolve(p)) return out({ ok: false, error: "auth" });
     e = { parameter: (e && e.parameter) || {}, postData: { contents: JSON.stringify(p), type: "text/plain" } };
   }
   return UP_DP0(e);
+};
+
+// ==================== 19. Разработчик — вход с полными правами руководителя + инструменты обслуживания
+// Пароль разработчика и пароль руководителя задаёт руководитель в панели: «Команда и смены» → «🛠 Аккаунт разработчика».
+function devHash(pw) { var pr = PropertiesService.getScriptProperties(), s = pr.getProperty("devs"); if (!s) { s = rnd(16); pr.setProperty("devs", s); } return hashPw(String(pw), s); }
+function devResolve(q, pw) {
+  var pr = PropertiesService.getScriptProperties(), h = pr.getProperty("devh"), real = upKey("director");
+  if (!h || !real || !pw) return false;
+  var n = +(C().get("devtry") || 0); if (n >= 8) return false;
+  var ck = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, "dv|" + pw));
+  if (C().get("devok") !== ck) {
+    if (devHash(pw) !== h) { C().put("devtry", String(n + 1), 900); return false; }
+    C().put("devok", ck, 3600);
+  }
+  q.key = real; q.role = "director"; q.who = clean(q.who, 60) || "Разработчик"; q.dev = 1; return true;
+}
+function devState() { var pr = PropertiesService.getScriptProperties(); return { ok: true, dev: !!pr.getProperty("devh"), dkey: !!upKey("director") }; }
+function devAct(a, p) {
+  if (a === "t_devst" || a === "t_devset") {
+    var me = staff(p); if (!me || me.role !== "director") return { ok: false, error: "role" };
+    if (a === "t_devst") return devState();
+    var pr = PropertiesService.getScriptProperties(), dk = String(p.dk || "").trim(), pw = String(p.pw || "");
+    if (dk) {
+      var ok = false;
+      try { var x = UrlFetchApp.fetch(MAIN_API, { method: "post", contentType: "text/plain;charset=utf-8", payload: JSON.stringify({ a: "admin_list", key: dk, role: "director", who: "Проверка пароля" }), muteHttpExceptions: true, followRedirects: true }); var j = JSON.parse(x.getContentText() || "{}"); ok = !!(j && j.ok); } catch (e) { ok = false; }
+      if (!ok) return { ok: false, error: "dk" };
+      pr.setProperty("okey:director", dk);
+    }
+    if (p.off) { pr.deleteProperty("devh"); C().remove("devok"); return devState(); }
+    if (pw) { if (pw.length < 6) return { ok: false, error: "pw" }; pr.setProperty("devh", devHash(pw)); C().remove("devok"); }
+    return devState();
+  }
+  if (p.dev !== 1) return { ok: false, error: "role" };
+  if (a === "dv_info") {
+    var ss = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty("ssid"));
+    var sh = ss.getSheets().map(function (x) { return { n: x.getName(), r: Math.max(0, x.getLastRow() - 1) }; });
+    var tr = []; try { tr = ScriptApp.getProjectTriggers().map(function (t) { return t.getHandlerFunction(); }); } catch (e) {}
+    var props = PropertiesService.getScriptProperties().getKeys();
+    return { ok: true, sheets: sh, trig: tr, props: props.length, url: ss.getUrl(), tg: typeof puTok === "function" && !!puTok(), now: Date.now() };
+  }
+  if (a === "dv_trig") {
+    var done = [];
+    try { if (typeof pushSetup === "function") { pushSetup(); done.push("pushTick"); } } catch (e) {}
+    try { if (typeof pushSetup2 === "function") { pushSetup2(); done.push("tgTick"); } } catch (e) {}
+    return { ok: true, done: done };
+  }
+  if (a === "dv_backup") {
+    var ss2 = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty("ssid")), o = {};
+    ss2.getSheets().forEach(function (x) { var n = x.getLastRow(), c = x.getLastColumn(); o[x.getName()] = n && c ? x.getRange(1, 1, n, c).getValues() : []; });
+    return { ok: true, at: Date.now(), data: o };
+  }
+  return { ok: false, error: "action" };
+}
+var DEV_ROUTE0 = route;
+route = function (p) {
+  var a = String(p.a || "");
+  if (a === "t_devst" || a === "t_devset" || a.indexOf("dv_") === 0) return devAct(a, p);
+  return DEV_ROUTE0(p);
 };

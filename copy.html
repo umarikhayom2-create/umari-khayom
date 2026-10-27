@@ -17,12 +17,12 @@ textarea{position:fixed;left:-9999px;top:0}
 </style></head><body><main>
 <h1>Код сервера «Server»</h1>
 <p>Нажмите «Скопировать» у файла — код скопируется целиком. В Apps Script откройте файл с тем же названием, выделите всё (Ctrl+A), вставьте (Ctrl+V), 💾 Сохранить.</p>
-<div class="warn">Проще всего: удалите все старые файлы, кроме «Не трогать», создайте один файл «Server» и вставьте в него первый пункт. Остальные пункты нужны, только если хотите оставить файлы по отдельности.<br><br>Файл «Не трогать» не меняйте. Порядок файлов в Apps Script должен остаться таким же, как здесь.</div>
+<div class="warn">В Apps Script откройте файл «Server», выделите всё (Ctrl+A), вставьте (Ctrl+V), сохраните. Файл «Не трогать» не меняйте.</div>
 <div id="L"></div>
-<ol><li>Замените все файлы по списку (зелёные — уже скопированы).</li><li>💾 Сохранить.</li><li>«Начать развёртывание» → «Управление развёртываниями» → ✏️ → Версия: «Новая версия» → «Развернуть».</li></ol>
+<ol><li>Нажмите «Скопировать» и вставьте код в файл «Server» вместо старого.</li><li>💾 Сохранить.</li><li>«Начать развёртывание» → «Управление развёртываниями» → ✏️ → Версия: «Новая версия» → «Развернуть».</li></ol>
 <textarea id="t"></textarea>
 <script>
-var F=[["Server","⭐ ВЕСЬ СЕРВЕР ОДНИМ ФАЙЛОМ"],["01-chat","Чат"],["02-postavki","Поставки"],["03-qr","QR"],["04-kurer","Kurer"],["05-team","Team"],["06-tasks","Tasks"],["07-expenses","Expenses"],["08-staff","Staff"],["09-branch","Branch"],["10-push","Push"],["11-push2","Push2"],["12-access","Access"],["13-qrsmena","QRSmena"],["14-zayavki","Заявки"],["15-dostavki","Доставки"],["16-dostizheniya","Достижения"],["17-postavki-kurer","ПоставкиКурьер"],["18-obnovlenie","Обновление"]],C={};
+var F=[["Server","⭐ Весь сервер — один файл «Server»"]],C={};
 var L=document.getElementById("L"),t=document.getElementById("t");
 L.innerHTML=F.map(function(f,i){return'<div class="f" id="r'+i+'"><div><b>'+(i+1)+'. '+f[1]+(i?'.gs':'')+'</b>'<small id="s'+i+'">загрузка…</small></div><button id="b'+i+'" disabled>Скопировать</button></div>'}).join("");
 F.forEach(function(f,i){fetch("server/"+f[0]+".gs?v="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(x){C[i]=x;document.getElementById("b"+i).disabled=false;document.getElementById("s"+i).textContent=x.split("\n").length+" строк · "+Math.round(x.length/1024)+" КБ"}).catch(function(){document.getElementById("s"+i).textContent="не загрузилось — обновите страницу"})});

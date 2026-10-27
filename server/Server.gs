@@ -851,7 +851,8 @@ function kCpnClient(a, p) {
 }
 
 // ==================== Умари Хайём · Team — Команда: смены 08:00–23:00, филиалы, сотрудники, оклады. Файлы держать в этом порядке.
-var T = { FROM: 8, TO: 23, TZ: 5 };          // смена учитывается с 08:00 до 23:00 (Душанбе, UTC+5)
+var T = { FROM: 7, TO: 23, TZ: 5, SEASON: [6, 7, 8, 9], MAXH: 24 }; // обычно смена 07:00–23:00; в сезон (июнь–сентябрь) — круглосуточно, до 24 ч (Душанбе, UTC+5)
+function tSeason(ts) { var m = new Date((ts || Date.now()) + T.TZ * 36e5).getUTCMonth() + 1; return T.SEASON.indexOf(m) > -1; }
 var T_ROUTE0 = route;
 route = function (p) {
   var a = String(p.a || "");
@@ -864,7 +865,7 @@ var T_BOSS = { director: 1, admin: 1 }, T_SEE = { director: 1, admin: 1, account
 
 // ---------- время ----------
 function tDay(ts) { var d = 864e5, o = T.TZ * 36e5; return Math.floor((ts + o) / d) * d - o; }
-function tClip(s, e) { var d0 = tDay(s), a = Math.max(s, d0 + T.FROM * 36e5), b = Math.min(e, d0 + T.TO * 36e5); return Math.max(0, b - a); }
+function tClip(s, e) { if (tSeason(s)) return Math.max(0, Math.min(e, s + T.MAXH * 36e5) - s); var d0 = tDay(s), a = Math.max(s, d0 + T.FROM * 36e5), b = Math.min(e, d0 + T.TO * 36e5); return Math.max(0, b - a); }
 
 // ---------- смены ----------
 function shSh() { return sheet("smena", ["id", "who", "json", "ts"]); }
@@ -872,7 +873,7 @@ function shAll() {
   var sh = shSh(), n = sh.getLastRow(), L = [];
   if (n > 1) sh.getRange(2, 1, n - 1, 3).getValues().forEach(function (r, i) { if (!r[0]) return; try { var o = JSON.parse(r[2]); o.row = i + 2; L.push(o); } catch (x) {} });
   var now = Date.now();
-  L.forEach(function (o) { if (!o.out) { var end = tDay(o.in) + T.TO * 36e5; if (now > end) { o.out = Math.max(o.in, end); o.auto = 1; shPut(sh, o); } } });
+  L.forEach(function (o) { if (!o.out) { var end = tSeason(o.in) ? o.in + T.MAXH * 36e5 : tDay(o.in) + T.TO * 36e5; if (now > end) { o.out = Math.max(o.in, end); o.auto = 1; shPut(sh, o); } } });
   return { sh: sh, L: L };
 }
 function shPut(sh, o) { var row = o.row; delete o.row; var v = [o.id, o.pk, JSON.stringify(o), o.in]; if (row) sh.getRange(row, 1, 1, 4).setValues([v]); else sh.appendRow(v); o.row = row; }
@@ -881,7 +882,7 @@ function shOpen(L, pk) { for (var i = L.length - 1; i >= 0; i--) if (L[i].pk ===
 function shView(o) { if (!o) return null; return { id: o.id, in: o.in, out: o.out || 0, w: o.w, r: o.r, k: o.k, phIn: o.phIn || "", phOut: o.phOut || "", auto: o.auto || 0, br: o.br || "" }; }
 function shAct(act, u, p) {
   var pk = shKey(u);
-  if (act === "shst" || act === "me") { var A0 = shAll(); return { ok: true, sh: shView(shOpen(A0.L, pk)), today: shToday(A0.L, pk), cfg: T }; }
+  if (act === "shst" || act === "me") { var A0 = shAll(); return { ok: true, sh: shView(shOpen(A0.L, pk)), today: shToday(A0.L, pk), cfg: { FROM: T.FROM, TO: T.TO, TZ: T.TZ, season: tSeason(Date.now()), MAXH: T.MAXH } }; }
   var ph = "";
   if (p.photo) { try { ph = kSavePhoto(p.photo, "smena_" + String(u.w).replace(/\W/g, "_") + "_" + Date.now()); } catch (x) { ph = ""; } }
   return locked(function () {
@@ -891,7 +892,7 @@ function shAct(act, u, p) {
       var h = (now + T.TZ * 36e5) % 864e5 / 36e5;
       o = { id: "S" + now + rnd(4), pk: pk, k: u.k, w: u.w, r: u.r, lg: u.lg || "", in: now, phIn: ph, br: brOf(u) };
       shPut(A.sh, o);
-      return { ok: true, sh: shView(o), early: h < T.FROM, late: h >= T.TO };
+      var ss = tSeason(now); return { ok: true, sh: shView(o), early: !ss && h < T.FROM, late: !ss && h >= T.TO, season: ss };
     }
     if (!o) return { ok: false, error: "noshift" };
     o.out = now; o.phOut = ph; shPut(A.sh, o);
@@ -1457,7 +1458,15 @@ function pushTick() {
   } catch (x) {}
   try {
     var h = (now + 5 * H) % 864e5 / H;
-    if (h >= 22.7 && h < 23) { var R3 = puReg(); shAll().L.forEach(function (s) { if (!s.out && R3[s.pk] && puOnce("sh23:" + s.id)) puSend(R3[s.pk].c, "🌙 Скоро 23:00 — не забудьте завершить смену в приложении."); }); }
+    // сезон (июнь–сентябрь): смены круглосуточные; через 12 ч — напоминание, дальше каждые 30 мин
+    var R4 = puReg();
+    shAll().L.forEach(function (s) {
+      if (s.out || !tSeason(s.in) || !R4[s.pk]) return;
+      var age = (now - s.in) / H;
+      if (age >= 12 && age < 12.6 && puOnce("ss12:" + s.id, 86400)) puSend(R4[s.pk].c, "⏰ Вы на смене уже 12 часов. Возможно, пора закрыть смену — не забудьте отметить её в приложении.");
+      else if (age >= 12.5) { var k = Math.floor((age - 12) * 2); if (puOnce("ss30:" + s.id + ":" + k, 86400)) puSend(R4[s.pk].c, "⚠ Смена идёт уже " + Math.floor(age) + " ч " + Math.round((age % 1) * 60) + " мин. Закройте смену в приложении, если вы закончили работу." + (age >= T.MAXH - 1 ? "\nЧерез " + Math.max(1, Math.round((T.MAXH - age) * 60)) + " мин смена закроется автоматически." : "")); }
+    });
+    if (!tSeason(now) && h >= 22.7 && h < 23) { var R3 = puReg(); shAll().L.forEach(function (s) { if (!s.out && R3[s.pk] && puOnce("sh23:" + s.id)) puSend(R3[s.pk].c, "🌙 Скоро 23:00 — не забудьте завершить смену в приложении."); }); }
   } catch (x) {}
 }
 

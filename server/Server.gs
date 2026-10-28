@@ -2943,7 +2943,21 @@ route = function (p) {
     if (p.login) {
       var from = +p.from || (Date.now() - 864e5), to = +p.to || Date.now(), sh = geoSh(), n = sh.getLastRow(), T = [];
       if (n > 1) sh.getRange(Math.max(2, n - 29999), 1, Math.min(30000, n - 1), 8).getValues().forEach(function (r) { if (String(r[1]) === String(p.login) && +r[0] >= from && +r[0] <= to) T.push([+r[0], +r[3], +r[4], String(r[7] || "")]); });
-      res.track = T;
+      res.track = T.sort(function (a, b) { return a[0] - b[0]; });
+      // заказы курьера за этот период: когда взял (с первого взятия) и чем закончил
+      var cg = courGet(String(p.login)) || {}, nm = cg.nm || "", J = [];
+      try { jobAll().L.forEach(function (o) {
+        var L = o.log || [];
+        L.forEach(function (l, i) {
+          if (l.st !== "taken" || !(l.l ? l.l === p.login : l.w === nm) || l.re) return;
+          var tk = l.ts; if (tk > to || tk < from - 864e5) return;
+          var end = 0, st = "taken";
+          for (var k = i + 1; k < L.length; k++) { var e = L[k]; if (/^(done|fail|drop)$/.test(e.st) && (e.l ? e.l === p.login : e.w === nm)) { if (e.st === "drop" && L.slice(k + 1).some(function (z) { return z.st === "taken" && z.re && (z.l ? z.l === p.login : z.w === nm); })) continue; end = e.ts; st = e.st; break; } }
+          if ((end || Date.now()) < from) return;
+          J.push({ no: o.no, take: tk, end: end, st: st, ad: ((o.to || {}).ad || "") + ((o.to || {}).nm ? " · " + o.to.nm : ""), geo: (o.to || {}).geo || null });
+        });
+      }); } catch (x) {}
+      res.jobs = J.sort(function (a, b) { return a.take - b.take; });
     }
     return res;
   }

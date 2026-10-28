@@ -2853,6 +2853,12 @@ route = function (p) {
     var nm = clean(p.nm, 60); if (!nm) return { ok: false, error: "nm" };
     return locked(function () { var o = accGet(me.k); o.nm = nm; o.org = clean(p.org, 120); o.ct = /^[rcw]$/.test(p.ct) ? p.ct : "r"; o.cty = clean(p.cty, 60); o.ad = clean(p.ad, 200); accPut(o); return { ok: true, me: pub(o) }; });
   }
+  // вход по коду (почта или SMS) — всегда подтверждённый сеанс, даже если SMS ещё не были подключены
+  if (a === "u_verify" || a === "u_creg") {
+    var rv = WY_ROUTE0(p);
+    if (rv && rv.ok && rv.tok && rv.me) { var kv = k9(rv.me.ph); if (kv) { var ov = accGet(kv); if (ov && !pvTok(ov, rv.tok)) pvMark(kv, rv.tok); } }
+    return rv;
+  }
   if (a === "u_ways") {
     var o = waysAcc(p); if (!o) return { ok: false, error: "none" };
     var W = [{ via: "sms", m: pvMask(o.k), on: smsReady() }]; if (o.em) W.push({ via: "em", m: maskEm(o.em), on: true });

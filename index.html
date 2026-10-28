@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
+<script src="i18n-dict.js?v=1"></script><script src="i18n.js?v=1"></script>
 <script>/* сотрудник уже входил — сразу открываем его приложение (?site=1 — остаться на сайте, ?staff=0 — забыть) */(function(){try{var q=location.search,h=location.hash,ss=sessionStorage,ls=localStorage;
 if(/[?&]site=1/.test(q)){ss.setItem("uh_site","1");return}if(/[?&]staff=0/.test(q)){ls.removeItem("uh_staff");ss.setItem("uh_site","1");return}
 if(h||ss.getItem("uh_site")==="1")return;if(q&&!/^\?((utm_\w+|source|pwa)=[^&]*&?)+$/.test(q))return;
@@ -4191,6 +4192,23 @@ document.addEventListener("click",function(e){var t=e.target.closest&&e.target.c
 var done=function(j,msg){t.disabled=false;if(j&&j.ok){SMSA.st=j;toast(msg);tmRefresh()}else toast(j&&j.error==="nosms"?"Сначала сохраните настройки и включите SMS":j&&j.error==="send"?"SMS не ушло: "+(j.why||""):j&&j.error==="role"?"Только руководитель":"Не получилось: "+((j&&j.error)||"нет связи"))};
 if(k==="save")stApi("sms_set",{cfg:{login:$("smlg").value.trim(),from:$("smfr").value.trim(),hash:$("smhs").value.trim(),token:$("smtk").value.trim(),on:$("smon").checked?1:0}}).then(function(j){done(j,"Настройки SMS сохранены ✓")}).catch(function(){done(null)});
 else{var ph=$("smph").value.trim();if(ph.replace(/\D/g,"").length<9){t.disabled=false;toast("Введите номер");return}stApi("sms_test",{ph:ph}).then(function(j){done(j,"Тестовое SMS отправлено ✓")}).catch(function(){done(null)})}},true);
+/* --- 🌐 Перевод сайта: ИИ и ручная правка переводов (руководитель, администратор) --- */
+var TRA={st:null,q:"",open:0};
+function traLoad(){stApi("tr_get",{q:TRA.q}).then(function(j){TRA.st=j&&j.ok?j:{err:(j&&j.error)||"нет связи"};tmRefresh()})}
+var _okh3=offKeysHtml;offKeysHtml=function(){var h=_okh3();if(A.role!=="director"&&A.role!=="admin")return h;if(!TRA.st){TRA.st={ld:1};traLoad()}var S=TRA.st||{};
+return h+'<details class="pq" data-trad="1"'+(TRA.open?" open":"")+'><summary style="cursor:pointer"><b>🌐 Перевод сайта (English · Тоҷикӣ)</b> <span class="chip">'+(S.ai?"✓ ИИ Claude":"Google-переводчик")+(S.n!=null?" · в базе "+S.n:"")+'</span></summary>'+
+'<p class="note" style="margin:6px 0">Интерфейс сайта переведён вручную. Названия товаров и новые тексты переводятся автоматически при первом показе и сохраняются. Без ключа ИИ работает бесплатный Google-переводчик; с ключом Claude перевод точнее и по смыслу. Любой перевод можно исправить ниже — исправление сразу увидят все.</p>'+
+(S.err&&S.err!=="нет связи"?'<div class="note" style="color:#dc2626">Последняя ошибка ИИ: '+esc(S.err)+'</div>':'')+
+(A.role==="director"?'<div class="row" style="gap:6px;margin:6px 0"><input class="pin" type="password" id="trkey" autocomplete="new-password" placeholder="'+(S.ai?"Ключ сохранён — введите новый, чтобы заменить":"Ключ API Claude (sk-ant-…)")+'" style="flex:1;min-width:180px"><button class="btn sm" data-tra="key">Сохранить ключ</button>'+(S.ai?'<button class="btn sm o" data-tra="keydel">Убрать ключ</button>':'')+'</div>':'')+
+'<div class="row" style="gap:6px;margin:8px 0"><input class="pin" data-traq="1" placeholder="🔎 Найти перевод (русский, English, тоҷикӣ)" value="'+esc(TRA.q)+'" style="flex:1"><button class="btn sm o" data-tra="find">Найти</button></div>'+
+(S.list?(S.list.length?S.list.map(function(x,i){return'<div class="pq" style="margin:6px 0;padding:10px"><small class="note">'+esc(x.ru)+'</small><div class="row" style="gap:6px;margin-top:6px"><input class="pin" data-tren="'+i+'" value="'+esc(x.en)+'" placeholder="English" style="flex:1;min-width:150px"><input class="pin" data-trtg="'+i+'" value="'+esc(x.tg)+'" placeholder="Тоҷикӣ" style="flex:1;min-width:150px"><button class="btn sm" data-tra="fix" data-i="'+i+'">Сохранить</button></div></div>'}).join(""):'<div class="emp">Ничего не найдено</div>'):'<div class="emp">Загружаем…</div>')+'</details>'};
+document.addEventListener("toggle",function(e){if(e.target&&e.target.dataset&&e.target.dataset.trad)TRA.open=e.target.open?1:0},true);
+document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("[data-tra]");if(!t)return;e.preventDefault();e.stopPropagation();var k=t.dataset.tra;
+if(k==="find"){TRA.q=($("admC").querySelector("[data-traq]")||{}).value||"";TRA.st=null;traLoad();return}
+if(k==="key"||k==="keydel"){var v=($("trkey")||{}).value||"";if(k==="key"&&!v){toast("Вставьте ключ");return}t.disabled=true;stApi("tr_set",k==="key"?{key:v}:{keydel:1}).then(function(j){t.disabled=false;if(j&&j.ok){TRA.st=j;toast(k==="key"?"Ключ ИИ сохранён ✓":"Ключ убран");tmRefresh()}else toast("Не получилось: "+((j&&j.error)||""))});return}
+if(k==="fix"){var i=+t.dataset.i,x=(TRA.st.list||[])[i];if(!x)return;var en=($("admC").querySelector('[data-tren="'+i+'"]')||{}).value||"",tg=($("admC").querySelector('[data-trtg="'+i+'"]')||{}).value||"";t.disabled=true;
+stApi("tr_fix",{ru:x.ru,to:"en",v:en}).then(function(){return stApi("tr_fix",{ru:x.ru,to:"tg",v:tg})}).then(function(j){t.disabled=false;if(j&&j.ok){x.en=en;x.tg=tg;toast("Перевод исправлен ✓")}else toast("Не получилось")}).catch(function(){t.disabled=false;toast("Нет связи")})}},true);
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.traq){e.preventDefault();TRA.q=e.target.value;TRA.st=null;traLoad()}},true);
 /* --- вкладки и вход --- */
 ["director","admin","accountant"].forEach(function(r){if(TABS[r]&&TABS[r].indexOf("g")<0){var i=TABS[r].indexOf("f");TABS[r].splice(i<0?TABS[r].length:i,0,"g")}});
 var _tf=tabsFor;tabsFor=function(r){var t=_tf(r);if(t.indexOf("f")>-1&&t.indexOf("g")<0)t.splice(t.indexOf("f"),0,"g");if(t.indexOf("f")>-1&&t.indexOf("n")<0)t.splice(t.indexOf("g")+1,0,"n");return t};

@@ -2989,3 +2989,87 @@ if (typeof pushTick === "function") {
     } catch (x) {}
   };
 }
+
+// ==================== 27. Перевод сайта: английский и таджикский. Готовые переводы хранятся в таблице «tr»
+// Если в настройках указан ключ Claude (Anthropic) — переводит ИИ со смыслом; иначе — встроенный Google-переводчик.
+var TR = { MAXLEN: 1500, MAXNEW: 400, LANGS: { en: "English", tg: "Tajik (Cyrillic script, literary Tajik)" } };
+function trSh() { return sheet("tr", ["ru", "en", "tg", "src", "ts"]); }
+function trMap() {
+  var c = C().get("tr:all"); if (c) { try { return JSON.parse(c); } catch (x) {} }
+  var sh = trSh(), n = sh.getLastRow(), M = {};
+  if (n > 1) sh.getRange(2, 1, n - 1, 3).getValues().forEach(function (r, i) { var k = String(r[0] || ""); if (k) M[k] = { en: String(r[1] || ""), tg: String(r[2] || ""), row: i + 2 }; });
+  var s = JSON.stringify(M); if (s.length < 95000) C().put("tr:all", s, 21600);
+  return M;
+}
+function trCfg() { var v = PropertiesService.getScriptProperties().getProperty("tr:cfg"); return v ? JSON.parse(v) : {}; }
+// ИИ: переводит пачку строк за один запрос и возвращает массив той же длины
+function trAI(list, to) {
+  var c = trCfg();
+  if (c.key) {
+    var sys = "You translate the website of «Umari Khayom», a stationery and office supplies shop in Dushanbe, Tajikistan, from Russian into " + TR.LANGS[to] + ". " +
+      "Translate the meaning naturally, as a native copywriter would, not word by word. Keep it short like the original. " +
+      "Keep placeholders like {0}, {1} exactly as they are. Keep brand names, model codes, sizes, emoji, currency amounts and phone numbers unchanged. " +
+      (to === "en" ? "Write «сом.» as «TJS». " : "Use correct Tajik letters (ӣ, ӯ, қ, ғ, ҳ, ҷ). Write «сом.» as «сом.». ") +
+      "Product names: translate the product type and description, keep the brand and code. " +
+      "Answer ONLY with a JSON array of strings, same length and order as the input.";
+    try {
+      var r = UrlFetchApp.fetch("https://api.anthropic.com/v1/messages", { method: "post", contentType: "application/json", muteHttpExceptions: true,
+        headers: { "x-api-key": c.key, "anthropic-version": "2023-06-01" },
+        payload: JSON.stringify({ model: c.model || "claude-haiku-5-5", max_tokens: 8000, system: sys, messages: [{ role: "user", content: JSON.stringify(list) }] }) });
+      var j = JSON.parse(r.getContentText() || "{}"), t = j && j.content && j.content[0] && j.content[0].text || "";
+      var m = t.match(/\[[\s\S]*\]/); if (m) { var a = JSON.parse(m[0]); if (Array.isArray(a) && a.length === list.length) return { list: a, src: "ai" }; }
+      PropertiesService.getScriptProperties().setProperty("tr:err", (j.error && j.error.message) || String(t).slice(0, 200));
+    } catch (e) { PropertiesService.getScriptProperties().setProperty("tr:err", String(e).slice(0, 200)); }
+  }
+  // запасной вариант: встроенный переводчик Google
+  return { list: list.map(function (s) { try { return LanguageApp.translate(s, "ru", to); } catch (e) { return ""; } }), src: "google" };
+}
+function trGet(list, to) {
+  if (!TR.LANGS[to]) return { ok: false, error: "lang" };
+  list = (Array.isArray(list) ? list : []).slice(0, 40).map(function (s) { return String(s || "").slice(0, TR.MAXLEN); }).filter(function (s) { return /[А-Яа-яЁё]/.test(s); });
+  var M = trMap(), out = {}, need = [];
+  list.forEach(function (s) { var x = M[s]; if (x && x[to]) out[s] = x[to]; else if (need.indexOf(s) < 0) need.push(s); });
+  if (need.length) {
+    // защита от перерасхода: не больше TR.MAXNEW новых строк в час
+    var used = +(C().get("tr:n") || 0); if (used >= TR.MAXNEW) return { ok: true, tr: out, wait: 1 };
+    C().put("tr:n", String(used + need.length), 3600);
+    var res = trAI(need, to);
+    locked(function () {
+      var sh = trSh(), M2 = trMap(), add = [];
+      need.forEach(function (s, i) {
+        var v = String(res.list[i] || "").trim(); if (!v) return;
+        // плейсхолдеры {0} должны сохраниться
+        var a = (s.match(/\{\d+\}/g) || []).sort().join(), b = (v.match(/\{\d+\}/g) || []).sort().join(); if (a !== b) return;
+        out[s] = v;
+        if (M2[s]) { sh.getRange(M2[s].row, to === "en" ? 2 : 3).setValue(v); M2[s][to] = v; }
+        else add.push([s, to === "en" ? v : "", to === "tg" ? v : "", res.src, Date.now()]);
+      });
+      if (add.length) sh.getRange(sh.getLastRow() + 1, 1, add.length, 5).setValues(add);
+      C().remove("tr:all");
+      return {};
+    });
+  }
+  return { ok: true, tr: out };
+}
+function trAll(to) { if (!TR.LANGS[to]) return { ok: false, error: "lang" }; var M = trMap(), o = {}; Object.keys(M).forEach(function (k) { if (M[k][to]) o[k] = M[k][to]; }); return { ok: true, tr: o }; }
+// руководитель: ключ ИИ, список переводов и исправление вручную
+function trAdm(a, p) {
+  var me = staff(p); if (!me || (me.role !== "director" && me.role !== "admin")) return { ok: false, error: "role" };
+  var P = PropertiesService.getScriptProperties(), c = trCfg();
+  if (a === "tr_set") { if (me.role !== "director") return { ok: false, error: "role" }; if (p.key) c.key = String(p.key).trim(); if (p.keydel) delete c.key; if (p.model != null) c.model = clean(p.model, 60); P.setProperty("tr:cfg", JSON.stringify(c)); }
+  if (a === "tr_fix") {
+    var k = String(p.ru || ""), to = p.to === "tg" ? "tg" : "en", v = clean(p.v, TR.MAXLEN); if (!k) return { ok: false, error: "bad" };
+    locked(function () { var M = trMap(), sh = trSh(); if (M[k]) sh.getRange(M[k].row, to === "en" ? 2 : 3).setValue(v); else sh.appendRow([k, to === "en" ? v : "", to === "tg" ? v : "", "ручной", Date.now()]); C().remove("tr:all"); return {}; });
+  }
+  var M = trMap(), q = String(p.q || "").toLowerCase(), L = [];
+  Object.keys(M).forEach(function (k) { if (L.length >= 200) return; if (q && (k + " " + M[k].en + " " + M[k].tg).toLowerCase().indexOf(q) < 0) return; L.push({ ru: k, en: M[k].en, tg: M[k].tg }); });
+  return { ok: true, ai: !!c.key, model: c.model || "claude-haiku-5-5", err: P.getProperty("tr:err") || "", n: Object.keys(M).length, list: L };
+}
+var TR_ROUTE0 = route;
+route = function (p) {
+  var a = String(p.a || "");
+  if (a === "c_tr") return trGet(p.list, String(p.to || ""));
+  if (a === "c_trall") return trAll(String(p.to || ""));
+  if (a === "tr_get" || a === "tr_set" || a === "tr_fix") return trAdm(a, p);
+  return TR_ROUTE0(p);
+};

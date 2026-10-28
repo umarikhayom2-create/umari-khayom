@@ -165,7 +165,18 @@ function staffAct(a, p, me) {
   if (a === "s_fget" || a === "s_fset" || a === "s_fdel") { if (["director", "admin", "accountant"].indexOf(me.role) < 0) return { ok: false, error: "role" }; return a === "s_fget" ? { ok: true, d: finGet() } : locked(function () { return a === "s_fset" ? finSet(me, p) : finDel(p); }); }
   if (a === "s_promo") { if (me.role !== "director" && me.role !== "admin") return { ok: false, error: "role" }; return locked(function () { return promoAdd(me, p); }); }
   if (a === "s_bonus") return { ok: true, r: locked(function () { return bonusSync(p.list); }) };
-  if (a === "s_acc") { var ao = accGet(k9(p.ph)); return { ok: true, acc: ao ? { nm: ao.nm, ph: ao.ph, bal: ao.bal || 0, reg: !!ao.h, led: (ao.led || []).slice(-20).reverse() } : null }; }
+  if (a === "s_acc") { var ao = accGet(k9(p.ph)); return { ok: true, acc: ao ? { nm: ao.nm, ph: ao.ph, em: ao.em || "", bal: ao.bal || 0, reg: !!(ao.h || ao.cv || ao.em), led: (ao.led || []).slice(-20).reverse() } : null }; }
+  // все зарегистрированные на сайте клиенты (для раздела «Клиенты»)
+  if (a === "s_accs") {
+    if (me.role === "partner" || me.role === "content" || me.role === "sales") return { ok: false, error: "role" };
+    var ash = accSh(), an = ash.getLastRow(), AL = [];
+    if (an > 1) ash.getRange(2, 1, an - 1, 2).getValues().forEach(function (r) {
+      try { var o = JSON.parse(r[1] || "{}"); if (!(o.h || o.cv || o.em)) return;
+        AL.push({ k: String(r[0]), nm: o.nm || "", ph: o.ph || "", em: o.em || o.em0 || "", emok: !!o.em, c: o.c || 0, bal: Math.round((o.bal || 0) * 100) / 100, pv: !!o.pv, ct: o.ct || "", org: o.org || "", cty: o.cty || "", ad: o.ad || "" }); } catch (x) {}
+    });
+    AL.sort(function (x, y) { return (y.c || 0) - (x.c || 0); });
+    return { ok: true, list: AL.slice(0, 1000), n: AL.length };
+  }
   if (a === "s_pwreset") {
     if (me.role !== "admin" && me.role !== "director" && me.role !== "operator") return { ok: false, error: "role" };
     var nk = k9(p.ph), npw = String(p.pw || ""); if (!nk || npw.length < 6) return { ok: false, error: "pw" };

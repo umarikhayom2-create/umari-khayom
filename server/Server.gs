@@ -2601,7 +2601,8 @@ function prAct(a, p) {
       if (old) { if (!PR.ED[me.role]) return { ok: false, error: "role" }; H.no = old.no; H.ts = old.ts; H.w = old.w; H.ew = me.who; H.et = Date.now(); prDelRows(H.id); }
       else { var y = H.d.slice(0, 4), nk = "pr:n:" + y, nn = (+pr.getProperty(nk) || 0) + 1; pr.setProperty(nk, String(nn)); H.id = "pr" + rnd(10); H.no = "ПР-" + nn + "/" + y.slice(2); H.ts = Date.now(); H.w = me.who; }
       // курс, по которому оприходовали, попадает в историю курсов
-      if (H.cur !== "TJS") kursSh().appendRow([H.d, H.cur, H.rate, "приход " + H.no, Date.now(), me.who]);
+      // курс прихода попадает в историю; если приход самый свежий — он же становится текущим курсом
+      if (H.cur !== "TJS") { var RR = prRates(); if (!RR[H.cur] || H.d >= RR[H.cur].d) prRateSet(H.cur, H.rate, "приход " + H.no, me.who, H.d); else kursSh().appendRow([H.d, H.cur, H.rate, "приход " + H.no, Date.now(), me.who]); }
       var js = JSON.stringify(IT), rows = [[H.id, 0, H.ts, JSON.stringify(H)]];
       for (var i = 0, k = 1; i < js.length; i += PR.PART, k++) rows.push([H.id, k, H.ts, js.slice(i, i + PR.PART)]);
       var sh2 = prSh(); sh2.getRange(sh2.getLastRow() + 1, 1, rows.length, 4).setValues(rows);

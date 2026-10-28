@@ -263,7 +263,7 @@ function mainGet(q) {
 }
 function otpOn() { var c = C().get("otpon"); if (c) return c === "1"; var j = mainGet("a=cfg"); var on = !!(j && j.otp); C().put("otpon", on ? "1" : "0", 600); return on; }
 function phoneOk(ph, tk) { if (!otpOn()) return true; if (!tk) return false; var j = mainGet("a=my&ph=" + encodeURIComponent(ph) + "&tk=" + encodeURIComponent(tk)); return !!(j && j.ok); }
-function pub(o) { return { nm: o.nm || "", ph: o.ph || "", bal: Math.round((o.bal || 0) * 100) / 100, led: (o.led || []).slice(-30).reverse(), pct: BONUS_PCT }; }
+function pub(o) { return { nm: o.nm || "", ph: o.ph || "", em: o.em || "", pw: !!o.h, bal: Math.round((o.bal || 0) * 100) / 100, led: (o.led || []).slice(-30).reverse(), pct: BONUS_PCT }; }
 function ordSh() { return sheet("ord", ["no", "phone9", "json", "ts"]); }
 function accOrders(k) {
   var sh = ordSh(), n = sh.getLastRow(); if (n < 2) return [];
@@ -300,7 +300,7 @@ function account(a, p) {
     if (!phoneOk(p.ph, p.tk)) return { ok: false, error: "otp" };
     return locked(function () {
       var o = accGet(k);
-      if (o && o.h) return { ok: false, error: "exists" };
+      if (o && (o.h || o.cv)) return { ok: false, error: "exists" }; // аккаунт уже есть (с паролем или созданный по коду)
       o = o || { k: k, bal: 0, led: [] };
       o.nm = nm; o.ph = clean(p.ph, 30); o.s = rnd(16); o.h = hashPw(pw, o.s); o.c = Date.now();
       var t = newTok(o); accPut(o);
@@ -501,7 +501,13 @@ function courier(a, p) {
   }
   return locked(function () {
     var J = jobAll(), o = J.L.filter(function (x) { return x.key === p.key; })[0]; if (!o) return { ok: false, error: "none" };
-    if (a === "k_take") { if (o.st !== "ready") return { ok: false, error: "taken" }; o.st = "taken"; o.cour = { login: me.login, nm: me.nm, ph: me.ph }; o.log.push({ ts: Date.now(), st: "taken", w: me.nm }); }
+    if (a === "k_take") {
+      if (o.st !== "ready") return { ok: false, error: "taken" };
+      // если этот же курьер сбросил заказ и взял снова — время доставки идёт с его первого взятия (таймер не обнуляется)
+      var f0 = kFirstTake(o, me);
+      o.st = "taken"; o.cour = { login: me.login, nm: me.nm, ph: me.ph };
+      var tl = { ts: Date.now(), st: "taken", w: me.nm, l: me.login }; if (f0) { tl.f = f0; tl.re = 1; } o.log.push(tl);
+    }
     else if (a === "k_done" || a === "k_fail" || a === "k_drop") {
       if (o.st !== "taken" || !o.cour || o.cour.login !== me.login) return { ok: false, error: "notyours" };
       if (a === "k_done") { o.st = "done"; o.cash = Math.round((+p.cash || 0) * 100) / 100; o.log.push({ ts: Date.now(), st: "done", w: me.nm, cash: o.cash, note: clean(p.note, 200) }); }
@@ -770,6 +776,16 @@ function kDone(p) {
   });
 }
 
+// первое взятие заказа этим курьером после последнего «готов»/«не доставлен» (сброс не даёт нового таймера)
+function kFirstTake(o, me) {
+  var f = 0, L = o.log || [];
+  for (var i = L.length - 1; i >= 0; i--) {
+    var l = L[i]; if (l.st === "fail" || l.st === "done" || l.st === "ready") break;
+    if (l.st === "taken" && (l.l ? l.l === me.login : l.w === me.nm)) f = l.f || l.ts;
+  }
+  return f;
+}
+function kTk(l) { return l ? (l.f || l.ts) : 0; }
 // ---------- рейтинг ----------
 function kMonth(ts) { return Utilities.formatDate(new Date(ts), "Asia/Dushanbe", "yyyy-MM"); }
 function kMonthStart(off) { var d = new Date(); var y = +Utilities.formatDate(d, "Asia/Dushanbe", "yyyy"), m = +Utilities.formatDate(d, "Asia/Dushanbe", "MM") - 1 + off; var x = new Date(Date.UTC(y, m, 1, -5)); return x.getTime(); }
@@ -786,7 +802,7 @@ function kScore(jobs, me, from, to) {
       if (l.st === "drop") { s.drop++; s.max += 10; }
       if (l.st === "done" && tk && mine(tk)) {
         s.n++; s.max += 23; var pts = 10;
-        var wt = (tk.ts - ready) / 6e4, dt = (l.ts - tk.ts) / 6e4; s.mins += dt;
+        var wt = (kTk(tk) - ready) / 6e4, dt = (l.ts - kTk(tk)) / 6e4; s.mins += dt;
         if (wt <= K.TAKE_MIN) { pts += 5; s.genius++; } else if (wt <= K.TAKE_LIM) pts += 2; else { pts -= 5; s.slow++; }
         if (dt <= K.DLV_LIM) { pts += 5; s.ontime++; } else { pts -= 15; s.late++; }
         if (l.ph) { pts += 3; s.photo++; }
@@ -1010,6 +1026,8 @@ function qEst(t) {
   return Math.max(15, Math.min(2880, m));
 }
 function qSh() { return sheet("tasks", ["id", "json", "ts"]); }
+// фото к поручению (с камеры или из галереи) — по желанию
+function qImg(p) { if (!p.img) return ""; try { return kSavePhoto(p.img, "task_new_" + Date.now()) || ""; } catch (x) { return ""; } }
 function qAll() {
   var sh = qSh(), n = sh.getLastRow(), L = [];
   if (n > 1) sh.getRange(2, 1, n - 1, 2).getValues().forEach(function (r, i) { if (!r[0]) return; try { var o = JSON.parse(r[1]); o.row = i + 2; L.push(o); } catch (x) {} });
@@ -1035,13 +1053,14 @@ function qAct(act, u, p) {
   }
   if (act === "new") {
     if (u.k !== "staff") return { ok: false, error: "role" };
-    var t = clean(p.t, 1500); if (t.length < 3) return { ok: false, error: "text" };
+    var img = qImg(p), t = clean(p.t, 1500); if (t.length < 3 && !img) return { ok: false, error: "text" }; if (!t) t = "Поручение по фото";
     var to = (p.to || []).filter(function (r) { return Q.RANK[r] && qCanTo(u.r, r); }); if (!to.length) return { ok: false, error: "to" };
     var est = qEst(t), dl = est, man = 0;
     if (+p.dl > 0) { if (!boss) return { ok: false, error: "dl" }; dl = Math.max(5, Math.min(30 * 1440, Math.round(+p.dl))); man = 1; }
     var br = clean(p.br, 20); if (br && !brGet().some(function (x) { return x.id === br; })) br = "";
     var now = Date.now();
     var o = { id: "Q" + now + rnd(4), t: t, to: to, br: br, brn: br ? (brGet().filter(function (x) { return x.id === br; })[0] || {}).nm : "", ph: !!p.ph, dl: dl, est: est, man: man, ts: now, st: "open", by: { pk: pk, w: u.w, r: u.r }, log: [{ ts: now, e: "new", w: u.w }] };
+    if (img) o.img = img;
     return locked(function () { var A = qAll(); qPut(A.sh, o); return { ok: true, o: qView(o) }; });
   }
   return locked(function () {
@@ -1050,7 +1069,9 @@ function qAct(act, u, p) {
     if (act === "take") {
       if (o.st !== "open") return { ok: false, error: "taken" };
       if ((o.to || []).indexOf(u.r) < 0 || (o.br && o.br !== brOf(u))) return { ok: false, error: "notfor" };
-      o.st = "taken"; o.tk = { pk: pk, w: u.w, r: u.r, k: u.k, ts: now }; o.due = now + o.dl * 6e4; o.log.push({ ts: now, e: "take", w: u.w });
+      // взял снова после своего же возврата — срок считается от первого взятия, а не заново
+      o.t0 = o.t0 || {}; var first = o.t0[pk] || now; o.t0[pk] = first;
+      o.st = "taken"; o.tk = { pk: pk, w: u.w, r: u.r, k: u.k, ts: now, f: first }; o.due = first + o.dl * 6e4; o.log.push({ ts: now, e: "take", w: u.w, re: first < now ? 1 : 0 });
     } else if (act === "done") {
       if (o.st !== "taken" || !qMine(o, u)) return { ok: false, error: "notyours" };
       if (o.ph && !p.photo) return { ok: false, error: "photo" };
@@ -1241,12 +1262,13 @@ function stBrTeam(u) {
 function stTaskNew(u, p) {
   if (stRank(u.r) < 2) return { ok: false, error: "role" };
   var bid = brOf(u); if (!bid) return { ok: false, error: "nobranch" };
-  var t = clean(p.t, 1500); if (t.length < 3) return { ok: false, error: "text" };
+  var img = qImg(p), t = clean(p.t, 1500); if (t.length < 3 && !img) return { ok: false, error: "text" }; if (!t) t = "Поручение по фото";
   var to = (p.to || []).filter(function (r) { return M_ROLES[r] && stRank(r) <= stRank(u.r); }); if (!to.length) return { ok: false, error: "to" };
   var now = Date.now(), est = qEst(t), dl = est, man = 0;
   if (u.r === "badmin" && +p.dl > 0) { dl = Math.max(5, Math.min(30 * 1440, Math.round(+p.dl))); man = 1; }
   var b = brGet().filter(function (x) { return x.id === bid; })[0] || {};
   var o = { id: "Q" + now + rnd(4), t: t, to: to, br: bid, brn: b.nm || "", ph: !!p.ph, dl: dl, est: est, man: man, ts: now, st: "open", by: { pk: qKey(u), w: u.w, r: u.r }, log: [{ ts: now, e: "new", w: u.w }] };
+  if (img) o.img = img;
   return locked(function () { var A = qAll(); qPut(A.sh, o); return { ok: true, o: qView(o) }; });
 }
 
@@ -1442,7 +1464,7 @@ function pushTick() {
         if (age >= 60 && puOnce("jv:" + o.key + ":" + ready)) { puTo(function (z) { return z.k === "cour"; }, "🔴 Нарушение: заказ " + o.no + " ждёт курьера больше часа!", true); puTo(function (z) { return z.k === "staff" && PU.BOSS[z.r]; }, "🔴 Заказ " + o.no + " больше часа без курьера.", false); }
       }
       if (o.st === "taken" && o.cour) {
-        var tk = 0; (o.log || []).forEach(function (l) { if (l.st === "taken") tk = l.ts; });
+        var tk = 0; (o.log || []).forEach(function (l) { if (l.st === "taken") tk = kTk(l); });
         var left = (tk + 2.5 * H - now) / 6e4, R = puReg(), me = R["cour|" + o.cour.login];
         if (left <= 30 && left > 0 && me && puOnce("jd30:" + o.key + ":" + tk)) puSend(me.c, "⏱ Осталось " + Math.round(left) + " мин, чтобы вручить заказ " + o.no + ".");
         if (left <= 0 && puOnce("jdl:" + o.key + ":" + tk)) { if (me) puSend(me.c, "⚠ Опоздание по заказу " + o.no + ". Вручите как можно скорее."); puTo(function (z) { return z.k === "staff" && PU.BOSS[z.r]; }, "⚠ Курьер " + o.cour.nm + " опаздывает с заказом " + o.no + ".", false); }
@@ -1487,7 +1509,7 @@ puAfter = function (a, p, r) {
     var o = r.o, R = puReg(), on = puOnShift();
     var L = Object.keys(R).filter(function (pk) { return (o.to || []).indexOf(R[pk].r) > -1 && (!o.br || puBr(pk) === o.br) && pk !== (o.by || {}).pk; });
     var L2 = L.filter(function (pk) { return on[pk]; }); if (L2.length) L = L2;
-    var text = "📋 Новое поручение от " + o.by.w + (o.brn ? " (" + o.brn + ")" : "") + ":\n" + o.t.slice(0, 300) + "\n⏱ Срок после принятия: " + Math.round(o.dl) + " мин" + (o.ph ? "\n📷 Нужен фотоотчёт" : "");
+    var text = "📋 Новое поручение от " + o.by.w + (o.brn ? " (" + o.brn + ")" : "") + ":\n" + o.t.slice(0, 300) + "\n⏱ Срок после принятия: " + Math.round(o.dl) + " мин" + (o.img ? "\n🖼 К поручению приложено фото — смотрите в приложении" : "") + (o.ph ? "\n📷 Нужен фотоотчёт" : "");
     L.forEach(function (pk) { puSend(R[pk].c, text, { inline_keyboard: [[{ text: "✅ Беру в работу", callback_data: "qt|" + o.id }], [{ text: "📲 Открыть в приложении", url: p2App(R[pk].k) }]] }); });
     return;
   }
@@ -1742,6 +1764,8 @@ function zvPut(sh, o) {
 }
 function zvSees(o, bid) { return o.by.b === bid || o.pub || (o.to || []).indexOf(bid) > -1; }
 function zvGot(it) { var s = 0; (it.g || []).forEach(function (g) { s += +g.q || 0; }); return Math.round(s * 1000) / 1000; }
+// позиция закрыта: собрано нужное количество; если количество не указали — собрано хоть сколько-то
+function zvFull(it) { var g = zvGot(it); return it.q > 0 ? g >= it.q : g > 0; }
 function zvView(o) { var x = JSON.parse(JSON.stringify(o)); delete x.row; return x; }
 
 function zvAct(act, u, b, B, p) {
@@ -1759,9 +1783,9 @@ function zvAct(act, u, b, B, p) {
       var o = { n: clean(it && it.n, 120), q: Math.max(0, Math.round((+it.q || 0) * 1000) / 1000), g: [] };
       if (it && it.ph) { try { o.ph = kSavePhoto(it.ph, "zv_" + b.id + "_" + Date.now() + "_" + i); } catch (x) { o.ph = ""; } }
       if (!o.ph) delete o.ph;
-      if (!o.n && o.ph) o.n = "Товар по фото";
-      return o;
-    }).filter(function (o) { return (o.n || o.ph) && o.q > 0; });
+      var hasN = !!o.n; if (!o.n) o.n = o.ph ? "Товар по фото" : "Товар (без названия)";
+      return hasN || o.ph || o.q > 0 ? o : null;
+    }).filter(Boolean);
     if (!items.length) return { ok: false, error: "items" };
     var ids = {}; B.forEach(function (x) { ids[x.id] = 1; });
     var to = (Array.isArray(p.to) ? p.to : []).map(String).filter(function (x) { return ids[x] && x !== b.id; });
@@ -2198,7 +2222,7 @@ function upZvCtx(p) {
 function upZvReady(o, bid) {
   if (o.pub || (o.to || []).length > 1) return 0; // заявка нескольким филиалам — каждый филиал отправляет свою часть сам
   var left = 0;
-  o.items.forEach(function (it) { if (zvGot(it) >= it.q) return; if ((it.g || []).some(function (g) { return g.b === bid && !g.s; })) return; left++; });
+  o.items.forEach(function (it) { if (zvFull(it)) return; if ((it.g || []).some(function (g) { return g.b === bid && !g.s; })) return; left++; });
   return left;
 }
 function upZvUnsent(o, bid) { var n = 0; o.items.forEach(function (it) { (it.g || []).forEach(function (g) { if (g.b === bid && !g.s && g.q > 0) n++; }); }); return n; }
@@ -2244,7 +2268,7 @@ function upZv(a, p) {
       Z.forEach(function (o) {
         var cnt = 0; o.items.forEach(function (it) { (it.g || []).forEach(function (g) { if (g.b === b.id && !g.s && g.q > 0) { g.s = 1; cnt++; } }); });
         o.packs = o.packs || []; o.packs.push({ b: b.id, bn: b.nm, t: Date.now(), w: who, no: no, key: key, n: cnt });
-        if (!o.items.some(function (it) { return zvGot(it) < it.q && !(it.g || []).some(function (g) { return g.no; }); })) o.st = "done";
+        if (!o.items.some(function (it) { return !zvFull(it) && !(it.g || []).some(function (g) { return g.no; }); })) o.st = "done";
         o.ts = Date.now(); zvPut(A.sh, o);
       });
       res.push(no);
@@ -2576,3 +2600,127 @@ function prAct(a, p) {
 }
 var PR_ROUTE0 = route;
 route = function (p) { var a = String(p.a || ""); if (a.indexOf("pr_") === 0) return prAct(a, p); return PR_ROUTE0(p); };
+
+// ==================== 22. Вход клиентов по коду: на почту (бесплатно, через Gmail) или по SMS (OsonSMS)
+// Код из 6 цифр живёт 10 минут, хранится только в виде хэша. Не больше 3 кодов в час на адрес/номер, 5 попыток ввода.
+var OC = { TTL: 600, MAXH: 3, TRIES: 5, GAP: 60 };
+function ocHash(to, code) { return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, "oc|" + to + "|" + code)); }
+function ocEm(s) { s = String(s || "").trim().toLowerCase(); return /^[^\s@<>"']{1,64}@[a-z0-9.-]{1,120}\.[a-z]{2,}$/.test(s) ? s : ""; }
+function ocTarget(p) {
+  var v = String(p.to || "").trim();
+  if (v.indexOf("@") > -1) { var e = ocEm(v); return e ? { via: "em", to: e } : null; }
+  var k = k9(v); return k ? { via: "sms", to: k, ph: v } : null;
+}
+function ocAccByEm(em) { var k = PropertiesService.getScriptProperties().getProperty("em:" + em); return k ? accGet(k) : null; }
+function hexSha(s) { return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, s, Utilities.Charset.UTF_8).map(function (b) { var h = (b & 255).toString(16); return h.length < 2 ? "0" + h : h; }).join(""); }
+// ---------- SMS ----------
+function smsCfg() { var v = PropertiesService.getScriptProperties().getProperty("sms:cfg"); return v ? JSON.parse(v) : {}; }
+function smsReady() { var c = smsCfg(); return !!(c.on && c.login && c.from && (c.hash || c.token)); }
+function smsSend(ph, msg, kind) {
+  var c = smsCfg(); if (!smsReady()) return { ok: false, error: "nosms" };
+  var num = "992" + k9(ph), txn = "uh" + Date.now() + rnd(6);
+  var q = { from: c.from, phone_number: num, msg: msg, login: c.login, txn_id: txn };
+  if (c.hash) q.str_hash = hexSha(txn + ";" + c.login + ";" + c.from + ";" + num + ";" + c.hash);
+  var url = (c.url || "https://api.osonsms.com/sendsms_v1.php") + "?" + Object.keys(q).map(function (k) { return k + "=" + encodeURIComponent(q[k]); }).join("&");
+  var opt = { muteHttpExceptions: true, followRedirects: true }; if (c.token) opt.headers = { Authorization: "Bearer " + c.token };
+  var code = 0, txt = "", j = {};
+  try { var r = UrlFetchApp.fetch(url, opt); code = r.getResponseCode(); txt = r.getContentText() || ""; try { j = JSON.parse(txt); } catch (x) {} } catch (e) { txt = String(e); }
+  var ok = code >= 200 && code < 300 && !j.error;
+  try { sheet("sms", ["ts", "phone", "kind", "ok", "answer"]).appendRow([new Date(), "'" + num, kind || "", ok ? "да" : "нет", String(txt).slice(0, 300)]); } catch (x) {}
+  return ok ? { ok: true, id: j.msg_id || "" } : { ok: false, error: "send", why: (j.error && (j.error.msg || j.error.message)) || ("HTTP " + code) };
+}
+// ---------- письмо с кодом ----------
+function ocMail(em, code) {
+  if (MailApp.getRemainingDailyQuota() < 3) return { ok: false, error: "quota" };
+  var html = '<div style="font-family:Arial,sans-serif;max-width:460px;margin:0 auto;padding:24px;border:1px solid #eee;border-radius:16px">' +
+    '<div style="font-size:20px;font-weight:700;color:#dc4c0e">Умари Хайём</div><p style="font-size:15px;color:#333">Ваш код для входа на сайт:</p>' +
+    '<div style="font-size:34px;font-weight:800;letter-spacing:8px;background:#fff4ec;border-radius:12px;padding:14px;text-align:center;color:#111">' + code + '</div>' +
+    '<p style="font-size:13px;color:#666">Код действует 10 минут. Никому его не сообщайте — сотрудники магазина никогда не спрашивают код.<br>Если вы не запрашивали вход, просто удалите это письмо.</p></div>';
+  MailApp.sendEmail({ to: em, subject: "Код для входа: " + code + " — Умари Хайём", htmlBody: html, body: "Ваш код для входа на сайт «Умари Хайём»: " + code + ". Код действует 10 минут. Никому его не сообщайте.", name: "Умари Хайём" });
+  return { ok: true };
+}
+function ocSend(t) {
+  var cnt = +(C().get("ocn:" + t.to) || 0), last = +(C().get("ocl:" + t.to) || 0);
+  if (Date.now() - last < OC.GAP * 1000) return { ok: false, error: "wait", sec: Math.ceil((OC.GAP * 1000 - (Date.now() - last)) / 1000) };
+  if (cnt >= OC.MAXH) return { ok: false, error: "slow" };
+  if (t.via === "sms" && !smsReady()) return { ok: false, error: "nosms" };
+  var code = String(100000 + Math.floor(Math.random() * 900000));
+  var r = t.via === "em" ? ocMail(t.to, code) : smsSend(t.ph || t.to, "Код для входа на сайт Умари Хайём: " + code + ". Никому не сообщайте.", "code");
+  if (!r.ok) return r;
+  C().put("oc:" + t.to, JSON.stringify({ h: ocHash(t.to, code), n: 0 }), OC.TTL);
+  C().put("ocn:" + t.to, String(cnt + 1), 3600); C().put("ocl:" + t.to, String(Date.now()), 3600);
+  return { ok: true, via: t.via, ttl: OC.TTL };
+}
+function ocCheck(t, code) {
+  var v = C().get("oc:" + t.to); if (!v) return "expired";
+  var o = JSON.parse(v); if (o.n >= OC.TRIES) { C().remove("oc:" + t.to); return "tries"; }
+  if (ocHash(t.to, String(code || "").replace(/\D/g, "")) !== o.h) { o.n++; C().put("oc:" + t.to, JSON.stringify(o), OC.TTL); return o.n >= OC.TRIES ? "tries" : "code"; }
+  C().remove("oc:" + t.to); return "";
+}
+function ocLogin(o) { var t = newTok(o); expireHolds(o); accPut(o); return { ok: true, tok: t, me: pub(o), orders: accOrders(o.k) }; }
+function ocAct(a, p) {
+  if (a === "u_code") { var t = ocTarget(p); if (!t) return { ok: false, error: "to" }; return ocSend(t); }
+  if (a === "u_verify") {
+    var t1 = ocTarget(p); if (!t1) return { ok: false, error: "to" };
+    var e1 = ocCheck(t1, p.code); if (e1) return { ok: false, error: e1 };
+    var acc = t1.via === "em" ? ocAccByEm(t1.to) : accGet(t1.to);
+    if (acc) return locked(function () { var o = t1.via === "em" ? ocAccByEm(t1.to) : accGet(t1.to); if (t1.via === "sms") o.pv = 1; return ocLogin(o); });
+    // нового клиента просим только имя (и телефон, если входил по почте)
+    var vt = rnd(32); C().put("ocv:" + vt, JSON.stringify(t1), 900);
+    return { ok: true, need: "reg", vt: vt, via: t1.via };
+  }
+  if (a === "u_creg") {
+    var v = C().get("ocv:" + String(p.vt || "")); if (!v) return { ok: false, error: "expired" };
+    var t2 = JSON.parse(v), nm = clean(p.nm, 60); if (!nm) return { ok: false, error: "nm" };
+    var k = t2.via === "sms" ? t2.to : k9(p.ph); if (!k) return { ok: false, error: "ph" };
+    if (t2.via === "em" && !phoneOk(p.ph, p.tk)) return { ok: false, error: "otp" };
+    return locked(function () {
+      var o = accGet(k);
+      if (o && (o.h || o.cv || o.em)) return { ok: false, error: "phused" }; // номер уже с аккаунтом — пусть войдёт им и привяжет почту
+      if (t2.via === "em" && ocAccByEm(t2.to)) return { ok: false, error: "emused" };
+      o = o || { k: k, bal: 0, led: [] };
+      o.nm = nm; o.ph = t2.via === "sms" ? "+992 " + k.slice(0, 2) + " " + k.slice(2, 5) + " " + k.slice(5, 7) + " " + k.slice(7) : clean(p.ph, 30); o.cv = 1; o.c = o.c || Date.now();
+      if (t2.via === "sms") o.pv = 1;
+      if (t2.via === "em") { o.em = t2.to; PropertiesService.getScriptProperties().setProperty("em:" + t2.to, k); }
+      C().remove("ocv:" + p.vt);
+      return ocLogin(o);
+    });
+  }
+  // дальше — только для вошедшего клиента
+  var me = tokAcc(p.tok); if (!me) return { ok: false, error: "tok" };
+  if (a === "u_emset") {
+    var em = ocEm(p.em); if (!em) return { ok: false, error: "to" };
+    var e3 = ocCheck({ via: "em", to: em }, p.code); if (e3) return { ok: false, error: e3 };
+    return locked(function () {
+      var other = ocAccByEm(em); if (other && other.k !== me.k) return { ok: false, error: "emused" };
+      var o = accGet(me.k), P = PropertiesService.getScriptProperties(); if (o.em && o.em !== em) P.deleteProperty("em:" + o.em);
+      o.em = em; P.setProperty("em:" + em, o.k); accPut(o); return { ok: true, me: pub(o) };
+    });
+  }
+  if (a === "u_pw") {
+    var pw = String(p.pw || ""); if (pw.length < 6) return { ok: false, error: "pw" };
+    return locked(function () { var o = accGet(me.k); o.s = rnd(16); o.h = hashPw(pw, o.s); accPut(o); return { ok: true, me: pub(o) }; });
+  }
+  return { ok: false, error: "action" };
+}
+// настройки SMS — только руководитель; ключи наружу не отдаются
+function smsAdm(a, p) {
+  var me = staff(p); if (!me || me.role !== "director") return { ok: false, error: "role" };
+  var P = PropertiesService.getScriptProperties(), c = smsCfg();
+  if (a === "sms_set") {
+    var q = p.cfg || {};
+    ["login", "from", "url"].forEach(function (k) { if (q[k] != null) c[k] = clean(q[k], 120); });
+    ["hash", "token"].forEach(function (k) { if (q[k]) c[k] = String(q[k]).trim().slice(0, 300); if (q[k + "_del"]) delete c[k]; });
+    if (q.on != null) c.on = !!q.on;
+    P.setProperty("sms:cfg", JSON.stringify(c));
+  }
+  if (a === "sms_test") { var r = smsSend(p.ph, "Умари Хайём: проверка SMS. Если вы получили это сообщение — SMS работают.", "test"); if (!r.ok) return r; }
+  return { ok: true, cfg: { on: !!c.on, login: c.login || "", from: c.from || "", url: c.url || "", hash: !!c.hash, token: !!c.token, ready: smsReady() }, mail: MailApp.getRemainingDailyQuota() };
+}
+var OC_ROUTE0 = route;
+route = function (p) {
+  var a = String(p.a || "");
+  if (/^u_(code|verify|creg|emset|pw)$/.test(a)) return ocAct(a, p);
+  if (/^sms_(get|set|test)$/.test(a)) return smsAdm(a, p);
+  return OC_ROUTE0(p);
+};

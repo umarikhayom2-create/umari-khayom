@@ -3065,9 +3065,44 @@ function trAdm(a, p) {
   Object.keys(M).forEach(function (k) { if (L.length >= 200) return; if (q && (k + " " + M[k].en + " " + M[k].tg).toLowerCase().indexOf(q) < 0) return; L.push({ ru: k, en: M[k].en, tg: M[k].tg }); });
   return { ok: true, ai: !!c.key, model: c.model || "claude-haiku-5-5", err: P.getProperty("tr:err") || "", n: Object.keys(M).length, list: L };
 }
+// документы (договоры, справки, письма): перевод с русского или таджикского на ru / tg / en, отдельная таблица «trdoc»
+var TRD = { LANGS: { ru: "Russian", tg: "Tajik (Cyrillic script, formal literary Tajik)", en: "English" } };
+function trdSh() { return sheet("trdoc", ["key", "to", "text", "ts"]); }
+function trdAI(list, to) {
+  var c = trCfg();
+  if (c.key) {
+    var sys = "You translate official business and legal documents (contracts, certificates, letters, payment orders) of companies in Tajikistan from Russian or Tajik into formal " + TRD.LANGS[to] + ". " +
+      "Use correct legal terminology and the formal register of official documents. Each item is a fragment of one document; translate it fully and precisely, without adding or omitting anything. " +
+      "Keep placeholders like {0}, {1} exactly. Keep blank lines made of underscores. Keep company names in quotes «» (transliterate them for English). " +
+      "Answer ONLY with a JSON array of strings, same length and order as the input.";
+    try {
+      var r = UrlFetchApp.fetch("https://api.anthropic.com/v1/messages", { method: "post", contentType: "application/json", muteHttpExceptions: true, headers: { "x-api-key": c.key, "anthropic-version": "2023-06-01" },
+        payload: JSON.stringify({ model: c.model || "claude-haiku-5-5", max_tokens: 16000, system: sys, messages: [{ role: "user", content: JSON.stringify(list) }] }) });
+      var j = JSON.parse(r.getContentText() || "{}"), t = j && j.content && j.content[0] && j.content[0].text || "", m = t.match(/\[[\s\S]*\]/);
+      if (m) { var a = JSON.parse(m[0]); if (Array.isArray(a) && a.length === list.length) return a; }
+    } catch (e) {}
+  }
+  return list.map(function (s) { try { return LanguageApp.translate(s, "", to); } catch (e) { return ""; } });
+}
+function trDoc(list, to) {
+  if (!TRD.LANGS[to]) return { ok: false, error: "lang" };
+  list = (Array.isArray(list) ? list : []).slice(0, 30).map(function (s) { return String(s || "").slice(0, 3000); });
+  var sh = trdSh(), n = sh.getLastRow(), M = {}, out = {};
+  if (n > 1) sh.getRange(2, 1, n - 1, 3).getValues().forEach(function (r) { if (r[1] === to) M[String(r[0])] = String(r[2]); });
+  var need = list.filter(function (s, i) { if (M[s]) { out[s] = M[s]; return false; } return list.indexOf(s) === i; });
+  if (need.length) {
+    var used = +(C().get("trd:n") || 0); if (used >= 1500) return { ok: true, tr: out, wait: 1 };
+    C().put("trd:n", String(used + need.length), 3600);
+    var res = trdAI(need, to), add = [];
+    need.forEach(function (s, i) { var v = String(res[i] || "").trim(); var a = (s.match(/\{\d+\}/g) || []).sort().join(), b = (v.match(/\{\d+\}/g) || []).sort().join(); if (!v || a !== b) return; out[s] = v; add.push([s, to, v, Date.now()]); });
+    if (add.length) locked(function () { var sh2 = trdSh(); sh2.getRange(sh2.getLastRow() + 1, 1, add.length, 4).setValues(add); return {}; });
+  }
+  return { ok: true, tr: out };
+}
 var TR_ROUTE0 = route;
 route = function (p) {
   var a = String(p.a || "");
+  if (a === "c_tr" && p.d) { var me = staff(p); if (!me || !DC.ADM[me.role]) return { ok: false, error: "role" }; return trDoc(p.list, String(p.to || "")); }
   if (a === "c_tr") return trGet(p.list, String(p.to || ""));
   if (a === "c_trall") return trAll(String(p.to || ""));
   if (a === "tr_get" || a === "tr_set" || a === "tr_fix") return trAdm(a, p);

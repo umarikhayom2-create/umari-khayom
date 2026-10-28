@@ -190,11 +190,37 @@ var CSS = "@page{size:A4;margin:16mm 14mm 16mm 22mm}*{box-sizing:border-box}body
   "table.grid{width:100%;border-collapse:collapse;margin:8px 0}table.grid td,table.grid th{border:1px solid #000;padding:4px 6px;font-size:11pt;vertical-align:top}.n{text-align:right;white-space:nowrap}.pay .ph{display:flex;justify-content:space-between;font-size:13pt;margin-bottom:6px}.pl{width:30%}.pf{display:flex;justify-content:space-between;gap:20px;font-size:11pt;margin-top:8px}" +
   ".tb{position:sticky;top:0;background:#1f2937;color:#fff;padding:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font:600 14px system-ui;z-index:5}.tb button{border:0;border-radius:10px;padding:10px 14px;font:700 14px system-ui;cursor:pointer}.tb .p{background:#16a34a;color:#fff}.pg{max-width:190mm;margin:10mm auto;padding:0 4mm}@media print{.tb{display:none}.pg{margin:0;max-width:none;padding:0}}";
 function preWin() { var w = window.open("", "_blank"); if (w) { try { w.document.write("<p style='font:16px system-ui;padding:20px'>⏳ Готовим документ…</p>"); } catch (x) {} } return w; }
+/* перевод документа на выбранный язык (ИИ на сервере; числа не отправляются, перевод сохраняется) */
+var DLANG = [["", "Как в шаблоне"], ["ru", "Русский"], ["tg", "Тоҷикӣ"], ["en", "English"]];
+var DNUM = /[−\-+]?\d+(?:[\d\u00a0 ]*\d)?(?:[.,]\d+)?/g;
+function dTpl(s) { var nums = []; var t = String(s).replace(/[\s\u00a0]+/g, " ").trim().replace(DNUM, function (m) { nums.push(m); return "{" + (nums.length - 1) + "}"; }); return { t: t, n: nums }; }
+function trHtml(html, to) {
+  var box = document.createElement("div"); box.innerHTML = html;
+  var w0 = document.createTreeWalker(box, NodeFilter.SHOW_TEXT), nodes = [], keys = [], seen = {}, n;
+  while ((n = w0.nextNode())) { if (!/[А-Яа-яЁёӢӣӮӯҚқҒғҲҳҶҷ]/.test(n.data)) continue; var k = dTpl(n.data); n._k = k; nodes.push(n); if (!seen[k.t]) { seen[k.t] = 1; keys.push(k.t); } }
+  var res = {}, p = Promise.resolve();
+  for (var i = 0; i < keys.length; i += 25) (function (part) { p = p.then(function () { return U.api("c_tr", { d: 1, to: to, list: part }).then(function (j) { if (j && j.tr) Object.keys(j.tr).forEach(function (k) { res[k] = j.tr[k]; }); }); }); })(keys.slice(i, i + 25));
+  return p.then(function () {
+    var miss = 0;
+    nodes.forEach(function (nd) { var k = nd._k, v = res[k.t]; if (!v) { miss++; return; } var lead = (nd.data.match(/^\s*/) || [""])[0], tail = (nd.data.match(/\s*$/) || [""])[0]; nd.data = lead + v.replace(/\{(\d+)\}/g, function (m, i) { return k.n[+i] != null ? k.n[+i] : m; }) + tail; });
+    if (miss) toast("Часть текста не перевелась (" + miss + ") — попробуйте открыть документ ещё раз");
+    return box.innerHTML;
+  });
+}
 function openDoc(t, d, title, w) {
   var html = TPL[t](d); w = w || window.open("", "_blank");
   if (!w) { toast("Разрешите всплывающие окна для сайта, чтобы открыть документ"); return; }
+  if (d.lang) {
+    try { w.document.open(); w.document.write("<p style='font:16px system-ui;padding:20px'>⏳ Переводим документ (" + ((DLANG.filter(function (x) { return x[0] === d.lang; })[0] || [])[1] || d.lang) + ")… Обычно до минуты, повторно — мгновенно.</p>"); w.document.close(); } catch (x) {}
+    var dd = Object.assign({}, d); delete dd.lang;
+    trHtml(html, d.lang).then(function (h2) { writeDoc(w, t, h2, title, d.lang); }).catch(function () { toast("Не удалось перевести — открываю как в шаблоне"); writeDoc(w, t, html, title, ""); });
+    return;
+  }
+  writeDoc(w, t, html, title, "");
+}
+function writeDoc(w, t, html, title, lang) {
   w.document.open();
-  w.document.write("<!doctype html><html lang=ru><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>" + esc(title || T[t].n) + "</title><style>" + CSS + "</style></head><body><div class=tb><span style='flex:1'>" + esc(title || T[t].n) + "</span><button class=p onclick='print()'>🖨 Печать / Сохранить PDF</button><button onclick='close()'>Закрыть</button></div><div class=pg>" + html + "</div></body></html>");
+  w.document.write("<!doctype html><html lang=" + (lang || "ru") + "><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>" + esc(title || T[t].n) + "</title><style>" + CSS + "</style></head><body><div class=tb><span style='flex:1'>" + esc(title || T[t].n) + "</span><button class=p onclick='print()'>🖨 Печать / Сохранить PDF</button><button onclick='close()'>Закрыть</button></div><div class=pg>" + html + "</div></body></html>");
   w.document.close();
 }
 
@@ -225,6 +251,7 @@ function form() {
   h += "<div class=dcf><div class=dcsec>Документ</div><div class=fl><label>Дата документа</label><input class=pin type=date data-dk=date value='" + esc(S.d.date || today()) + "'></div><div class=fl><label>Номер (пусто — присвоится сам)</label><input class=pin data-dk=no value='" + esc(S.d.no || "") + "'></div>";
   var sec = "";
   t.f.forEach(function (f) { var s2 = f[0].slice(0, 2) === "p_" ? "Контрагент" : f[0].slice(0, 2) === "e_" ? "Работник" : f[0].slice(0, 2) === "r_" ? "Получатель" : "Условия"; if (s2 !== sec) { sec = s2; h += "<div class=dcsec>" + sec + "</div>"; } h += fld(f); });
+  h += "<div class=fl><label>Язык документа</label><select class=pin data-dk=lang>" + DLANG.map(function (o) { return "<option value='" + o[0] + "'" + ((S.d.lang || "") === o[0] ? " selected" : "") + ">" + o[1] + (o[0] ? " (перевод ИИ)" : "") + "</option>"; }).join("") + "</select></div>";
   h += "</div><label class=rem style='margin:12px 0'><input type=checkbox id=dcst" + (S.stamp && has ? " checked" : "") + (has ? "" : " disabled") + "> 🔵 Поставить печать компании" + (has ? "" : " (печать не загружена)") + "</label>";
   h += "<div class=row style='gap:6px'><button class=btn data-dgo=1 style='flex:1'>📄 Создать документ</button><button class='btn o' data-dprev=1>👁 Предпросмотр без номера</button></div><p class=note>Поля со звёздочкой обязательны. Незаполненные поля печатаются линией — их можно вписать от руки.</p>";
   return h;

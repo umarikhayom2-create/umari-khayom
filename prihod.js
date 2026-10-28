@@ -62,13 +62,21 @@ function html() {
 }
 function inp(id, v, o) { o = o || {}; return '<input class="pin" data-pf="' + id + '" value="' + esc(v == null ? "" : v) + '"' + (o.t ? ' type="' + o.t + '"' : "") + (o.num ? ' inputmode="decimal"' : "") + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : "") + (o.st ? ' style="' + o.st + '"' : "") + ">"; }
 function curSel(id, v, withTj) { return '<select class="pin" data-pf="' + id + '">' + Object.keys(CUR).filter(function (k) { return withTj || k !== "TJS"; }).map(function (k) { return '<option value="' + k + '"' + (k === v ? " selected" : "") + ">" + k + " — " + CUR[k] + "</option>"; }).join("") + "</select>"; }
+function noRate(f) { return f.cur !== "TJS" && !(nv(f.rate) > 0); }
+// ячейка себестоимости с расшифровкой: сколько стоит сам товар и сколько — доставка
+function costCell(it, c, f) {
+  if (!(+it.fx > 0) && noRate(f)) return '<b style="color:#dc2626">?</b><br><small style="color:#dc2626;white-space:nowrap">нет курса</small>';
+  return "<b>" + nf(c.cost) + '</b><br><small class="note" style="white-space:nowrap">' + (+it.fx > 0 ? "вручную" : "товар " + nf(c.cost - c.log) + " + дост. " + nf(c.log)) + "</small>";
+}
+function warnHtml(f) { return noRate(f) ? '⚠️ Не указан курс ' + f.cur + ' на дату прихода — без него в себестоимость попадает только доставка. Впишите курс выше (например, 1.41) или откройте «Курсы и тарифы».' : ""; }
 function formHtml() {
+  if (noRate(S.f) && rateOf(S.f.cur)) { S.f.rate = rateOf(S.f.cur); S.f.rsrc = (S.rates[S.f.cur] || {}).src || ""; }
   var f = S.f, tot = { q: 0, s: 0 }, C = f.items.map(function (it) { var c = calc(it, f); tot.q += c.qty; tot.s += c.sum; return c; });
   var rw = f.items.map(function (it, i) {
     var c = C[i], cell = function (k, w, num) { return '<td><input class="pin pri" data-pi="' + i + '" data-k="' + k + '" value="' + esc(it[k] == null ? "" : it[k]) + '"' + (num ? ' inputmode="decimal"' : "") + ' style="min-width:' + w + 'px"></td>'; };
     var pct = function (k) { return '<td><input class="pin pri" data-pi="' + i + '" data-k="' + k + '" data-pct="1" value="' + pc(it[k]) + '" inputmode="decimal" style="min-width:52px"></td>'; };
     return '<tr><td class="n">' + (i + 1) + "</td>" + cell("nm", 150) + cell("code", 70) + cell("bc", 100) + cell("pr", 70, 1) + cell("box", 52, 1) + cell("qpb", 60, 1) + cell("kgb", 60, 1) + cell("m3b", 64, 1) + cell("fx", 70, 1) +
-      '<td class="n" data-pc="q' + i + '">' + nf(c.qty, 0) + '</td><td class="n" data-pc="c' + i + '"><b>' + nf(c.cost) + "</b></td>" + pct("po") + '<td class="n" data-pc="o' + i + '">' + nf(c.opt) + "</td>" + pct("prr") + '<td class="n" data-pc="r' + i + '">' + nf(c.rozn) + "</td>" + pct("pf") + '<td class="n" data-pc="f' + i + '">' + nf(c.ofis) + '</td><td class="n" data-pc="s' + i + '">' + nf(c.sum) + '</td><td><button class="fdl" data-pr="rm" data-i="' + i + '" title="Удалить строку">✕</button></td></tr>';
+      '<td class="n" data-pc="q' + i + '">' + nf(c.qty, 0) + '</td><td class="n" data-pc="c' + i + '">' + costCell(it, c, f) + "</td>" + pct("po") + '<td class="n" data-pc="o' + i + '">' + nf(c.opt) + "</td>" + pct("prr") + '<td class="n" data-pc="r' + i + '">' + nf(c.rozn) + "</td>" + pct("pf") + '<td class="n" data-pc="f' + i + '">' + nf(c.ofis) + '</td><td class="n" data-pc="s' + i + '">' + nf(c.sum) + '</td><td><button class="fdl" data-pr="rm" data-i="' + i + '" title="Удалить строку">✕</button></td></tr>';
   }).join("");
   var nb = S.nbt && S.nbt[f.cur] ? '<small class="note">НБТ сегодня: ' + nf(S.nbt[f.cur], 4) + ' <a href="#" data-pr="usenbt">подставить</a></small>' : '<small class="note"><a href="#" data-pr="nbt">узнать курс НБТ на дату</a></small>';
   return '<div class="pq fform"><b>' + (f.id ? "Изменить приход " + esc(f.no || "") : "Новый приход товаров") + '</b>' +
@@ -78,6 +86,7 @@ function formHtml() {
     '<div class="fl"><label>Примечание</label>' + inp("note", f.note, { ph: "контейнер, накладная, карго" }) + "</div>" +
     '<p class="note" style="margin:4px 0 8px">Себестоимость 1 шт. = цена × курс + (кг ÷ штук) × тариф за кг + (м³ ÷ штук) × тариф за м³. Оптовая = себестоимость + % опт; розничная и офисная считаются от оптовой.</p></div>' +
     '<div class="row" style="margin:0 0 8px"><button class="btn sm o" data-pr="add">+ Строка</button><label class="btn sm o" style="cursor:pointer">📥 Загрузить из Excel<input type="file" accept=".xlsx,.xls" data-pr-file="1" hidden></label>' + (f.items.length > 1 ? '<button class="btn sm o" data-pr="clr">Очистить</button>' : "") + "</div>" +
+    '<div data-pc="warn" style="margin:0 0 8px;padding:' + (noRate(f) ? "10px 12px" : "0") + ';border-radius:12px;background:#fef2f2;color:#991b1b;font-weight:600">' + warnHtml(f) + '</div>' +
     '<div class="tw"><table class="tb ftb prt"><tr><th>№</th><th>Наименование</th><th>Код</th><th>Штрихкод</th><th>Цена, ' + f.cur + '</th><th>Коробок</th><th>Шт. в кор.</th><th>кг в 1 кор.</th><th>м³ в 1 кор.</th><th title="Если товар куплен на месте в сомони — впишите себестоимость, курс и доставка не применяются">Себест. вручную</th><th>Всего шт.</th><th>Себест., сом.</th><th>% опт</th><th>Оптовая</th><th>% розн.</th><th>Розничная</th><th>% офис</th><th>Офисная</th><th>Сумма по себест.</th><th></th></tr>' + rw +
     '<tr><td></td><td colspan="9"><b>Итого</b></td><td class="n"><b data-pc="tq">' + nf(tot.q, 0) + '</b></td><td colspan="8"></td><td class="n"><b data-pc="ts">' + nf(tot.s) + "</b></td><td></td></tr></table></div>" +
     '<div class="row" style="margin:10px 0"><button class="btn" data-pr="save"' + (S.busy ? " disabled" : "") + ">💾 " + (f.id ? "Сохранить изменения" : "Оприходовать") + "</button>" + (f.id ? '<button class="btn o" data-pr="cancel">Отмена</button>' : "") + "</div>";
@@ -175,8 +184,9 @@ function onInput(e) {
 }
 function live() {
   var f = S.f, q = 0, s = 0, set = function (k, v) { var n = S.box.querySelector('[data-pc="' + k + '"]'); if (n) n.innerHTML = v; };
-  f.items.forEach(function (it, i) { var c = calc(it, f); q += c.qty; s += c.sum; set("q" + i, nf(c.qty, 0)); set("c" + i, "<b>" + nf(c.cost) + "</b>"); set("o" + i, nf(c.opt)); set("r" + i, nf(c.rozn)); set("f" + i, nf(c.ofis)); set("s" + i, nf(c.sum)); });
+  f.items.forEach(function (it, i) { var c = calc(it, f); q += c.qty; s += c.sum; set("q" + i, nf(c.qty, 0)); set("c" + i, costCell(it, c, f)); set("o" + i, nf(c.opt)); set("r" + i, nf(c.rozn)); set("f" + i, nf(c.ofis)); set("s" + i, nf(c.sum)); });
   set("tq", nf(q, 0)); set("ts", nf(s));
+  var w = S.box.querySelector('[data-pc="warn"]'); if (w) { w.innerHTML = warnHtml(f); w.style.padding = noRate(f) ? "10px 12px" : "0"; }
 }
 function onClick(e) {
   var t = e.target.closest("[data-pr]"); if (!t || !S.box || !S.box.contains(t)) return; var a = t.dataset.pr; e.preventDefault();

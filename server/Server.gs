@@ -2638,17 +2638,22 @@ function smsSend(ph, msg, kind) {
   var code = 0, txt = "", j = {};
   try { var r = UrlFetchApp.fetch(url, opt); code = r.getResponseCode(); txt = r.getContentText() || ""; try { j = JSON.parse(txt); } catch (x) {} } catch (e) { txt = String(e); }
   var ok = code >= 200 && code < 300 && !j.error;
-  try { sheet("sms", ["ts", "phone", "kind", "ok", "answer"]).appendRow([new Date(), "'" + num, kind || "", ok ? "да" : "нет", String(txt).slice(0, 300)]); } catch (x) {}
+  msgLog("SMS", "+" + num, kind, ok, ok ? "" : String(txt).slice(0, 200));
   return ok ? { ok: true, id: j.msg_id || "" } : { ok: false, error: "send", why: (j.error && (j.error.msg || j.error.message)) || ("HTTP " + code) };
 }
 // ---------- письмо с кодом ----------
+// журнал отправленных сообщений (сами коды не записываются)
+function msgSh() { return sheet("msglog", ["ts", "chan", "to", "kind", "ok", "err"]); }
+function msgLog(chan, to, kind, ok, err) { try { msgSh().appendRow([Date.now(), chan, "'" + to, kind || "", ok ? 1 : 0, err || ""]); } catch (x) {} }
 function ocMail(em, code) {
   if (MailApp.getRemainingDailyQuota() < 3) return { ok: false, error: "quota" };
   var html = '<div style="font-family:Arial,sans-serif;max-width:460px;margin:0 auto;padding:24px;border:1px solid #eee;border-radius:16px">' +
     '<div style="font-size:20px;font-weight:700;color:#dc4c0e">Умари Хайём</div><p style="font-size:15px;color:#333">Ваш код для входа на сайт:</p>' +
     '<div style="font-size:34px;font-weight:800;letter-spacing:8px;background:#fff4ec;border-radius:12px;padding:14px;text-align:center;color:#111">' + code + '</div>' +
     '<p style="font-size:13px;color:#666">Код действует 10 минут. Никому его не сообщайте — сотрудники магазина никогда не спрашивают код.<br>Если вы не запрашивали вход, просто удалите это письмо.</p></div>';
-  MailApp.sendEmail({ to: em, subject: "Код для входа: " + code + " — Умари Хайём", htmlBody: html, body: "Ваш код для входа на сайт «Умари Хайём»: " + code + ". Код действует 10 минут. Никому его не сообщайте.", name: "Умари Хайём" });
+  try { MailApp.sendEmail({ to: em, subject: "Код для входа: " + code + " — Умари Хайём", htmlBody: html, body: "Ваш код для входа на сайт «Умари Хайём»: " + code + ". Код действует 10 минут. Никому его не сообщайте.", name: "Умари Хайём" }); }
+  catch (e) { msgLog("Почта", em, "code", false, String(e).slice(0, 200)); return { ok: false, error: "quota" }; }
+  msgLog("Почта", em, "code", true, "");
   return { ok: true };
 }
 function ocSend(t) {
@@ -2748,6 +2753,7 @@ route = function (p) {
   var a = String(p.a || "");
   if (/^u_(code|verify|creg|emset|pw)$/.test(a)) return ocAct(a, p);
   if (/^sms_(get|set|test)$/.test(a)) return smsAdm(a, p);
+  if (a === "sms_log") return msgList(p);
   return OC_ROUTE0(p);
 };
 
@@ -2873,3 +2879,25 @@ route = function (p) {
   }
   return WY_ROUTE0(p);
 };
+
+// ==================== 25. История отправленных сообщений (SMS и письма) — руководитель и администратор
+function msgList(p) {
+  var me = staff(p); if (!me || (me.role !== "director" && me.role !== "admin")) return { ok: false, error: "role" };
+  var sh = msgSh(), n = sh.getLastRow(), L = [], now = Date.now(), d0 = new Date(now + 5 * 36e5); d0.setUTCHours(0, 0, 0, 0);
+  var day = d0.getTime() - 5 * 36e5, mon = Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth(), 1) - 5 * 36e5, st = { smsDay: 0, smsMon: 0, mailDay: 0, mailMon: 0, err: 0 };
+  if (n > 1) {
+    var V = sh.getRange(Math.max(2, n - 3999), 1, Math.min(4000, n - 1), 6).getValues();
+    V.forEach(function (r) {
+      var ts = +r[0] || 0, sms = r[1] === "SMS", ok = +r[4] === 1;
+      if (ok && ts >= day) sms ? st.smsDay++ : st.mailDay++;
+      if (ok && ts >= mon) sms ? st.smsMon++ : st.mailMon++;
+      if (!ok && ts >= day) st.err++;
+    });
+    var q = String(p.q || "").toLowerCase().replace(/\s/g, "");
+    for (var i = V.length - 1; i >= 0 && L.length < 300; i--) {
+      var r = V[i], to = String(r[2]); if (q && to.toLowerCase().replace(/\s/g, "").indexOf(q) < 0) continue;
+      L.push({ ts: +r[0] || 0, ch: r[1], to: to, k: r[3], ok: +r[4] === 1, e: r[5] });
+    }
+  }
+  return { ok: true, list: L, st: st };
+}

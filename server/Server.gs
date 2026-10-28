@@ -263,7 +263,7 @@ function mainGet(q) {
 }
 function otpOn() { var c = C().get("otpon"); if (c) return c === "1"; var j = mainGet("a=cfg"); var on = !!(j && j.otp); C().put("otpon", on ? "1" : "0", 600); return on; }
 function phoneOk(ph, tk) { if (!otpOn()) return true; if (!tk) return false; var j = mainGet("a=my&ph=" + encodeURIComponent(ph) + "&tk=" + encodeURIComponent(tk)); return !!(j && j.ok); }
-function pub(o) { return { nm: o.nm || "", ph: o.ph || "", em: o.em || "", em0: o.em0 || "", pw: !!o.h, bal: Math.round((o.bal || 0) * 100) / 100, led: (o.led || []).slice(-30).reverse(), pct: BONUS_PCT }; }
+function pub(o) { return { nm: o.nm || "", ph: o.ph || "", em: o.em || "", em0: o.em0 || "", org: o.org || "", ct: o.ct || "", cty: o.cty || "", ad: o.ad || "", pw: !!o.h, bal: Math.round((o.bal || 0) * 100) / 100, led: (o.led || []).slice(-30).reverse(), pct: BONUS_PCT }; }
 function ordSh() { return sheet("ord", ["no", "phone9", "json", "ts"]); }
 function accOrders(k) {
   var sh = ordSh(), n = sh.getLastRow(); if (n < 2) return [];
@@ -2828,6 +2828,13 @@ accOrders = function (k) { var L = ACO_0(k), o = accGet(k); if (o && o.pvn && !o
 var WY_ROUTE0 = route;
 route = function (p) {
   var a = String(p.a || "");
+  // данные для заказа хранятся в аккаунте — одинаковые на всех устройствах
+  if (a === "u_upd") {
+    var me = tokAcc(p.tok); if (!me) return { ok: false, error: "tok" };
+    if (smsReady() && !pvTok(me, String(p.tok))) return { ok: false, error: "pv" };
+    var nm = clean(p.nm, 60); if (!nm) return { ok: false, error: "nm" };
+    return locked(function () { var o = accGet(me.k); o.nm = nm; o.org = clean(p.org, 120); o.ct = /^[rcw]$/.test(p.ct) ? p.ct : "r"; o.cty = clean(p.cty, 60); o.ad = clean(p.ad, 200); accPut(o); return { ok: true, me: pub(o) }; });
+  }
   if (a === "u_ways") {
     var o = waysAcc(p); if (!o) return { ok: false, error: "none" };
     var W = [{ via: "sms", m: pvMask(o.k), on: smsReady() }]; if (o.em) W.push({ via: "em", m: maskEm(o.em), on: true });

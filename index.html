@@ -2996,6 +2996,24 @@ if(a==="ch"){var keep={nm:($("u2nm")||{}).value,ph:($("u2ph")||{}).value,em:($("
 if(a==="back"){u.step=u.cid?"ways":"form";u.cid=null;accDraw();return}
 if(a==="way"||(a==="resend"&&u.cid)){var via=a==="way"?t.dataset.v:u.via;t.disabled=true;uApi("u_code2",{to:u.f.to,via:via}).then(function(j){t.disabled=false;if(!j.ok){var x=$("u2e");if(x)x.textContent=ocErr(j.error,j);return}u.step="code";u.cid=j.cid;u.via=j.via;u.to=j.m;u.until=Date.now()+(j.sec||60)*1000;accDraw();setTimeout(function(){var i=$("u2code");if(i)i.focus()},50);u2Tick();toast(j.via==="em"?"Код отправлен на почту":"Код отправлен по SMS")}).catch(function(){t.disabled=false;var x=$("u2e");if(x)x.textContent=ocErr("")});return}
 if(a==="resend"){t.disabled=true;u2Send(u.via,u.to,"")}},true);
+/* профиль: после входа данные берутся из аккаунта; форма — «Данные для заказа», старая «регистрация на устройстве» скрыта */
+function profFromAcc(me,prev){if(!me)return;var p=prev||ld("uh_prof",{}),same=p9(p.ph||"")===p9(me.ph||"");var n={nm:me.nm||p.nm||"",ph:me.ph||"",org:me.org||(same?p.org||"":""),ct:me.ct||(same?p.ct||"r":"r"),cty:me.cty||(same?p.cty||"":""),ad:me.ad||(same?p.ad||"":""),id:custId(me.ph||"")};sv("uh_prof",n);try{fillProfForm();fillCheckoutAcc()}catch(x){}pvView()}
+function fillCheckoutAcc(){var p=ld("uh_prof",{});if(!$("nm"))return;fillCheckout();if(accOn()){$("nm").value=p.nm||"";$("ph").value=p.ph||"";$("org").value=p.org||"";$("cty").value=p.cty||"";$("ad").value=p.ad||""}}
+function pvView(){var f=$("pf"),vp=$("vp");if(!f||!vp)return;var nt=vp.querySelector(":scope > p.note"),on=accOn()&&!ACCM.s2;if(nt)nt.hidden=true;f.hidden=!on;var c=$("cdw");if(c&&!on)c.hidden=true;
+var hd=$("pfh");if(!hd){hd=document.createElement("h3");hd.id="pfh";hd.style.margin="18px 0 10px";hd.textContent="📦 Данные для заказа";f.parentNode.insertBefore(hd,f)}hd.hidden=!on;
+var ph=$("pph");if(ph){ph.readOnly=on;ph.style.opacity=on?".7":"";ph.title=on?"Номер аккаунта. Чтобы сменить номер — выйдите и зарегистрируйтесь с новым":""}var pv=$("pver");if(pv&&on)pv.innerHTML='<small class="note">Номер вашего аккаунта</small>'}
+var _accIn0=accIn;accIn=function(j){var prev=ld("uh_prof",{});_accIn0(j);profFromAcc(j.me,prev)};
+var _accDraw0=accDraw;accDraw=function(){_accDraw0();pvView()};
+var _accLoad0=accLoad;accLoad=function(){return _accLoad0().then(function(){if(accOn()&&ACC.me){var p=ld("uh_prof",{});if(p.nm!==ACC.me.nm||p9(p.ph||"")!==p9(ACC.me.ph||""))profFromAcc(ACC.me)}})};
+/* сохранение данных профиля в аккаунт (на всех устройствах одинаково) */
+document.addEventListener("submit",function(e){if(!e.target||e.target.id!=="pf"||!accOn())return;e.preventDefault();e.stopImmediatePropagation();var nm=$("pnm").value.trim();if(!nm){toast("Укажите имя");return}
+var d={nm:nm,org:$("porg").value.trim(),ct:$("pct").value,cty:$("pcty").value.trim(),ad:$("pad").value.trim()},b=e.target.querySelector("button[type=submit]");if(b)b.disabled=true;
+uApi("u_upd",Object.assign({tok:ACC.tok},d)).then(function(j){if(b)b.disabled=false;if(!j.ok){toast(j.error==="pv"?"Подтвердите вход кодом":"Не удалось сохранить");return}ACC.me=j.me;accSave();profFromAcc(j.me);accDraw();toast("Данные сохранены ✓")}).catch(function(){if(b)b.disabled=false;toast("Нет связи — данные не сохранены")})},true);
+/* оформление заказа: имя и телефон — из аккаунта */
+var _view0=view;view=function(v){_view0(v);if(v==="vk"&&accOn())setTimeout(fillCheckoutAcc,0);if(v==="vp")pvView()};
+/* выход: стираем данные прошлого пользователя с этого устройства */
+document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest('[data-a="accout"]');if(!t)return;setTimeout(function(){sv("uh_prof",{});try{fillProfForm();["nm","ph","org","cty","ad"].forEach(function(id){var x=$(id);if(x)x.value=id==="ph"?"+992 ":""})}catch(x){}pvView()},0)},true);
+if(accOn()&&ACC.me)setTimeout(function(){profFromAcc(ACC.me)},0);else setTimeout(pvView,0);
 /* бонусы при оформлении */
 function bnsAmt(){if(!accOn()||!ACC.me||!(ACC.me.bal>0))return 0;var t=tot(),dv=dlvOf(t.s,val("dm"));return Math.round(Math.min(ACC.me.bal,t.s+dv)*100)/100}
 function bnsDraw(){var w=$("bnsw");if(!w){var d=$("dlvn");if(!d)return;w=document.createElement("div");w.id="bnsw";d.parentNode.insertBefore(w,d.nextSibling)}var amt=bnsAmt();if(!amt){w.hidden=true;BNS.use=false;return}w.hidden=false;var t=tot(),dv=dlvOf(t.s,val("dm")),tot2=t.s+dv;

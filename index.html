@@ -1299,7 +1299,7 @@ function goCatalog(){$("catalog").scrollIntoView({behavior:"smooth"})}
 document.addEventListener("click",function(e){var t=e.target.closest("[data-a]");if(!t)return;
 if(t.id==="md"&&e.target!==t)return;
 var a=t.dataset.a,i=t.dataset.i,k=t.dataset.k;
-if(a==="bnc"){goCatalog()}else if(a==="sell"){window.open("https://wa.me/"+PHONE+"?text="+encodeURIComponent("Здравствуйте! Хочу стать продавцом-партнёром на сайте «Умари Хайём». Мои товары: "),"_blank")}else if(a==="svc"){var sv=SVC[+k]||SVC[0];window.open("https://wa.me/"+SVC_PHONE+"?text="+encodeURIComponent("Здравствуйте! Интересует услуга: "+sv.t+". Подскажите цену и сроки."),"_blank")}else if(a==="bnp"){fillProfForm();openD("vp")}else if(a==="add"||a==="inc"){cart[k]=(cart[k]||0)+1;if(a==="add")toast("Добавлено в корзину");changed()}
+if(a==="bnc"){goCatalog()}else if(a==="sell"){window.open("https://wa.me/"+PHONE+"?text="+encodeURIComponent("Здравствуйте! Хочу стать продавцом-партнёром на сайте «Умари Хайём». Мои товары: "),"_blank")}else if(a==="svc"){var svo=SVC[+k]||SVC[0];window.open("https://wa.me/"+SVC_PHONE+"?text="+encodeURIComponent("Здравствуйте! Интересует услуга: "+svo.t+". Подскажите цену и сроки."),"_blank")}else if(a==="bnp"){fillProfForm();openD("vp")}else if(a==="add"||a==="inc"){cart[k]=(cart[k]||0)+1;if(a==="add")toast("Добавлено в корзину");changed()}
 else if(a==="addn"){cart[k]=(cart[k]||0)+parseInt(t.dataset.n,10);toast("Добавлено: +"+t.dataset.n);changed()}
 else if(a==="dec"){cart[k]=(cart[k]||0)-1;if(cart[k]<=0)delete cart[k];changed()}
 else if(a==="rm"){delete cart[k];changed()}

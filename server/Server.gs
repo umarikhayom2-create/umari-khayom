@@ -3108,3 +3108,67 @@ route = function (p) {
   if (a === "tr_get" || a === "tr_set" || a === "tr_fix") return trAdm(a, p);
   return TR_ROUTE0(p);
 };
+
+// ==================== 28. Обмен с 1С:Розница — товары из 1С попадают в список «Товары из 1С» в Каталоге
+// 1С сама отправляет товары сюда (обработка «Выгрузка на сайт»). Контент-менеджер добавляет фото и выкладывает на сайт.
+// Ключ обмена выдаёт руководитель в «Каталог» → «🔄 Товары из 1С». Хранится только отпечаток ключа.
+var C1 = { MAX: 20000, ROLES: { director: 1, admin: 1, content: 1 } };
+function c1Sh() { return sheet("c1", ["code", "art", "n", "grp", "ub", "p", "bc", "del", "ts", "ost"]); }
+function c1Hash(k) { return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, "c1|" + String(k || ""))); }
+function c1Log(t) { var P = PropertiesService.getScriptProperties(), L = []; try { L = JSON.parse(P.getProperty("c1:log") || "[]"); } catch (x) {} L.unshift({ ts: Date.now(), t: String(t).slice(0, 200) }); P.setProperty("c1:log", JSON.stringify(L.slice(0, 30))); }
+// приём от 1С: { a:"c1_put", k1:"ключ", items:[{code, art, n, grp, ub, p, bc:[..], del, ost}], part, of }
+function c1Put(p) {
+  var P = PropertiesService.getScriptProperties(), h = P.getProperty("c1:key");
+  if (!h || c1Hash(p.k1) !== h) { c1Log("❌ Отклонено: неверный ключ обмена"); return { ok: false, error: "key" }; }
+  var items = Array.isArray(p.items) ? p.items.slice(0, 2000) : [];
+  var res = locked(function () {
+    var sh = c1Sh(), n = sh.getLastRow(), idx = {}, rows = n > 1 ? sh.getRange(2, 1, n - 1, 10).getValues() : [], now = Date.now(), add = 0, upd = 0;
+    rows.forEach(function (r, i) { idx[String(r[0])] = i; });
+    items.forEach(function (o) {
+      var code = clean(o.code, 40); if (!code) return;
+      var bc = (Array.isArray(o.bc) ? o.bc : String(o.bc || "").split(/[,;\s]+/)).map(function (x) { return String(x || "").replace(/\s+/g, ""); }).filter(function (x) { return /^[0-9A-Za-z\-.]{4,40}$/.test(x); }).slice(0, 10).join(",");
+      var pr = Math.round((parseFloat(String(o.p || 0).replace(",", ".")) || 0) * 100) / 100, ost = o.ost == null || o.ost === "" ? "" : Math.round((parseFloat(String(o.ost).replace(",", ".")) || 0) * 1000) / 1000;
+      var row = ["'" + code, "'" + clean(o.art, 40), clean(o.n, 200), clean(o.grp, 100), clean(o.ub, 20), pr, "'" + bc, o.del ? 1 : 0, now, ost];
+      if (idx[code] != null) { var old = rows[idx[code]]; if (String(old[2]) !== row[2] || +old[5] !== pr || String(old[6]).replace(/^'/, "") !== bc || String(old[1]).replace(/^'/, "") !== row[1].slice(1) || +old[7] !== row[7] || String(old[3]) !== row[3] || String(old[9]) !== String(ost)) upd++; rows[idx[code]] = row; }
+      else if (rows.length < C1.MAX) { idx[code] = rows.length; rows.push(row); add++; }
+    });
+    var q = function (v) { v = String(v == null ? "" : v); return v && v.charAt(0) !== "'" ? "'" + v : v; };
+    rows.forEach(function (r) { r[0] = q(r[0]); r[1] = q(r[1]); r[6] = q(r[6]); });
+    if (rows.length) sh.getRange(2, 1, rows.length, 10).setValues(rows);
+    C().remove("c1:all");
+    return { add: add, upd: upd, total: rows.length };
+  });
+  var part = +p.part || 1, of = +p.of || 1;
+  P.setProperty("c1:last", JSON.stringify({ ts: Date.now(), part: part, of: of, total: res.total }));
+  c1Log("✅ Из 1С: часть " + part + " из " + of + " · получено " + items.length + " · новых " + res.add + " · изменено " + res.upd);
+  return { ok: true, got: items.length, add: res.add, upd: res.upd, total: res.total };
+}
+function c1All() {
+  var c = C().get("c1:all"); if (c) { try { return JSON.parse(c); } catch (x) {} }
+  var sh = c1Sh(), n = sh.getLastRow(), L = [];
+  if (n > 1) sh.getRange(2, 1, n - 1, 10).getValues().forEach(function (r) {
+    var s = function (v) { return String(v == null ? "" : v).replace(/^'/, ""); };
+    if (!s(r[0])) return; var o = { c: s(r[0]), a: s(r[1]), n: s(r[2]), g: s(r[3]), u: s(r[4]), p: +r[5] || 0 }, b = s(r[6]); if (b) o.b = b.split(","); if (+r[7]) o.d = 1; if (r[9] !== "" && r[9] != null) o.o = +r[9]; L.push(o);
+  });
+  var t = JSON.stringify(L); if (t.length < 95000) C().put("c1:all", t, 1800);
+  return L;
+}
+function c1Adm(a, p) {
+  var me = staff(p); if (!me || !C1.ROLES[me.role]) return { ok: false, error: "role" };
+  var P = PropertiesService.getScriptProperties();
+  if (a === "c1_key") {
+    if (me.role !== "director") return { ok: false, error: "role" };
+    var k = Utilities.getUuid().replace(/-/g, "") + Utilities.getUuid().replace(/-/g, "").slice(0, 8);
+    P.setProperty("c1:key", c1Hash(k)); c1Log("🔑 Новый ключ обмена выдал " + me.who);
+    return { ok: true, k1: k };
+  }
+  var last = {}, log = []; try { last = JSON.parse(P.getProperty("c1:last") || "{}"); log = JSON.parse(P.getProperty("c1:log") || "[]"); } catch (x) {}
+  return { ok: true, on: !!P.getProperty("c1:key"), last: last, log: log.slice(0, 10), list: a === "c1_list" ? c1All() : undefined, dir: me.role === "director" };
+}
+var C1_ROUTE0 = route;
+route = function (p) {
+  var a = String(p.a || "");
+  if (a === "c1_put") return c1Put(p);
+  if (a === "c1_list" || a === "c1_cfg" || a === "c1_key") return c1Adm(a, p);
+  return C1_ROUTE0(p);
+};

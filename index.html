@@ -4209,6 +4209,50 @@ if(k==="key"||k==="keydel"){var v=($("trkey")||{}).value||"";if(k==="key"&&!v){t
 if(k==="fix"){var i=+t.dataset.i,x=(TRA.st.list||[])[i];if(!x)return;var en=($("admC").querySelector('[data-tren="'+i+'"]')||{}).value||"",tg=($("admC").querySelector('[data-trtg="'+i+'"]')||{}).value||"";t.disabled=true;
 stApi("tr_fix",{ru:x.ru,to:"en",v:en}).then(function(){return stApi("tr_fix",{ru:x.ru,to:"tg",v:tg})}).then(function(j){t.disabled=false;if(j&&j.ok){x.en=en;x.tg=tg;toast("Перевод исправлен ✓")}else toast("Не получилось")}).catch(function(){t.disabled=false;toast("Нет связи")})}},true);
 document.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.traq){e.preventDefault();TRA.q=e.target.value;TRA.st=null;traLoad()}},true);
+/* --- 🔄 Товары из 1С: список из 1С:Розница, контент-менеджер выкладывает их на сайт с фото --- */
+var C1S={L:null,ld:0,at:0,open:0,f:"new",q:"",max:30,cfg:null,k1:""};
+function c1Load(){if(C1S.ld||!CHAT_URL)return;C1S.ld=1;stApi("c1_list",{}).then(function(j){C1S.ld=0;C1S.at=Date.now();if(j&&j.ok){C1S.L=j.list||[];C1S.cfg=j}else{C1S.L=C1S.L||[];C1S.cfg={err:(j&&j.error)||"нет связи"}}if(A.tab==="k")admRender()}).catch(function(){C1S.ld=0;C1S.cfg={err:"нет связи"};if(A.tab==="k")admRender()})}
+function c1Art(s){s=String(s||"").toUpperCase().replace(/\s+/g,"");return/^[0-9A-Z\-._\/]{2,30}$/.test(s)?s:""}
+function c1Match(){var byA={},byB={};D.forEach(function(p,i){if(p.art)byA[String(p.art).toUpperCase()]=i;(p.bc||[]).forEach(function(b){byB[b]=i})});
+var R={nw:[],pr:[],ok:[],all:[]};(C1S.L||[]).forEach(function(o){if(o.d)return;var i=-1,a=c1Art(o.a),c=c1Art(o.c);if(a&&byA[a]!=null)i=byA[a];else if(c&&byA[c]!=null)i=byA[c];else(o.b||[]).some(function(b){if(byB[b]!=null){i=byB[b];return true}});
+var x={o:o,i:i};R.all.push(x);if(i<0)R.nw.push(x);else if(o.p>0&&Math.abs((+D[i].p||0)-o.p)>=0.01)R.pr.push(x);else R.ok.push(x)});return R}
+function c1When(ts){if(!ts)return"ещё не было";var d=new Date(ts);return d.toLocaleDateString("ru-RU")+" "+d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}
+function c1Html(){if(["content","director","admin"].indexOf(A.role)<0||!CHAT_URL)return"";if(!C1S.L&&!C1S.ld)c1Load();var S=C1S.cfg||{},R=c1Match(),last=S.last||{};
+var h='<details class="pq" data-c1d="1"'+(C1S.open?" open":"")+' style="margin-bottom:12px"><summary style="cursor:pointer"><b>🔄 Товары из 1С</b> <span class="chip">'+(C1S.L?("в 1С "+R.all.length+" · новых "+R.nw.length+(R.pr.length?" · цена отличается "+R.pr.length:"")):"загружаем…")+'</span></summary>';
+h+='<p class="note" style="margin:6px 0">Сюда сами приходят товары из 1С:Розница. «Новые» — их ещё нет на сайте: нажмите «➕ На сайт», добавьте фото и характеристику и сохраните. Товар сопоставляется по артикулу, коду 1С или штрихкоду. Последний обмен: <b>'+esc(c1When(last.ts))+'</b>'+(S.on===false?' · <b style="color:var(--er)">обмен не настроен</b>':'')+'</p>';
+if(S.err)h+='<div class="note" style="color:#dc2626">Не удалось загрузить: '+esc(S.err==="role"?"нет доступа":S.err)+'</div>';
+var tabs=[["new","Новые",R.nw.length],["pr","Цена отличается",R.pr.length],["ok","Уже на сайте",R.ok.length],["all","Все",R.all.length]];
+h+='<div class="row" style="gap:6px;flex-wrap:wrap;margin:6px 0">'+tabs.map(function(t){return'<button class="chip'+(C1S.f===t[0]?" on":"")+'" data-c1="f" data-f="'+t[0]+'">'+t[1]+' <span>'+t[2]+'</span></button>'}).join("")+'<button class="btn sm o" data-c1="re">↻ Обновить</button></div>';
+h+='<div class="row" style="gap:6px;margin:6px 0"><input class="pin" data-c1q="1" placeholder="🔎 Название, артикул, код или штрихкод" value="'+esc(C1S.q)+'" style="flex:1"><button class="btn sm o" data-c1="find">Найти</button></div>';
+var L=C1S.f==="new"?R.nw:C1S.f==="pr"?R.pr:C1S.f==="ok"?R.ok:R.all,q=C1S.q.trim().toLowerCase();if(q)L=L.filter(function(x){var o=x.o;return(o.n+" "+o.a+" "+o.c+" "+(o.b||[]).join(" ")+" "+o.g).toLowerCase().indexOf(q)>-1});
+if(!C1S.L)h+='<div class="emp">Загружаем…</div>';else if(!L.length)h+='<div class="emp">'+(R.all.length?"Здесь пусто":"Из 1С пока ничего не пришло — запустите выгрузку в 1С")+'</div>';
+L.slice(0,C1S.max).forEach(function(x){var o=x.o,p=x.i>-1?D[x.i]:null;h+='<div class="kr" style="cursor:default"><div class="kth">'+(p&&p.i?'<img alt="" loading="lazy" src="'+esc(TH(p.i))+'">':'<span style="font-size:22px">1С</span>')+'</div><div class="kri"><b>'+esc(o.n)+'</b><span>'+esc(o.g||"без группы")+' · '+(o.p?f(o.p):"цена не указана")+(o.u?' / '+esc(o.u):'')+(o.o!=null?' · остаток '+o.o:'')+'</span><span style="font-size:12px;opacity:.8">Код 1С '+esc(o.c)+(o.a?' · Арт. '+esc(o.a):'')+' · '+(o.b&&o.b.length?'ШК '+esc(o.b[0])+(o.b.length>1?' +'+(o.b.length-1):''):'нет штрихкода')+'</span>'+(p?'<span style="font-size:12px">На сайте: «'+esc(p.n)+'» · '+f(p.p)+'</span>':'')+'</div>'+
+(x.i<0?'<button class="btn sm" data-c1="add" data-c="'+esc(o.c)+'">➕ На сайт</button>':(o.p>0&&Math.abs((+p.p||0)-o.p)>=0.01?'<button class="btn sm o" data-c1="price" data-c="'+esc(o.c)+'">Цена '+f(o.p)+'</button>':'<button class="btn sm o" data-ad="cedit" data-i="'+x.i+'">Открыть</button>'))+'</div>'});
+if(L.length>C1S.max)h+='<button class="btn o" data-c1="more" style="width:100%">Показать ещё ('+(L.length-C1S.max)+')</button>';
+if(A.role==="director"){h+='<details class="pq" style="margin-top:10px"><summary style="cursor:pointer"><b>⚙️ Настройка обмена с 1С</b> <span class="chip">'+(S.on?"✓ ключ выдан":"не настроен")+'</span></summary><p class="note">Ключ обмена вставляется в обработку 1С. Он показывается один раз — сохраните его. Новый ключ отменяет старый.</p>'+
+(C1S.k1?'<div class="pq" style="padding:10px;word-break:break-all"><small class="note">Ключ обмена (скопируйте в 1С):</small><div style="font:600 15px/1.4 monospace;margin:6px 0" data-noi18n="1">'+esc(C1S.k1)+'</div><button class="btn sm" data-c1="copy">📋 Скопировать</button></div>':'')+
+'<div class="row" style="gap:6px;margin:6px 0;flex-wrap:wrap"><button class="btn sm" data-c1="key">'+(S.on?"Выдать новый ключ":"Выдать ключ обмена")+'</button><button class="btn sm o" data-c1="url">📋 Адрес сервера для 1С</button></div>'+
+'<div class="note" style="margin-top:6px"><b>Журнал обмена</b>'+((S.log||[]).length?(S.log||[]).map(function(l){return'<div>'+esc(c1When(l.ts))+' — '+esc(l.t)+'</div>'}).join(""):'<div>пока пусто</div>')+'</div></details>'}
+return h+'</details>'}
+var _admCat1=admCat;admCat=function(){return c1Html()+_admCat1()};
+function c1Find(c){var R=c1Match(),x=null;R.all.forEach(function(y){if(y.o.c===c)x=y});return x}
+function c1Copy(t,msg){try{navigator.clipboard.writeText(t).then(function(){toast(msg)},function(){prompt("Скопируйте:",t)})}catch(e){prompt("Скопируйте:",t)}}
+document.addEventListener("toggle",function(e){if(e.target&&e.target.dataset&&e.target.dataset.c1d){C1S.open=e.target.open?1:0;if(C1S.open&&Date.now()-C1S.at>60000)c1Load()}},true);
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.c1q){e.preventDefault();C1S.q=e.target.value;C1S.max=30;admRender()}},true);
+document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("[data-c1]");if(!t)return;e.preventDefault();e.stopPropagation();var k=t.dataset.c1;
+if(k==="f"){C1S.f=t.dataset.f;C1S.max=30;admRender();return}
+if(k==="more"){C1S.max+=30;admRender();return}
+if(k==="find"){C1S.q=(document.querySelector("[data-c1q]")||{}).value||"";C1S.max=30;admRender();return}
+if(k==="re"){C1S.L=null;admRender();return}
+if(k==="copy"){c1Copy(C1S.k1,"Ключ скопирован ✓");return}
+if(k==="url"){c1Copy(CHAT_URL,"Адрес скопирован ✓");return}
+if(k==="key"){if(C1S.cfg&&C1S.cfg.on&&!confirm("Выдать новый ключ? Старый ключ в 1С перестанет работать."))return;t.disabled=true;stApi("c1_key",{}).then(function(j){t.disabled=false;if(j&&j.ok){C1S.k1=j.k1;C1S.cfg=Object.assign(C1S.cfg||{},{on:true});admRender();toast("Ключ выдан — скопируйте его в 1С")}else toast("Не получилось: "+((j&&j.error)==="role"?"только руководитель":(j&&j.error)||"нет связи"))}).catch(function(){t.disabled=false;toast("Нет связи")});return}
+var x=c1Find(t.dataset.c);if(!x)return;var o=x.o;
+if(k==="add"){var used={};D.forEach(function(p){if(p.art)used[String(p.art).toUpperCase()]=1});var art=c1Art(o.a);if(!art||used[art])art=c1Art(o.c);if(art&&used[art])art="";
+catEdit(null,{id:"N"+Date.now(),n:o.n,c:o.g||A.cc||(D[0]&&D[0].c)||"",p:o.p||"",ub:/кг|kg/i.test(o.u||"")?"кг":"шт",k:1,b:1,w:0,vat:0,desc:"",disc:[],i:"",hide:false,sd:10,ims:[],art:art,bc:(o.b||[]).slice(),bcm:{}});
+E.isNew=true;E.base=null;var h3=document.querySelector("#ced h3");if(h3)h3.textContent="Новый товар из 1С";toast("Добавьте фото и характеристику и нажмите «Сохранить»");return}
+if(k==="price"){var p=D[x.i];if(!p)return;if(!confirm("Поставить на сайте цену из 1С?\n«"+p.n+"»: "+f(p.p)+" → "+f(o.p)))return;var it=catItem(p,p.c);it.p=o.p;t.disabled=true;
+api({a:"admin_cat_save",key:A.key,role:A.role,who:A.who,item:it,note:"Цена из 1С «"+p.n+"»: "+f(p.p)+" → "+f(o.p)}).then(function(j){var o2=(j&&j.item)||it,ix=-1;CATO.forEach(function(y,i){if(y.id===o2.id)ix=i});if(ix>-1)CATO[ix]=Object.assign(CATO[ix],o2);else CATO.push(o2);sv("uh_catc",CATO);applyCat(CATO);clean();render();admRender();toast("Цена обновлена ✓")}).catch(function(){t.disabled=false;toast("Не удалось сохранить: нет прав или нет связи")})}},true);
 /* --- вкладки и вход --- */
 ["director","admin","accountant"].forEach(function(r){if(TABS[r]&&TABS[r].indexOf("g")<0){var i=TABS[r].indexOf("f");TABS[r].splice(i<0?TABS[r].length:i,0,"g")}});
 var _tf=tabsFor;tabsFor=function(r){var t=_tf(r);if(t.indexOf("f")>-1&&t.indexOf("g")<0)t.splice(t.indexOf("f"),0,"g");if(t.indexOf("f")>-1&&t.indexOf("n")<0)t.splice(t.indexOf("g")+1,0,"n");return t};

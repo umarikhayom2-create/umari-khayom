@@ -119,14 +119,16 @@
 /* ---------- переключатель языка (на всех языках, в том числе на русском) ---------- */
 (function () {
   var I = window.I18N; if (!I) return;
+  var SW = (document.currentScript && document.currentScript.getAttribute("data-sw")) || "";
   function mk() {
     if (document.getElementById("langsw")) return;
     var host = document.querySelector(".hd .acts") || document.querySelector("header") || document.body;
     var w = document.createElement("div"); w.id = "langsw"; w.setAttribute("data-noi18n", "1");
     w.innerHTML = '<button type="button" class="lsb" aria-label="Язык / Language / Забон">🌐 ' + I.SHORT[I.lang] + '</button><div class="lsm" hidden>' + Object.keys(I.LANGS).map(function (k) { return '<button type="button" data-lang="' + k + '"' + (k === I.lang ? ' class="on"' : "") + ">" + I.SHORT[k] + " · " + I.LANGS[k] + "</button>"; }).join("") + "</div>";
-    if (host.classList && host.classList.contains("acts")) host.insertBefore(w, host.firstChild); else { w.style.cssText = "position:fixed;top:10px;right:10px;z-index:999"; document.body.appendChild(w); }
+    if (SW !== "float" && host.classList && host.classList.contains("acts")) host.insertBefore(w, host.firstChild);
+    else { w.className = "lsf"; document.body.appendChild(w); }
     var st = document.createElement("style");
-    st.textContent = "#langsw{position:relative;display:inline-flex}#langsw .lsb{height:44px;min-width:58px;padding:0 10px;border-radius:14px;border:1px solid var(--bd,#e5e1da);background:var(--sf,#fff);color:var(--tx,#1d1d1f);font:700 13.5px system-ui,sans-serif;cursor:pointer;white-space:nowrap}#langsw .lsm{position:absolute;right:0;top:50px;z-index:1000;background:var(--sf,#fff);border:1px solid var(--bd,#e5e1da);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.15);padding:6px;min-width:170px}#langsw .lsm[hidden]{display:none}#langsw .lsm button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:10px;font:600 14.5px system-ui,sans-serif;color:var(--tx,#1d1d1f);cursor:pointer}#langsw .lsm button:hover,#langsw .lsm button.on{background:var(--sf2,#f3efe9)}";
+    st.textContent = "#langsw{position:relative;display:inline-flex}#langsw .lsb{height:44px;min-width:58px;padding:0 10px;border-radius:14px;border:1px solid var(--bd,#e5e1da);background:var(--sf,#fff);color:var(--tx,#1d1d1f);font:700 13.5px system-ui,sans-serif;cursor:pointer;white-space:nowrap}#langsw .lsm{position:absolute;right:0;top:50px;z-index:1000;background:var(--sf,#fff);border:1px solid var(--bd,#e5e1da);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.15);padding:6px;min-width:170px}#langsw .lsm[hidden]{display:none}#langsw .lsm button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:10px;font:600 14.5px system-ui,sans-serif;color:var(--tx,#1d1d1f);cursor:pointer}#langsw .lsm button:hover,#langsw .lsm button.on{background:var(--sf2,#f3efe9)}#langsw.lsf{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:999}#langsw.lsf .lsb{height:36px;min-width:52px;opacity:.9;box-shadow:0 4px 14px rgba(0,0,0,.15)}#langsw.lsf .lsm{top:auto;bottom:44px;left:0;right:auto}";
     document.head.appendChild(st);
     w.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; e.stopPropagation(); if (b.dataset.lang) { I.set(b.dataset.lang); return; } var m = w.querySelector(".lsm"); m.hidden = !m.hidden; });
     document.addEventListener("click", function () { var m = w.querySelector(".lsm"); if (m) m.hidden = true; });

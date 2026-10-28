@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script src="i18n-dict.js?v=1"></script><script src="i18n-team.js?v=1"></script><script src="i18n.js?v=1" data-sw="float"></script>
 <script>/* режим диагностики: ?debug=1 — показывает все ошибки прямо на экране */(function(){var on=/[?&]debug=1/.test(location.search);try{if(on)localStorage.setItem("uh_dbg","1");if(/[?&]debug=0/.test(location.search))localStorage.removeItem("uh_dbg");on=on||localStorage.getItem("uh_dbg")==="1"}catch(x){}if(!on)return;
 var L=[];function box(){var b=document.getElementById("uhdbg");if(!b){b=document.createElement("div");b.id="uhdbg";b.style.cssText="position:fixed;left:6px;right:6px;top:6px;z-index:999999;max-height:45vh;overflow:auto;background:#111;color:#fff;font:12px/1.35 monospace;border-radius:10px;padding:8px;opacity:.93;white-space:pre-wrap;word-break:break-word";(document.body||document.documentElement).appendChild(b)}b.textContent="🛠 ДИАГНОСТИКА (выключить: ?debug=0)\n"+(L.length?L.join("\n\n"):"Ошибок пока нет ✓")}
 window.__dbg=function(where,e){L.push("❌ "+where+": "+String(e&&e.message||e)+"\n"+String(e&&e.stack||"").split("\n").slice(1,4).join("\n").replace(/https?:\/\/[^ )]*\//g,""));if(document.body)box()};

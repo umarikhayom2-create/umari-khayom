@@ -351,19 +351,20 @@ function bonusSync(list) {
   (list || []).slice(0, 400).forEach(function (x) {
     var k = k9(x.ph), no = String(x.no || ""); if (!k || !no) return;
     var st = String(x.st || ""), base = Math.max(0, +x.base || 0);
-    if ((st === "done" || st === "recv") && x.r && !done[no + "|earn"]) {
+    var tst = !!x.t; // тестовый заказ: бонусы не начисляются, а уже начисленные списываются
+    if ((st === "done" || st === "recv") && x.r && !tst && !done[no + "|earn"]) {
       var amt = Math.round(base * BONUS_PCT) / 100; if (amt <= 0) return;
       addLed(acc(k), "earn", amt, no, "Бонус " + BONUS_PCT + "% за заказ"); sh.appendRow(["'" + no, "'" + k, "earn", amt, Date.now()]); done[no + "|earn"] = 1; res.earn++;
     }
-    if (st === "cancel") {
+    if (st === "cancel" || tst) {
       var o = acc(k);
       if (x.bid && !done[no + "|refund"]) {
         var h = (o.holds || []).filter(function (h) { return h.id === x.bid && !h.done; })[0];
-        if (h) { h.done = 1; addLed(o, "refund", h.a, no, "Возврат бонусов: заказ отменён"); sh.appendRow(["'" + no, "'" + k, "refund", h.a, Date.now()]); done[no + "|refund"] = 1; res.refund++; }
+        if (h) { h.done = 1; addLed(o, "refund", h.a, no, tst ? "Возврат бонусов: тестовый заказ" : "Возврат бонусов: заказ отменён"); sh.appendRow(["'" + no, "'" + k, "refund", h.a, Date.now()]); done[no + "|refund"] = 1; res.refund++; }
       }
       if (done[no + "|earn"] && !done[no + "|rev"]) {
         var e = (o.led || []).filter(function (l) { return l.t === "earn" && l.no === no; })[0];
-        if (e) { addLed(o, "rev", -e.a, no, "Списан бонус: заказ отменён"); sh.appendRow(["'" + no, "'" + k, "rev", -e.a, Date.now()]); done[no + "|rev"] = 1; res.rev++; }
+        if (e) { addLed(o, "rev", -e.a, no, tst ? "Списан бонус: тестовый заказ" : "Списан бонус: заказ отменён"); sh.appendRow(["'" + no, "'" + k, "rev", -e.a, Date.now()]); done[no + "|rev"] = 1; res.rev++; }
       }
     }
   });
@@ -2655,7 +2656,7 @@ function ocCheck(t, code) {
   var v = C().get("oc:" + t.to); if (!v) return "expired";
   var o = JSON.parse(v); if (o.n >= OC.TRIES) { C().remove("oc:" + t.to); return "tries"; }
   if (ocHash(t.to, String(code || "").replace(/\D/g, "")) !== o.h) { o.n++; C().put("oc:" + t.to, JSON.stringify(o), OC.TTL); return o.n >= OC.TRIES ? "tries" : "code"; }
-  C().remove("oc:" + t.to); return "";
+  C().remove("oc:" + t.to); C().remove("ocl:" + t.to); return ""; // код использован — новый можно запросить сразу
 }
 function ocLogin(o) { var t = newTok(o); expireHolds(o); accPut(o); return { ok: true, tok: t, me: pub(o), orders: accOrders(o.k) }; }
 function ocAct(a, p) {
@@ -2723,4 +2724,82 @@ route = function (p) {
   if (/^u_(code|verify|creg|emset|pw)$/.test(a)) return ocAct(a, p);
   if (/^sms_(get|set|test)$/.test(a)) return smsAdm(a, p);
   return OC_ROUTE0(p);
+};
+
+// ==================== 23. Подтверждение входа по SMS (включается само, когда SMS подключены)
+// Любой вход в личный кабинет (по паролю, по почте, регистрация, смена пароля) завершается кодом из SMS на номер аккаунта.
+// Старые сеансы без подтверждения тоже просят код. Пока SMS не подключены — всё работает как раньше.
+function pvMask(k) { k = String(k || ""); return "+992 •• ••• " + k.slice(5, 7) + " " + k.slice(7); }
+function pvTok(o, tok) { return (o.vt || []).indexOf(tok) > -1; }
+function pvMark(k, tok) {
+  return locked(function () { var o = accGet(k); if (!o) return null; o.vt = (o.vt || []).filter(function (t) { return (o.toks || []).indexOf(t) > -1; }); if (o.vt.indexOf(tok) < 0) o.vt.push(tok); o.pv = 1; accPut(o); return o; });
+}
+// отправить SMS-код на номер аккаунта и запомнить, что делать после подтверждения
+function pvAsk(k, job) {
+  var r = ocSend({ via: "sms", to: k, ph: "992" + k });
+  if (!r.ok && r.error !== "wait") return r;
+  var t2 = rnd(32); C().put("pv2:" + t2, JSON.stringify({ k: k, job: job }), 900);
+  return { ok: false, error: "sms", t2: t2, ph: pvMask(k), sec: r.sec || 60 };
+}
+var PV_PHOK0 = phoneOk, PV_OK = "";
+phoneOk = function (ph, tk) { if (PV_OK && k9(ph) === PV_OK) return true; return PV_PHOK0(ph, tk); };
+function pvAct(a, p) {
+  if (a === "u_sms2") {
+    var v = C().get("pv2:" + String(p.t2 || "")); if (!v) return { ok: false, error: "expired" };
+    var J = JSON.parse(v), e = ocCheck({ via: "sms", to: J.k }, p.code); if (e) return { ok: false, error: e };
+    C().remove("pv2:" + p.t2);
+    var job = J.job || {}, res;
+    if (job.t === "tok") { var o0 = accGet(J.k); if (!o0 || (o0.toks || []).indexOf(job.tok) < 0) return { ok: false, error: "tok" }; pvMark(J.k, job.tok); var o1 = accGet(J.k); return { ok: true, tok: job.tok, me: pub(o1), orders: accOrders(J.k) }; }
+    if (job.t === "login") res = locked(function () { var o = accGet(J.k); return ocLogin(o); });
+    else if (job.t === "reg") { PV_OK = J.k; try { res = account("u_reg", job.p); } finally { PV_OK = ""; } }
+    else if (job.t === "reset") res = locked(function () { var o = accGet(J.k); if (!o) return { ok: false, error: "none" }; o.s = rnd(16); o.h = hashPw(String(job.pw), o.s); o.toks = []; o.vt = []; var t = newTok(o); accPut(o); return { ok: true, tok: t, me: pub(o), orders: accOrders(J.k) }; });
+    else if (job.t === "creg") { PV_OK = J.k; try { res = ocAct("u_creg", job.p); } finally { PV_OK = ""; } }
+    else return { ok: false, error: "action" };
+    if (res && res.ok && res.tok) { pvMark(J.k, res.tok); res.me = pub(accGet(J.k)); }
+    return res;
+  }
+  if (a === "u_pvsend") { var me = tokAcc(p.tok); if (!me) return { ok: false, error: "tok" }; return pvAsk(me.k, { t: "tok", tok: String(p.tok) }); }
+  return null;
+}
+var PV_ROUTE0 = route;
+route = function (p) {
+  var a = String(p.a || "");
+  if (a === "u_sms2" || a === "u_pvsend") return pvAct(a, p);
+  if (a.indexOf("u_") !== 0 || !smsReady()) return PV_ROUTE0(p);
+  // вход по паролю: сначала проверяем пароль, потом SMS
+  if (a === "u_login") {
+    var k = k9(p.ph); if (!k) return { ok: false, error: "ph" };
+    var tries = +(C().get("lg:" + k) || 0); if (tries >= 6) return { ok: false, error: "slow" };
+    var o = accGet(k);
+    if (!o || !o.h || hashPw(String(p.pw || ""), o.s) !== o.h) { C().put("lg:" + k, String(tries + 1), 600); return { ok: false, error: o && o.h ? "pw" : "none" }; }
+    return pvAsk(k, { t: "login" });
+  }
+  if (a === "u_reg") {
+    var k2 = k9(p.ph); if (!k2) return { ok: false, error: "ph" }; if (String(p.pw || "").length < 6) return { ok: false, error: "pw" }; if (!clean(p.nm, 60)) return { ok: false, error: "nm" };
+    var o2 = accGet(k2); if (o2 && (o2.h || o2.cv)) return { ok: false, error: "exists" };
+    return pvAsk(k2, { t: "reg", p: { ph: p.ph, pw: String(p.pw), nm: p.nm } });
+  }
+  if (a === "u_reset") {
+    var k3 = k9(p.ph); if (!k3) return { ok: false, error: "ph" }; if (String(p.pw || "").length < 6) return { ok: false, error: "pw" };
+    var o3 = accGet(k3); if (!o3 || !(o3.h || o3.cv)) return { ok: false, error: "none" };
+    return pvAsk(k3, { t: "reset", pw: String(p.pw) });
+  }
+  // вход по коду с почты в уже существующий аккаунт — дополнительно SMS на номер аккаунта
+  if (a === "u_verify") {
+    var t = ocTarget(p); if (t && t.via === "em") {
+      var acc = ocAccByEm(t.to);
+      if (acc) { var e = ocCheck(t, p.code); if (e) return { ok: false, error: e }; return pvAsk(acc.k, { t: "login" }); }
+    }
+    var r = PV_ROUTE0(p); if (r && r.ok && r.tok && t) pvMark(t.via === "sms" ? t.to : (r.me && k9(r.me.ph)), r.tok); return r;
+  }
+  if (a === "u_creg") {
+    var v = C().get("ocv:" + String(p.vt || "")); if (!v) return { ok: false, error: "expired" };
+    var tv = JSON.parse(v); if (tv.via === "sms") { var r2 = PV_ROUTE0(p); if (r2 && r2.ok && r2.tok) { pvMark(tv.to, r2.tok); r2.me = pub(accGet(tv.to)); } return r2; }
+    var k4 = k9(p.ph); if (!k4) return { ok: false, error: "ph" }; if (!clean(p.nm, 60)) return { ok: false, error: "nm" };
+    var o4 = accGet(k4); if (o4 && (o4.h || o4.cv || o4.em)) return { ok: false, error: "phused" };
+    return pvAsk(k4, { t: "creg", p: { vt: p.vt, nm: p.nm, ph: p.ph } });
+  }
+  // действия в кабинете — только из подтверждённого сеанса
+  if (p.tok && a !== "u_out") { var me = tokAcc(p.tok); if (me && !pvTok(me, String(p.tok))) return { ok: false, error: "pv" }; }
+  return PV_ROUTE0(p);
 };

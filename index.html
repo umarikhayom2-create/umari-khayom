@@ -939,6 +939,39 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 .chip.qrc{background:#fff0c2;color:#7a4b00;font-weight:700}
 .qrbox{border:2px solid #f2b705;background:#fffaeb;color:#4a3500;border-radius:14px;padding:12px;margin:10px 0}
 .qrbox .btn{margin-top:8px}
+
+/* табло: точки и стрелки, крупный вид на большом экране */
+.bn{position:relative}
+.bnd i{cursor:pointer;position:relative}
+.bnd i::after{content:"";position:absolute;inset:-8px -3px}
+.bnd i:hover{background:#f59f6b}
+.bnar{display:none;position:absolute;top:calc(50% - 30px);width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#1d1d1f;font:700 28px/1 var(--fb);cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.18);z-index:5;opacity:0;transition:opacity .2s}
+.bnar.l{left:12px}.bnar.r{right:12px}
+.bn:hover .bnar{opacity:1}
+.bx{display:none}
+@media (min-width:761px){.bnar{display:flex;align-items:center;justify-content:center}}
+@media (min-width:900px){
+.bs{min-height:300px;padding:28px 72px 28px 40px;gap:30px}
+.bs.pr .th2{width:220px;height:220px}
+.bs.pr .th2 img{inset:22px;width:calc(100% - 44px);height:calc(100% - 44px)}
+.bs.pr .bpct{font-size:20px;padding:9px 11px}
+.bs.pr .bnm{font-size:26px;-webkit-line-clamp:3;margin-bottom:12px}
+.bs.pr .bpr{font-size:28px;padding:12px 16px}
+.bs.pr .bds{font-size:14px!important}
+.bs.pr .bkick{font-size:13.5px;padding:7px 12px}
+.bx{display:block;flex:0 0 300px;position:relative;z-index:3;background:rgba(255,255,255,.96);color:#1d1d1f;border-radius:18px;padding:16px 18px;box-shadow:0 12px 30px rgba(0,0,0,.18);cursor:default}
+.bxh{display:block;font:800 15px var(--fb);margin:0 0 8px}
+.bxt{list-style:none;margin:0;padding:0}
+.bxt li{display:grid;grid-template-columns:1fr auto 44px;gap:8px;align-items:baseline;padding:6px 0;border-top:1px dashed #e5e1da;font-size:14px}
+.bxt li:first-child{border-top:0}
+.bxt b{font:800 15px var(--fb)}.bxt small{font-weight:600;color:#8a8a90}
+.bxt em{font-style:normal;font-weight:800;color:#e8113a;text-align:right}
+.bxp{margin:8px 0 0!important;font-size:13px!important;color:#6b6b70;opacity:1!important}
+.bxb{display:flex;gap:8px;margin-top:12px}
+.bxa{flex:1;border:0;border-radius:12px;padding:11px;background:#e8430f;color:#fff;font:800 14.5px var(--fb);cursor:pointer;box-shadow:0 6px 14px rgba(232,67,15,.35)}
+.bxv{border:1px solid #e5e1da;border-radius:12px;padding:11px 12px;background:#fff;color:#1d1d1f;font:700 14px var(--fb);cursor:pointer}
+}
+@media (min-width:1200px){.bs.pr .th2{width:250px;height:250px}.bx{flex-basis:330px}}
 </style>
 <script>/* журнал ошибок и скорости */(function(){var U="https://script.google.com/macros/s/AKfycbzxbho2rc1WmpPRcsMGcKcbxdjH4AgJzxaOU_4R8PvEi5_x45vfRO2vP2nXRR5QKojg/exec",n=0,seen={};function s(k,m,ms){if(n>=6)return;n++;var b=JSON.stringify({a:"c_log",k:k,pg:"index",m:m||"",ms:ms||0,ua:navigator.userAgent.slice(0,110)});try{if(navigator.sendBeacon&&navigator.sendBeacon(U,b))return}catch(e){}try{fetch(U,{method:"POST",body:b,keepalive:true}).catch(function(){})}catch(e){}}addEventListener("error",function(e){if(!e.message)return;var m=String(e.message).slice(0,200)+" @"+(e.lineno||0);if(seen[m])return;seen[m]=1;s("err",m)});addEventListener("load",function(){setTimeout(function(){try{if(Math.random()>.3)return;var t=performance.getEntriesByType("navigation")[0],ms=t?Math.round(t.loadEventEnd||t.duration):0;if(ms>0)s("speed","",ms)}catch(e){}},500)})})();</script>
 <script src="news.js?v=1"></script>
@@ -1609,6 +1642,13 @@ var SVC=[{c:"sv1",a:"printer",k:"🖨 Услуги печати",h:"Печать
 {c:"sv2",a:"camera",k:"📸 Фотостудия",h:"Фото и фотошоп",l:["Фото на документы","3×4, паспорт, виза","Ретушь в фотошопе","Монтаж фото и видео"],t:"фото и фотошоп"},
 {c:"sv3",a:"plotter",k:"🎨 Дизайн и плоттер",h:"Визитки и плоттер",l:["Визитки","Печать на плоттере","Чертежи и плакаты","Баннеры и постеры"],t:"визитки и печать на плоттере"}];
 var BNPAL=["linear-gradient(135deg,#ff9a3d,#ff4d6d)","linear-gradient(135deg,#00c9a7,#2f80ed)","linear-gradient(135deg,#8e54e9,#e94ec7)","linear-gradient(135deg,#ff6a3d,#c2185b)","linear-gradient(135deg,#2193b0,#6dd5ed)","linear-gradient(135deg,#f7971e,#ffd200)"];
+/* большой экран: таблица цен за количество, упаковка и кнопки прямо на слайде */
+function bnExtra(p,i){var u=cu(i),k=i+"|"+u,T=(p.disc||[]).slice().sort(function(a,b){return a.q-b.q});
+var nm=function(x){return x==="u"?ub(p):String(DU[x]||"").replace(".","")};
+var rows='<li><span>1 '+nm("u")+'.</span><b>'+fn(upr(p,"u",1))+' сом.</b><em></em></li>'+T.map(function(d){return'<li><span>от '+d.q+' '+nm(d.u)+'.</span><b>'+fn(upr(p,d.u,d.q))+' сом.<small> / '+nm(d.u)+'</small></b><em>−'+d.pct+'%</em></li>'}).join("");
+var pk=[];if(p.k>1)pk.push("в пачке "+p.k+" "+ub(p));if(p.b>1)pk.push("в коробке "+p.b+" "+ub(p));
+var add=hasC(p)?'data-cp="open" data-i="'+i+'"':'data-a="add" data-k="'+k+'"';
+return'<div class="bx"><b class="bxh">Чем больше — тем дешевле</b><ul class="bxt">'+rows+'</ul>'+(pk.length?'<p class="bxp">📦 '+pk.join(" · ")+'</p>':'')+'<div class="bxb"><button type="button" class="bxa" '+add+'>🛒 В корзину</button><button type="button" class="bxv" data-a="view" data-i="'+i+'">Подробнее</button></div></div>'}
 function maxDisc(p){var m=0;(p.disc||[]).forEach(function(d){if(+d.pct>m)m=+d.pct});return m}
 function buildBanner(){var el=$("bnt");if(!el)return;
 var pics=[];D.forEach(function(p,i){if(pics.length<4&&vis(p)&&p.i&&p.disc&&p.disc.length)pics.push(p)});D.forEach(function(p){if(pics.length<4&&vis(p)&&p.i&&pics.indexOf(p)<0)pics.push(p)});
@@ -1617,8 +1657,13 @@ var h='<div class="bs ad" data-a="bnc"><i class="bart a1">'+ART.pen+'</i><i clas
 '<div class="bs sv mpb" data-a="sell"><i class="bart a8">'+ART.spark+'</i><i class="bart a7 mpi">🏬</i><i class="bart a3">'+ART.spark+'</i><div class="btx"><span class="bkick">🤝 Маркетплейс «Умари Хайём»</span><h2>Продавайте свои товары у нас</h2><ul class="svl"><li>Покупатели со всего города</li><li>Заказы приходят сразу</li><li>Доставку берём на себя</li></ul><span class="bt">Стать продавцом →</span></div></div>'+
 '<div class="bs lo" data-a="bnp"><i class="bart a4">'+ART.crown+'</i><i class="bart a3">'+ART.spark+'</i><i class="bart a5">'+ART.spark+'</i><div class="btx"><span class="bkick">👑 Клуб постоянных клиентов</span><h2>Ваша скидка растёт с каждым заказом</h2><div class="btier"><b>−'+LOYC.p1+'%</b><b>−'+LOYC.p2+'%</b><b>−'+LOYC.p3+'%</b></div><p>10 заказов или заказ от '+LOYC.sum+' сом. — скидка на 3 месяца. Покупки 3 месяца подряд на сумму от '+(LOYC.s3||1000)+' сом. — '+LOYC.p3+'%.</p><span class="bt">Моя скидка →</span></div></div>',n=0;
 D.forEach(function(p,i){if(n>=10||!vis(p)||!(p.disc&&p.disc.length))return;var md=maxDisc(p),bg=BNPAL[n%BNPAL.length];n++;
-h+='<div class="bs pr" data-a="view" data-i="'+i+'" style="background:'+bg+'"><i class="bart a3">'+ART.spark+'</i><i class="bart a6">'+(n%3===1?ART.note:n%3===2?ART.ruler:ART.pen)+'</i><div class="th2">'+(p.i?'<img loading="lazy" src="'+TH(p.i)+'" alt="">':'')+(md?'<i class="bpct">−'+md+'%</i>':'')+'</div><div class="btx"><span class="bkick">⚡ Скидка за количество</span><b class="bnm">'+esc(p.n)+'</b><div class="bpr">'+priceHtml(p,"u")+'</div><p class="bds">'+esc(discTxt(p))+'</p></div></div>'});
+h+='<div class="bs pr" data-a="view" data-i="'+i+'" style="background:'+bg+'"><i class="bart a3">'+ART.spark+'</i><i class="bart a6">'+(n%3===1?ART.note:n%3===2?ART.ruler:ART.pen)+'</i><div class="th2">'+(p.i?'<img loading="lazy" src="'+TH(p.i)+'" alt="">':'')+(md?'<i class="bpct">−'+md+'%</i>':'')+'</div><div class="btx"><span class="bkick">⚡ Скидка за количество</span><b class="bnm">'+esc(p.n)+'</b><div class="bpr">'+priceHtml(p,"u")+'</div><p class="bds">'+esc(discTxt(p))+'</p></div>'+bnExtra(p,i)+'</div>'});
 if(h===bnH)return;bnH=h;el.innerHTML=h;var d="",k;for(k=0;k<el.children.length;k++)d+='<i'+(k?'':' class="on"')+'></i>';$("bnd").innerHTML=d;bnI=0;el.scrollLeft=0;startBn()}
+(function(){var el=$("bnt"),bn=$("bn");if(!el||!bn)return;
+var go=function(n){var c=el.children.length;if(!c)return;bnI=(n+c)%c;el.scrollTo({left:bnI*(el.clientWidth+12),behavior:"smooth"});startBn()};
+$("bnd").addEventListener("click",function(e){var t=e.target.closest("i");if(!t)return;go([].indexOf.call(this.children,t))});
+["l","r"].forEach(function(s){var b=document.createElement("button");b.type="button";b.className="bnar "+s;b.setAttribute("aria-label",s==="l"?"Предыдущий слайд":"Следующий слайд");b.innerHTML=s==="l"?"‹":"›";b.onclick=function(e){e.stopPropagation();go(bnI+(s==="l"?-1:1))};bn.appendChild(b)});
+})();
 (function(){var el=$("bnt");if(!el)return;el.addEventListener("scroll",function(){var i=Math.round(el.scrollLeft/(el.clientWidth+12)),d=$("bnd").children,k;bnI=i;for(k=0;k<d.length;k++)d[k].className=k===i?"on":""});el.addEventListener("touchstart",function(){clearInterval(bnT)},{passive:true});el.addEventListener("touchend",function(){setTimeout(startBn,6000)},{passive:true})})();
 function refreshCatalog(){if(!API_URL){CATO=ld("uh_cat",[]);applyCat(CATO);clean();render();buildBanner();return Promise.resolve()}return fetch(API_URL+"?a=catalog").then(function(r){return r.json()}).then(function(j){if(j&&j.items){CATO=j.items;sv("uh_catc",CATO);applyCat(CATO);clean();render();buildBanner()}}).catch(function(){})}
 function sdPrev(){var e=$("ce-sdp");if(!e)return;var pr=parseFloat(($("ce-p")||{}).value.replace(",",".")),sd=parseFloat(($("ce-sd")||{}).value.replace(",","."))||0;

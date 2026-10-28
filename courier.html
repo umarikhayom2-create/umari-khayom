@@ -213,5 +213,20 @@ S.tok?load():login();
 NEWS.init({url:CHAT_URL,auth:function(){return S.tok?{tok:S.tok}:null},box:function(){return $("nwbox")},ping:function(o){toast("📢 Новость: "+String(o.t||"").slice(0,80));try{beep(1)}catch(x){}}});
 var _nwr=render;render=function(){_nwr();var m=document.querySelector("#app main");if(m&&!$("nwbox")){var d=document.createElement("div");d.id="nwbox";m.insertBefore(d,m.firstChild)}NEWS.draw()};
 document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("[data-qimgv]");if(!t)return;var v=document.createElement("div");v.className="ov";v.style.alignItems="center";v.innerHTML='<img src="https://drive.google.com/thumbnail?id='+encodeURIComponent(t.dataset.qimgv)+'&sz=w1600" style="max-width:96vw;max-height:90vh;border-radius:14px">';v.onclick=function(){v.remove()};document.body.appendChild(v)});
+/* ===== 📍 геопозиция курьера: только на смене или с заказом ===== */
+var KG={w:null,last:0,lla:0,llo:0,err:"",sent:0,on:false,busy:0};
+function kgActive(){return!!(S.tok&&(S.sh||(S.mine||[]).some(function(o){return o.st==="taken"})))}
+function kgDist(a,b,c,d){var r=Math.PI/180,x=(d-b)*r*Math.cos((a+c)/2*r),y=(c-a)*r;return Math.sqrt(x*x+y*y)*6371000}
+function kgSend(p){var c=p.coords,now=Date.now();if(KG.busy)return;if(KG.sent&&now-KG.sent<20000)return;if(KG.sent&&now-KG.sent<60000&&kgDist(KG.lla,KG.llo,c.latitude,c.longitude)<50)return;
+KG.busy=1;api({a:"k_geo",tok:S.tok,la:c.latitude,lo:c.longitude,acc:c.accuracy}).then(function(j){KG.busy=0;if(j&&j.ok){KG.sent=now;KG.lla=c.latitude;KG.llo=c.longitude;KG.err="";kgDraw()}}).catch(function(){KG.busy=0})}
+function kgStart(){if(KG.w!==null||!navigator.geolocation)return;KG.on=true;KG.w=navigator.geolocation.watchPosition(function(p){KG.err="";kgSend(p)},function(e){KG.err=e.code===1?"denied":"nofix";kgDraw()},{enableHighAccuracy:true,maximumAge:30000,timeout:60000})}
+function kgStop(){if(KG.w!==null&&navigator.geolocation)navigator.geolocation.clearWatch(KG.w);KG.w=null;KG.on=false}
+function kgCheck(){if(kgActive())kgStart();else kgStop();kgDraw()}
+function kgHtml(){if(!kgActive())return"";var ago=KG.sent?Math.round((Date.now()-KG.sent)/60000):null;
+var st=!navigator.geolocation?'⚠️ Телефон не поддерживает геопозицию':KG.err==="denied"?'⚠️ Доступ к геопозиции запрещён. Разрешите его в настройках браузера для этого сайта':KG.err==="nofix"?'⏳ Ищем спутники… Выйдите на открытое место':ago===null?'⏳ Определяем местоположение…':'🟢 Геопозиция передаётся · '+(ago<1?'только что':ago+' мин назад');
+return'<div class="card" style="--c:'+(KG.err==="denied"?'#dc2626':ago!==null&&ago<5?'#16a34a':'#f59e0b')+';padding:10px 14px"><b>📍 Ваше местоположение видит офис</b><div class="its" style="margin:4px 0 6px">'+st+'</div><details><summary class="its" style="cursor:pointer">📡 Чтобы работало с выключенным экраном — включите трансляцию в Telegram</summary><ol class="its" style="margin:6px 0 0 18px;padding:0"><li>Откройте чат с ботом «Умари Хайём» в Telegram</li><li>Нажмите 📎 (скрепка) → «Геопозиция»</li><li>«Транслировать геопозицию» → «8 часов»</li></ol><p class="its" style="margin:6px 0 0">Геопозиция передаётся только во время смены и доставки.</p></details></div>'}
+function kgDraw(){var m=document.querySelector("#app main");if(!m)return;var b=document.getElementById("kgbox");if(!b){b=document.createElement("div");b.id="kgbox";var q=document.getElementById("pubox");m.insertBefore(b,q||m.firstChild)}b.innerHTML=kgHtml()}
+var _kgR=render;render=function(){_kgR.apply(this,arguments);kgCheck()};
+setInterval(kgCheck,15000);document.addEventListener("visibilitychange",function(){if(!document.hidden)kgCheck()});
 </script>
 </body></html>

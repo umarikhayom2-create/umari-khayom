@@ -1533,12 +1533,13 @@ function puPoll() {
   try { p2Poll(); } finally { mx.remove("tgpoll"); }
 };
 function p2Poll() {
-  var off = +(puProp().getProperty("tgoff") || 0), r = tg("getUpdates", { offset: off, timeout: 0, allowed_updates: ["message", "callback_query"] });
+  var off = +(puProp().getProperty("tgoff") || 0), r = tg("getUpdates", { offset: off, timeout: 0, allowed_updates: ["message", "edited_message", "callback_query"] });
   if (!r || !r.ok) return;
   var R = null, cbs = [];
   (r.result || []).forEach(function (up) {
     off = Math.max(off, up.update_id + 1);
     if (up.callback_query) { cbs.push(up.callback_query); return; }
+    var lm = up.message || up.edited_message; if (lm && lm.location) { try { geoTg(lm, !!up.edited_message); } catch (x) {} return; }
     var m = up.message; if (!m || !m.text) return;
     var mt = String(m.text).match(/^\/start\s+([A-Za-z0-9]+)/);
     if (!mt) { if (/^\/start/.test(m.text)) tg("sendMessage", { chat_id: m.chat.id, text: "Здравствуйте! Чтобы получать уведомления, нажмите «🔔 Подключить Telegram» в приложении Умари Хайём." }); return; }
@@ -2900,4 +2901,70 @@ function msgList(p) {
     }
   }
   return { ok: true, list: L, st: st };
+}
+
+// ==================== 26. Где курьеры: геопозиция из приложения курьера и «живая геопозиция» Telegram
+// Точки пишутся только во время смены или когда курьер везёт заказ. Таблица «geo»: время, курьер, координаты, источник.
+var GEO = { GAP: 45e3, MIN_M: 25, STALE: 15 };
+function geoSh() { return sheet("geo", ["ts", "login", "nm", "la", "lo", "acc", "src", "job"]); }
+function geoLast() { var v = C().get("geo:last") || PropertiesService.getScriptProperties().getProperty("geo:last"); return v ? JSON.parse(v) : {}; }
+function geoSave(L) { var s = JSON.stringify(L); PropertiesService.getScriptProperties().setProperty("geo:last", s); C().put("geo:last", s, 21600); }
+function geoDist(a, b, c, d) { var R = 6371000, r = Math.PI / 180, x = (d - b) * r * Math.cos((a + c) / 2 * r), y = (c - a) * r; return Math.sqrt(x * x + y * y) * R; }
+function geoJob(login) {
+  var ck = "gj:" + login, c = C().get(ck); if (c !== null) return c;
+  var j = ""; try { jobAll().L.forEach(function (o) { if (o.st === "taken" && o.cour && o.cour.login === login) j = j ? j + ", " + o.no : String(o.no); }); } catch (x) {}
+  C().put(ck, j, 120); return j;
+}
+function geoPut(login, nm, la, lo, acc, src) {
+  la = +la; lo = +lo; if (!(la > -90 && la < 90 && lo > -180 && lo < 180) || (!la && !lo)) return { ok: false, error: "bad" };
+  return locked(function () {
+    var L = geoLast(), x = L[login], now = Date.now();
+    if (x && now - x.ts < GEO.GAP && geoDist(x.la, x.lo, la, lo) < GEO.MIN_M) { x.seen = now; x.src = src; geoSave(L); return { ok: true, skip: 1 }; }
+    var job = geoJob(login);
+    geoSh().appendRow([now, login, nm || "", la, lo, Math.round(+acc || 0), src, job]);
+    L[login] = { la: la, lo: lo, ts: now, seen: now, acc: Math.round(+acc || 0), src: src, nm: nm || "", job: job };
+    geoSave(L); return { ok: true };
+  });
+}
+// Telegram: курьер отправил геопозицию или включил трансляцию
+function geoTg(m, edited) {
+  var who = p2ByChat(m.chat.id); if (!who || who.pk.indexOf("cour|") !== 0) return;
+  var login = who.pk.slice(5), c = courGet(login), nm = (c && c.nm) || who.e.w || login, l = m.location;
+  geoPut(login, nm, l.latitude, l.longitude, l.horizontal_accuracy, l.live_period || edited ? "tg" : "tg1");
+  if (!edited) tg("sendMessage", { chat_id: m.chat.id, text: l.live_period ? "✅ Трансляция геопозиции включена на " + Math.round(l.live_period / 3600) + " ч. Спасибо! Не выключайте её до конца смены." : "📍 Точка получена. Лучше включите трансляцию: 📎 → Геопозиция → «Транслировать геопозицию» → 8 часов. Тогда не придётся отправлять вручную." });
+}
+var GEO_ROUTE0 = route;
+route = function (p) {
+  var a = String(p.a || "");
+  if (a === "k_geo") { var c = courTok(p.tok); if (!c) return { ok: false, error: "tok" }; return geoPut(c.login, c.nm, p.la, p.lo, p.acc, "app"); }
+  if (a === "s_geo") {
+    var me = staff(p); if (!me || ["director", "admin", "operator", "accountant"].indexOf(me.role) < 0) return { ok: false, error: "role" };
+    var res = { ok: true, last: geoLast(), now: Date.now() };
+    if (p.login) {
+      var from = +p.from || (Date.now() - 864e5), to = +p.to || Date.now(), sh = geoSh(), n = sh.getLastRow(), T = [];
+      if (n > 1) sh.getRange(Math.max(2, n - 29999), 1, Math.min(30000, n - 1), 8).getValues().forEach(function (r) { if (String(r[1]) === String(p.login) && +r[0] >= from && +r[0] <= to) T.push([+r[0], +r[3], +r[4], String(r[7] || "")]); });
+      res.track = T;
+    }
+    return res;
+  }
+  return GEO_ROUTE0(p);
+};
+// напоминания: курьер везёт заказ, а геопозиция давно не обновлялась
+if (typeof pushTick === "function") {
+  var GEO_TICK0 = pushTick;
+  pushTick = function () {
+    GEO_TICK0();
+    try {
+      var L = geoLast(), now = Date.now(), R = puReg(), seen = {};
+      jobAll().L.forEach(function (o) {
+        if (o.st !== "taken" || !o.cour || seen[o.cour.login]) return; seen[o.cour.login] = 1;
+        var x = L[o.cour.login], age = x ? (now - (x.seen || x.ts)) / 6e4 : 999, tk = 0;
+        (o.log || []).forEach(function (l) { if (l.st === "taken") tk = l.f || l.ts; });
+        if ((now - tk) / 6e4 < 10 || age < GEO.STALE) return;
+        var me = R["cour|" + o.cour.login], slot = Math.floor(now / 18e5);
+        if (me && puOnce("geo1:" + o.cour.login + ":" + slot)) puSend(me.c, "📍 Включите геопозицию: откройте приложение курьера или в этом чате нажмите 📎 → Геопозиция → «Транслировать геопозицию» на 8 часов.");
+        if (age >= 30 && puOnce("geo2:" + o.key)) puTo(function (z) { return z.k === "staff" && PU.BOSS[z.r]; }, "📍 Курьер " + o.cour.nm + " везёт заказ " + o.no + ", но геопозиция не обновлялась " + (x ? Math.round(age) + " мин" : "ни разу") + ".", false);
+      });
+    } catch (x) {}
+  };
 }

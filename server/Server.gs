@@ -263,7 +263,7 @@ function mainGet(q) {
 }
 function otpOn() { var c = C().get("otpon"); if (c) return c === "1"; var j = mainGet("a=cfg"); var on = !!(j && j.otp); C().put("otpon", on ? "1" : "0", 600); return on; }
 function phoneOk(ph, tk) { if (!otpOn()) return true; if (!tk) return false; var j = mainGet("a=my&ph=" + encodeURIComponent(ph) + "&tk=" + encodeURIComponent(tk)); return !!(j && j.ok); }
-function pub(o) { return { nm: o.nm || "", ph: o.ph || "", em: o.em || "", pw: !!o.h, bal: Math.round((o.bal || 0) * 100) / 100, led: (o.led || []).slice(-30).reverse(), pct: BONUS_PCT }; }
+function pub(o) { return { nm: o.nm || "", ph: o.ph || "", em: o.em || "", em0: o.em0 || "", pw: !!o.h, bal: Math.round((o.bal || 0) * 100) / 100, led: (o.led || []).slice(-30).reverse(), pct: BONUS_PCT }; }
 function ordSh() { return sheet("ord", ["no", "phone9", "json", "ts"]); }
 function accOrders(k) {
   var sh = ordSh(), n = sh.getLastRow(); if (n < 2) return [];
@@ -2665,7 +2665,16 @@ function ocAct(a, p) {
     var t1 = ocTarget(p); if (!t1) return { ok: false, error: "to" };
     var e1 = ocCheck(t1, p.code); if (e1) return { ok: false, error: e1 };
     var acc = t1.via === "em" ? ocAccByEm(t1.to) : accGet(t1.to);
-    if (acc) return locked(function () { var o = t1.via === "em" ? ocAccByEm(t1.to) : accGet(t1.to); if (t1.via === "sms") o.pv = 1; return ocLogin(o); });
+    if (acc) return locked(function () {
+      var o = t1.via === "em" ? ocAccByEm(t1.to) : accGet(t1.to);
+      if (t1.via === "sms") {
+        // владелец номера вошёл по SMS: если аккаунт создавали по почте без подтверждения номера — чужая почта отвязывается
+        // почту нужно будет подтвердить ещё раз (одна кнопка в профиле) — так чужая почта не сохранит доступ
+        if (o.pvn && o.em) { PropertiesService.getScriptProperties().deleteProperty("em:" + o.em); o.em0 = o.em; o.em = ""; }
+        o.pv = 1; delete o.pvn;
+      }
+      return ocLogin(o);
+    });
     // нового клиента просим только имя (и телефон, если входил по почте)
     var vt = rnd(32); C().put("ocv:" + vt, JSON.stringify(t1), 900);
     return { ok: true, need: "reg", vt: vt, via: t1.via };
@@ -2681,8 +2690,8 @@ function ocAct(a, p) {
       if (t2.via === "em" && ocAccByEm(t2.to)) return { ok: false, error: "emused" };
       o = o || { k: k, bal: 0, led: [] };
       o.nm = nm; o.ph = t2.via === "sms" ? "+992 " + k.slice(0, 2) + " " + k.slice(2, 5) + " " + k.slice(5, 7) + " " + k.slice(7) : clean(p.ph, 30); o.cv = 1; o.c = o.c || Date.now();
-      if (t2.via === "sms") o.pv = 1;
-      if (t2.via === "em") { o.em = t2.to; PropertiesService.getScriptProperties().setProperty("em:" + t2.to, k); }
+      if (t2.via === "sms") { o.pv = 1; var em0 = ocEm(p.em); if (em0 && !ocAccByEm(em0)) o.em0 = em0; } // почта из анкеты — пока не подтверждена
+      if (t2.via === "em") { o.em = t2.to; if (!o.pv) o.pvn = 1; PropertiesService.getScriptProperties().setProperty("em:" + t2.to, k); }
       C().remove("ocv:" + p.vt);
       return ocLogin(o);
     });
@@ -2695,7 +2704,7 @@ function ocAct(a, p) {
     return locked(function () {
       var other = ocAccByEm(em); if (other && other.k !== me.k) return { ok: false, error: "emused" };
       var o = accGet(me.k), P = PropertiesService.getScriptProperties(); if (o.em && o.em !== em) P.deleteProperty("em:" + o.em);
-      o.em = em; P.setProperty("em:" + em, o.k); accPut(o); return { ok: true, me: pub(o) };
+      o.em = em; delete o.em0; P.setProperty("em:" + em, o.k); accPut(o); return { ok: true, me: pub(o) };
     });
   }
   if (a === "u_pw") {
@@ -2785,19 +2794,23 @@ route = function (p) {
     return pvAsk(k3, { t: "reset", pw: String(p.pw) });
   }
   // вход по коду с почты в уже существующий аккаунт — дополнительно SMS на номер аккаунта
+  // вход по коду (SMS или почта) — подтверждённый вход
   if (a === "u_verify") {
-    var t = ocTarget(p); if (t && t.via === "em") {
-      var acc = ocAccByEm(t.to);
-      if (acc) { var e = ocCheck(t, p.code); if (e) return { ok: false, error: e }; return pvAsk(acc.k, { t: "login" }); }
-    }
-    var r = PV_ROUTE0(p); if (r && r.ok && r.tok && t) pvMark(t.via === "sms" ? t.to : (r.me && k9(r.me.ph)), r.tok); return r;
+    var t = ocTarget(p), r = PV_ROUTE0(p);
+    if (r && r.ok && r.tok && t) { var kk = t.via === "sms" ? t.to : (ocAccByEm(t.to) || {}).k; if (kk) { pvMark(kk, r.tok); r.me = pub(accGet(kk)); } }
+    return r;
   }
   if (a === "u_creg") {
     var v = C().get("ocv:" + String(p.vt || "")); if (!v) return { ok: false, error: "expired" };
     var tv = JSON.parse(v); if (tv.via === "sms") { var r2 = PV_ROUTE0(p); if (r2 && r2.ok && r2.tok) { pvMark(tv.to, r2.tok); r2.me = pub(accGet(tv.to)); } return r2; }
     var k4 = k9(p.ph); if (!k4) return { ok: false, error: "ph" }; if (!clean(p.nm, 60)) return { ok: false, error: "nm" };
     var o4 = accGet(k4); if (o4 && (o4.h || o4.cv || o4.em)) return { ok: false, error: "phused" };
-    return pvAsk(k4, { t: "creg", p: { vt: p.vt, nm: p.nm, ph: p.ph } });
+    // регистрация по почте: если по этому номеру уже есть заказы или бонусы — номер подтверждается по SMS
+    var hist = (o4 && ((o4.bal || 0) > 0 || (o4.led || []).length)) || accOrders(k4).length;
+    if (hist) return pvAsk(k4, { t: "creg", p: { vt: p.vt, nm: p.nm, ph: p.ph } });
+    var r4; PV_OK = k4; try { r4 = PV_ROUTE0(p); } finally { PV_OK = ""; }
+    if (r4 && r4.ok && r4.tok) { pvMark(k4, r4.tok); r4.me = pub(accGet(k4)); }
+    return r4;
   }
   // действия в кабинете — только из подтверждённого сеанса
   if (p.tok && a !== "u_out") { var me = tokAcc(p.tok); if (me && !pvTok(me, String(p.tok))) return { ok: false, error: "pv" }; }

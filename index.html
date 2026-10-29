@@ -779,6 +779,18 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 .cdf{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
 .cdchip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:5px 8px;border-radius:10px;background:var(--sf2);font-size:12.5px;overflow:hidden}.cdchip i{font-style:normal;color:var(--mut)}.cdchip button{border:0;background:none;color:var(--er);font-size:16px;line-height:1;padding:0 2px}
 
+</style><style id="auroraSite">/* Сайт для клиентов: стиль «Аврора» */
+:root{--bg:#eef1fb;--sf:#ffffff;--sf2:#f0f3fa;--plate:rgba(255,255,255,.85);--tx:#0f172a;--ink:#0f172a;--mut:#5a6474;--bd:rgba(15,23,42,.09);--ov:rgba(15,23,42,.45);--sh:0 1px 2px rgba(15,23,42,.05),0 14px 36px -16px rgba(76,29,149,.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#090b12;--sf:#141823;--sf2:#1b2030;--plate:rgba(20,24,35,.85);--tx:#eef2ff;--ink:#eef2ff;--mut:#a3acc2;--bd:rgba(255,255,255,.10);--ov:rgba(0,0,0,.6);--sh:0 18px 40px -18px rgba(0,0,0,.8)}}
+:root[data-theme="dark"]{--bg:#090b12;--sf:#141823;--sf2:#1b2030;--plate:rgba(20,24,35,.85);--tx:#eef2ff;--ink:#eef2ff;--mut:#a3acc2;--bd:rgba(255,255,255,.10);--ov:rgba(0,0,0,.6);--sh:0 18px 40px -18px rgba(0,0,0,.8)}
+html{background:#eef1fb}
+html::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(60% 40% at 0% 0%,rgba(139,92,246,.30),transparent 70%),radial-gradient(55% 35% at 100% 6%,rgba(34,211,238,.28),transparent 70%),radial-gradient(60% 40% at 90% 100%,rgba(244,114,182,.22),transparent 70%),radial-gradient(50% 35% at 0% 95%,rgba(52,211,153,.20),transparent 70%),#eef1fb}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){background:#090b12}:root:not([data-theme="light"])::before{background:radial-gradient(60% 40% at 0% 0%,rgba(124,58,237,.40),transparent 70%),radial-gradient(55% 35% at 100% 8%,rgba(6,182,212,.28),transparent 70%),radial-gradient(60% 40% at 85% 100%,rgba(236,72,153,.20),transparent 70%),#090b12}}
+:root[data-theme="dark"]{background:#090b12}:root[data-theme="dark"]::before{background:radial-gradient(60% 40% at 0% 0%,rgba(124,58,237,.40),transparent 70%),radial-gradient(55% 35% at 100% 8%,rgba(6,182,212,.28),transparent 70%),radial-gradient(60% 40% at 85% 100%,rgba(236,72,153,.20),transparent 70%),#090b12}
+body{background:transparent!important}
+.hd{background:rgba(238,241,251,.62)!important;-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);border-bottom-color:rgba(15,23,42,.06)!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hd{background:rgba(9,11,18,.55)!important;border-bottom-color:rgba(255,255,255,.06)!important}}
+:root[data-theme="dark"] .hd{background:rgba(9,11,18,.55)!important;border-bottom-color:rgba(255,255,255,.06)!important}
 </style><style id="admModern">/* Панель: темы оформления (🎨 рядом с заголовком) */
 .adm{--glass:none;transition:background .4s}
 .adm.th-aurora{--bg:#eef1fb;--sf:rgba(255,255,255,.74);--sf2:rgba(255,255,255,.58);--plate:rgba(255,255,255,.8);--tx:#0f172a;--ink:#0f172a;--mut:#556070;--bd:rgba(15,23,42,.09);--sh:0 1px 2px rgba(15,23,42,.05),0 14px 36px -16px rgba(76,29,149,.28);--glass:blur(18px) saturate(1.4);color-scheme:light;

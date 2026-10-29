@@ -779,6 +779,17 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 .cdf{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
 .cdchip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:5px 8px;border-radius:10px;background:var(--sf2);font-size:12.5px;overflow:hidden}.cdchip i{font-style:normal;color:var(--mut)}.cdchip button{border:0;background:none;color:var(--er);font-size:16px;line-height:1;padding:0 2px}
 
+</style><style id="admModern">/* Панель: современный светлый фон и карточки */
+.adm{--bg:#f3f5fa;--sf:#ffffff;--sf2:#f1f4f9;--plate:#ffffff;--tx:#0f172a;--ink:#0f172a;--mut:#5b6675;--bd:#e3e8f0;--sh:0 1px 2px rgba(15,23,42,.04),0 12px 32px -14px rgba(15,23,42,.18);
+background:radial-gradient(900px 560px at -15% -10%,rgba(124,58,237,.11),transparent 60%),radial-gradient(800px 520px at 115% 5%,rgba(14,165,233,.11),transparent 62%),radial-gradient(900px 700px at 50% 115%,rgba(16,185,129,.08),transparent 60%),#f3f5fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .adm{--bg:#0d1016;--sf:#161a22;--sf2:#1d222c;--plate:#181c25;--tx:#eef1f6;--ink:#eef1f6;--mut:#9aa4b2;--bd:#283040;--sh:0 12px 32px -14px rgba(0,0,0,.6);background:radial-gradient(900px 560px at -15% -10%,rgba(124,58,237,.18),transparent 60%),radial-gradient(800px 520px at 115% 5%,rgba(14,165,233,.14),transparent 62%),#0d1016}}
+:root[data-theme="dark"] .adm{--bg:#0d1016;--sf:#161a22;--sf2:#1d222c;--plate:#181c25;--tx:#eef1f6;--ink:#eef1f6;--mut:#9aa4b2;--bd:#283040;--sh:0 12px 32px -14px rgba(0,0,0,.6);background:radial-gradient(900px 560px at -15% -10%,rgba(124,58,237,.18),transparent 60%),radial-gradient(800px 520px at 115% 5%,rgba(14,165,233,.14),transparent 62%),#0d1016}
+.adm .pq,.adm .wlg{border-radius:18px;box-shadow:var(--sh)}
+.adm .pin{border-radius:12px;background:var(--sf)}
+.adm .pin:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 4px rgba(99,102,241,.15)}
+.adm .bdg{background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.6));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.9);box-shadow:var(--sh)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .adm .bdg{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08)}}
+:root[data-theme="dark"] .adm .bdg{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08)}
 </style>
 
 <header class="hd"><div class="hdi">

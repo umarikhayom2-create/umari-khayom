@@ -779,17 +779,33 @@ body:has(#bar:not([hidden])) .stb{bottom:calc(84px + env(safe-area-inset-bottom,
 .cdf{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
 .cdchip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:5px 8px;border-radius:10px;background:var(--sf2);font-size:12.5px;overflow:hidden}.cdchip i{font-style:normal;color:var(--mut)}.cdchip button{border:0;background:none;color:var(--er);font-size:16px;line-height:1;padding:0 2px}
 
-</style><style id="admModern">/* Панель: современный светлый фон и карточки */
-.adm{--bg:#f3f5fa;--sf:#ffffff;--sf2:#f1f4f9;--plate:#ffffff;--tx:#0f172a;--ink:#0f172a;--mut:#5b6675;--bd:#e3e8f0;--sh:0 1px 2px rgba(15,23,42,.04),0 12px 32px -14px rgba(15,23,42,.18);
-background:radial-gradient(900px 560px at -15% -10%,rgba(124,58,237,.11),transparent 60%),radial-gradient(800px 520px at 115% 5%,rgba(14,165,233,.11),transparent 62%),radial-gradient(900px 700px at 50% 115%,rgba(16,185,129,.08),transparent 60%),#f3f5fa}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .adm{--bg:#0d1016;--sf:#161a22;--sf2:#1d222c;--plate:#181c25;--tx:#eef1f6;--ink:#eef1f6;--mut:#9aa4b2;--bd:#283040;--sh:0 12px 32px -14px rgba(0,0,0,.6);background:radial-gradient(900px 560px at -15% -10%,rgba(124,58,237,.18),transparent 60%),radial-gradient(800px 520px at 115% 5%,rgba(14,165,233,.14),transparent 62%),#0d1016}}
-:root[data-theme="dark"] .adm{--bg:#0d1016;--sf:#161a22;--sf2:#1d222c;--plate:#181c25;--tx:#eef1f6;--ink:#eef1f6;--mut:#9aa4b2;--bd:#283040;--sh:0 12px 32px -14px rgba(0,0,0,.6);background:radial-gradient(900px 560px at -15% -10%,rgba(124,58,237,.18),transparent 60%),radial-gradient(800px 520px at 115% 5%,rgba(14,165,233,.14),transparent 62%),#0d1016}
-.adm .pq,.adm .wlg{border-radius:18px;box-shadow:var(--sh)}
-.adm .pin{border-radius:12px;background:var(--sf)}
-.adm .pin:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 4px rgba(99,102,241,.15)}
-.adm .bdg{background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.6));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.9);box-shadow:var(--sh)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .adm .bdg{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08)}}
-:root[data-theme="dark"] .adm .bdg{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08)}
+</style><style id="admModern">/* Панель: темы оформления (🎨 рядом с заголовком) */
+.adm{--glass:none;transition:background .4s}
+.adm.th-aurora{--bg:#eef1fb;--sf:rgba(255,255,255,.74);--sf2:rgba(255,255,255,.58);--plate:rgba(255,255,255,.8);--tx:#0f172a;--ink:#0f172a;--mut:#556070;--bd:rgba(15,23,42,.09);--sh:0 1px 2px rgba(15,23,42,.05),0 14px 36px -16px rgba(76,29,149,.28);--glass:blur(18px) saturate(1.4);color-scheme:light;
+background:radial-gradient(60% 45% at 0% 0%,rgba(139,92,246,.32),transparent 70%),radial-gradient(55% 40% at 100% 8%,rgba(34,211,238,.30),transparent 70%),radial-gradient(60% 45% at 85% 100%,rgba(244,114,182,.24),transparent 70%),radial-gradient(50% 40% at 5% 92%,rgba(52,211,153,.22),transparent 70%),#eef1fb}
+.adm.th-night{--bg:#090b12;--sf:rgba(255,255,255,.06);--sf2:rgba(255,255,255,.08);--plate:rgba(255,255,255,.07);--tx:#eef2ff;--ink:#eef2ff;--mut:#a3acc2;--bd:rgba(255,255,255,.11);--sh:0 18px 40px -18px rgba(0,0,0,.8);--glass:blur(18px) saturate(1.3);color-scheme:dark;
+background:radial-gradient(60% 45% at 0% 0%,rgba(124,58,237,.42),transparent 70%),radial-gradient(55% 40% at 100% 10%,rgba(6,182,212,.30),transparent 70%),radial-gradient(60% 45% at 80% 100%,rgba(236,72,153,.22),transparent 70%),#090b12}
+.adm.th-ocean{--bg:#e6edfb;--sf:rgba(255,255,255,.7);--sf2:rgba(255,255,255,.55);--plate:rgba(255,255,255,.78);--tx:#0b1b33;--ink:#0b1b33;--mut:#4d5f78;--bd:rgba(11,27,51,.09);--sh:0 14px 36px -16px rgba(30,64,175,.3);--glass:blur(16px) saturate(1.3);color-scheme:light;
+background:radial-gradient(70% 50% at 100% 0%,rgba(255,255,255,.7),transparent 70%),linear-gradient(160deg,#c7e3ff 0%,#dde4ff 45%,#f5dcff 100%)}
+.adm.th-min{--bg:#f5f5f7;--sf:#ffffff;--sf2:#f5f5f7;--plate:#ffffff;--tx:#1d1d1f;--ink:#1d1d1f;--mut:#6e6e73;--bd:#e3e3e8;--sh:0 1px 3px rgba(0,0,0,.05),0 8px 24px -12px rgba(0,0,0,.12);color-scheme:light;background:#f5f5f7}
+.adm .pq,.adm .wlg{border-radius:20px;box-shadow:var(--sh)}
+.adm .bdg{background:var(--plate);border:1px solid var(--bd);box-shadow:var(--sh);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass)}
+.adm .bd0,.adm .bdk>div{background:var(--sf2);border-color:var(--bd)}
+.adm .pin{border-radius:12px;background:var(--sf);color:var(--tx)}
+.adm .pin:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,.16)}
+.adm .ah>b{font-size:19px;letter-spacing:-.01em}
+.adm.th-night .qrw{background:rgba(250,204,21,.10);color:#fde68a;border-color:rgba(250,204,21,.28)}
+.thb{border:1px solid var(--bd);background:var(--plate);color:var(--tx);border-radius:12px;padding:6px 10px;font:700 13px var(--fb);cursor:pointer;box-shadow:var(--sh);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass)}
+.thm{position:fixed;inset:0;z-index:200;background:rgba(10,12,20,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.thm>div{width:100%;max-width:520px;background:var(--plate,#fff);color:var(--tx);border-radius:24px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+.thg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.tho{border:2px solid transparent;border-radius:18px;padding:0;overflow:hidden;cursor:pointer;background:none;text-align:left;font:inherit;color:inherit}
+.tho.on{border-color:#7c3aed}
+.tho i{display:block;height:86px;position:relative}
+.tho i:after{content:"";position:absolute;left:12px;right:12px;bottom:12px;height:26px;border-radius:10px;background:rgba(255,255,255,.75)}
+.tho i.n:after{background:rgba(255,255,255,.1)}
+.tho b{display:block;padding:8px 10px 10px;font-size:14px}
+@media(min-width:700px){.thm{align-items:center}}
 </style>
 
 <header class="hd"><div class="hdi">
@@ -912,7 +928,7 @@ background:radial-gradient(900px 560px at -15% -10%,rgba(124,58,237,.11),transpa
 
 <div class="md" id="md" hidden data-a="mclose"><div class="mdc" id="mdc" role="dialog" aria-modal="true"></div></div>
 <div class="rib" id="rib" hidden></div>
-<div class="adm" id="adm" hidden><div class="ah"><b>Панель поставщика</b><span id="wlc" class="wlc" data-ad="wlgo" hidden></span><button class="btn sm o" id="brk" data-ad="brk" hidden></button><div class="row ahb"><button class="ahi ahi-r" data-ad="ref" title="Обновить"><i>🔄</i><span>Обновить</span></button><button class="ahi ahi-o" data-ad="out" title="Выйти"><i>🚪</i><span>Выйти</span></button><button class="ahi ahi-c" data-ad="close" title="Закрыть"><i>✕</i><span>Закрыть</span></button></div></div>
+<div class="adm" id="adm" hidden><div class="ah"><b>Панель поставщика</b><button class="thb" data-ad="theme" title="Оформление">🎨 Оформление</button><span id="wlc" class="wlc" data-ad="wlgo" hidden></span><button class="btn sm o" id="brk" data-ad="brk" hidden></button><div class="row ahb"><button class="ahi ahi-r" data-ad="ref" title="Обновить"><i>🔄</i><span>Обновить</span></button><button class="ahi ahi-o" data-ad="out" title="Выйти"><i>🚪</i><span>Выйти</span></button><button class="ahi ahi-c" data-ad="close" title="Закрыть"><i>✕</i><span>Закрыть</span></button></div></div>
 <div class="aw"><form id="alg"><h3>Вход для поставщика</h3><div id="alerr" role="alert" hidden style="margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#fee2e2;color:#991b1b;font-weight:600"></div><p class="note" id="alh" style="margin:0 0 12px"></p><div class="fl"><label for="arole">Роль</label><select class="pin" id="arole"><option value="operator">Оператор</option><option value="admin">Администратор</option><option value="accountant">Бухгалтер</option><option value="director">Руководитель</option><option value="content">Контент-менеджер</option><option value="partner">Партнёр (логин)</option><option value="sales">Торговый представитель</option><option value="developer">🛠 Разработчик</option></select></div><div class="fl"><label for="anm">Ваше имя</label><input class="pin" id="anm" autocomplete="name" placeholder="Для истории изменений"></div><div class="fl"><label for="apw">Пароль роли</label><input id="apw" type="password" autocomplete="current-password"></div><button class="btn w100" type="submit">Войти</button></form>
 <div id="amain" hidden><p class="note" id="awho" style="margin:0 0 10px"></p><div class="row" id="per1" style="margin-bottom:8px"><button class="btn sm o" data-ad="per" data-p="today">Сегодня</button><button class="btn sm o" data-ad="per" data-p="week">7 дней</button><button class="btn sm o" data-ad="per" data-p="month">Месяц</button><button class="btn sm o" data-ad="per" data-p="all">Всё время</button></div>
 <div class="row" id="per2" style="margin-bottom:12px;align-items:center"><span class="note" style="margin:0">с</span><input class="pin" type="date" id="adf"><span class="note" style="margin:0">по</span><input class="pin" type="date" id="adt"></div>
@@ -4264,6 +4280,16 @@ catEdit(null,{id:"N"+Date.now(),n:o.n,c:o.g||A.cc||(D[0]&&D[0].c)||"",p:o.p||"",
 E.isNew=true;E.base=null;var h3=document.querySelector("#ced h3");if(h3)h3.textContent="Новый товар из 1С";toast("Добавьте фото и характеристику и нажмите «Сохранить»");return}
 if(k==="price"){var p=D[x.i];if(!p)return;if(!confirm("Поставить на сайте цену из 1С?\n«"+p.n+"»: "+f(p.p)+" → "+f(o.p)))return;var it=catItem(p,p.c);it.p=o.p;t.disabled=true;
 api({a:"admin_cat_save",key:A.key,role:A.role,who:A.who,item:it,note:"Цена из 1С «"+p.n+"»: "+f(p.p)+" → "+f(o.p)}).then(function(j){var o2=(j&&j.item)||it,ix=-1;CATO.forEach(function(y,i){if(y.id===o2.id)ix=i});if(ix>-1)CATO[ix]=Object.assign(CATO[ix],o2);else CATO.push(o2);sv("uh_catc",CATO);applyCat(CATO);clean();render();admRender();toast("Цена обновлена ✓")}).catch(function(){t.disabled=false;toast("Не удалось сохранить: нет прав или нет связи")})}},true);
+/* --- 🎨 темы оформления панели --- */
+var ADT=[["aurora","Аврора","radial-gradient(60% 60% at 0% 0%,rgba(139,92,246,.55),transparent 70%),radial-gradient(60% 60% at 100% 10%,rgba(34,211,238,.5),transparent 70%),radial-gradient(60% 60% at 80% 100%,rgba(244,114,182,.45),transparent 70%),#eef1fb"],["night","Ночь","radial-gradient(60% 60% at 0% 0%,rgba(124,58,237,.7),transparent 70%),radial-gradient(60% 60% at 100% 10%,rgba(6,182,212,.5),transparent 70%),#090b12"],["ocean","Океан","linear-gradient(160deg,#c7e3ff,#dde4ff 45%,#f5dcff)"],["min","Минимал","#f5f5f7"]];
+function adTh(){var t="";try{t=localStorage.getItem("uh_admth")||""}catch(x){}if(!t)t=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"night":"aurora";return t}
+function adThSet(t){var el=$("adm");if(!el)return;ADT.forEach(function(x){el.classList.remove("th-"+x[0])});el.classList.add("th-"+t)}
+adThSet(adTh());
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-ad=theme]");if(b){e.preventDefault();e.stopPropagation();var cur=adTh(),m=document.createElement("div");m.className="thm";
+m.innerHTML='<div><b style="font-size:18px">🎨 Оформление панели</b><div class="note" style="margin-top:4px">Выбор сохраняется на этом устройстве.</div><div class="thg">'+ADT.map(function(x){return'<button class="tho'+(x[0]===cur?" on":"")+'" data-th="'+x[0]+'"><i class="'+(x[0]==="night"?"n":"")+'" style="background:'+x[2]+'"></i><b>'+x[1]+(x[0]===cur?" ✓":"")+'</b></button>'}).join("")+'</div><button class="btn o" data-thx="1" style="width:100%;margin-top:12px">Готово</button></div>';
+$("adm").appendChild(m);return}
+var o=e.target.closest&&e.target.closest("[data-th]");if(o){e.preventDefault();e.stopPropagation();var t=o.dataset.th;try{localStorage.setItem("uh_admth",t)}catch(x){}adThSet(t);var M=o.closest(".thm");M.querySelectorAll(".tho").forEach(function(z){var on=z.dataset.th===t;z.classList.toggle("on",on);z.querySelector("b").textContent=ADT.filter(function(q){return q[0]===z.dataset.th})[0][1]+(on?" ✓":"")});return}
+var c=e.target.closest&&(e.target.closest("[data-thx]")||(e.target.classList&&e.target.classList.contains("thm")&&e.target));if(c){e.preventDefault();var M2=c.closest?c.closest(".thm"):c;if(M2)M2.remove()}},true);
 /* --- вкладки и вход --- */
 ["director","admin","accountant"].forEach(function(r){if(TABS[r]&&TABS[r].indexOf("g")<0){var i=TABS[r].indexOf("f");TABS[r].splice(i<0?TABS[r].length:i,0,"g")}});
 var _tf=tabsFor;tabsFor=function(r){var t=_tf(r);if(t.indexOf("f")>-1&&t.indexOf("g")<0)t.splice(t.indexOf("f"),0,"g");if(t.indexOf("f")>-1&&t.indexOf("n")<0)t.splice(t.indexOf("g")+1,0,"n");return t};

@@ -112,12 +112,51 @@ input,select{font:15px var(--body);color:var(--fg);background:var(--surface);bor
 .zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:40;display:grid;place-items:center;padding:16px}
 .zoom img{max-height:90vh;border-radius:8px}
 @media (prefers-reduced-motion:no-preference){.toast{animation:up .25s ease}@keyframes up{from{transform:translate(-50%,10px);opacity:0}}}
+/* выбор роли */
+.hello{display:grid;gap:6px}
+.hello h2{font-size:20px}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.role{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:18px;padding:16px;display:grid;grid-template-columns:44px 1fr;gap:4px 12px;align-items:center;cursor:pointer;color:var(--fg);font:inherit}
+.role:hover,.role:focus-visible{border-color:var(--accent)}
+.role .ic{grid-row:span 2;width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;font-size:22px}
+.role b{font-family:var(--display);font-size:15px;font-weight:500}
+.role span{font-size:13px;color:var(--muted)}
+.role.alt .ic{background:var(--gold-soft)}
+.who-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* пластиковая карточка получателя */
+.pcard{position:relative;border-radius:18px;padding:18px;color:#fff;background:linear-gradient(135deg,#1F4E9C 0%,#14295A 100%);display:grid;grid-template-columns:1fr auto;gap:10px;max-width:420px;aspect-ratio:1.586;align-content:space-between;overflow:hidden}
+.pcard::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(227,180,90,.18)}
+.pcard .t{font-family:var(--display);font-weight:500;font-size:15px}
+.pcard .n{font-size:18px;letter-spacing:.12em;font-weight:600;grid-column:1/-1}
+.pcard .s{font-size:12px;opacity:.85}
+.pcard .q{width:86px;height:86px;background:#fff;border-radius:10px;padding:6px;position:relative;z-index:1}
+.pcard.blocked{filter:grayscale(1);opacity:.7}
+.pinbox{display:flex;gap:10px;justify-content:center}
+.pinbox i{width:14px;height:14px;border-radius:50%;border:2px solid var(--fg);display:block}
+.pinbox i.on{background:var(--fg)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.keys button:disabled{opacity:.4;cursor:not-allowed}
+.keys button{border:0;background:var(--sunk);color:var(--fg);font:600 20px var(--body);padding:12px 0;border-radius:12px;cursor:pointer}
+/* Telegram */
+.tg{background:var(--sunk);border-radius:16px;padding:12px;display:grid;gap:8px}
+.tg .b{max-width:85%;padding:8px 12px;border-radius:14px;font-size:14px;background:var(--surface);border:1px solid var(--line)}
+.tg .b.me{justify-self:end;background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.bars{display:grid;gap:8px}
+.bars .r{display:grid;grid-template-columns:150px 1fr auto;gap:10px;align-items:center;font-size:13.5px}
+.bars .r i{display:block;height:10px;border-radius:6px;background:var(--accent)}
+@media (max-width:480px){.bars .r{grid-template-columns:110px 1fr auto}}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:6px 6px 6px 0}
+.tbl td{border-top:1px solid var(--line);padding:9px 6px 9px 0;vertical-align:top}
+.scroll{overflow-x:auto}
+.vote{display:flex;gap:6px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}
+.vote:first-child{border-top:0}
 </style>
 
 <div class="wrap">
   <header class="top">
     <div class="brand"><div class="mark">А</div><div><h1>Фонд «Амонат»</h1><div class="sub">Целевая помощь через единый QR</div></div></div>
-    <div class="row"><span class="demo">Демо: банк имитируется</span><button class="btn small ghost" id="reset">Сбросить демо</button></div>
+    <div class="row"><span class="demo">Демо: банк имитируется</span><button class="btn small ghost" id="roleBtn" hidden></button><button class="btn small ghost" id="reset">Сбросить демо</button></div>
   </header>
   <nav class="tabs" role="tablist" id="tabs"></nav>
   <main id="view"></main>
@@ -127,10 +166,31 @@ input,select{font:15px var(--body);color:var(--fg);background:var(--surface);bor
 <div class="zoom" id="zoom" hidden></div>
 
 <script>
-const TABS=[["overview","Фонд"],["watch","Наблюдение"],["donate","Донору"],["wallet","Получателю"],["pay","Оплата QR"],["partner","Партнёрам"]];
+/* Роли: у каждого своё меню. «Режим презентации» показывает все экраны для показа в банке */
+const TABNAMES={overview:"Обзор",check:"Проверки",watch:"Наблюдение",rules:"Правила",donate:"Пожертвовать",notes:"Куда пошли мои деньги",report:"Отчёт фонда",wallet:"Мой кошелёк",pay:"Оплата QR",partner:"Касса партнёра"};
+const ROLES={
+  donor:{t:"Жертвователь",d:"Пожертвовать, закят, подписка, куда пошли ваши деньги",ic:"🤲",tabs:["donate","notes","report"]},
+  recipient:{t:"Получатель помощи",d:"Мой баланс, карточка с PIN, оплата по QR",ic:"💳",tabs:["wallet","pay"]},
+  partner:{t:"Партнёр",d:"Аптека, магазин или столовая: оплаты, чеки, закрытие смены",ic:"🏪",tabs:["partner","pay"]},
+  fund:{t:"Сотрудник фонда",d:"Получатели, комиссия, проверки, правила и лимиты",ic:"🏛",tabs:["overview","check","watch","rules","report"]},
+  public:{t:"Публичный отчёт",d:"Для всех: сколько собрано и куда потрачено",ic:"📊",tabs:["report"]},
+  all:{t:"Режим презентации",d:"Все экраны сразу — для показа в банке",ic:"🎬",tabs:["overview","check","watch","rules","donate","notes","wallet","pay","partner","report"]}
+};
+let role=null;try{role=localStorage.getItem("amonat-role")}catch(e){}
+if(!ROLES[role])role=null;
+const TABS_=()=>role?ROLES[role].tabs.map(k=>[k,TABNAMES[k]]):[];
+/* Категории товаров у партнёров: что можно и что нельзя оплатить из фонда */
+const PCATS={pharmacy:{ok:["Лекарства","Медтовары","Детское питание"],no:["Косметика"]},shop:{ok:["Продукты","Гигиена","Детские товары"],no:["Сигареты","Алкоголь","Техника","Подарочные карты"]},canteen:{ok:["Обед"],no:["Алкоголь"]}};
+const CFG0={buy:300,buyMed:1000,day:500,month:4000,share:80,expire:90,remind:75,ops:"pct",opsPct:5,opsSponsor:"",dblCap:500};
+const PSTATE={ok:["p-good","Работает"],warn:["p-warn","Предупреждён"],frozen:["p-bad","Выплаты заморожены"],out:["p-bad","Исключён"]};
+const LEVELS={monthly:"Ежемесячная",urgent:"Срочная",once:"Разовая (на цель)"};
+const COMMISSION=[["op","Оператор фонда"],["mah","Представитель махалли"],["vol","Волонтёр (был дома)"]];
+const FROM={tj:["Карта банка Таджикистана","смн",1],ru:["Карта России / СБП","₽",0.12],world:["Visa / Mastercard (любая страна)","$",10.6]};
 const CATS={health:"Болезнь / лекарства",disability:"Инвалидность",lowincome:"Малоимущая семья",elderly:"Одинокий пожилой"};
 const PTYPES={pharmacy:"Аптека",shop:"Магазин",canteen:"Столовая"};
-const OPS_SHARE=0.10;
+/* Доля на работу фонда: 0, если расходы оплачивает спонсор */
+const opsShare=()=>S.cfg.ops==="sponsor"?0:S.cfg.opsPct/100;
+const opsOf=a=>Math.round(a*opsShare());
 /* Правила распределения */
 const RULE={tiers:[[14,1],[30,.5],[45,.25]],unlock:1,hold:3,bigMul:5,maxPerDay:3,manual:1000,idle:30,reserve:60,warn:30,roundPer:0.4,maxK:1.2,minKc:.5,minKo:.3};
 const DOCKINDS=["Справка об инвалидности","Заключение врача","Рецепт","Справка о доходах","Справка из махалли","Паспорт","Фото условий жизни","Другое"];
@@ -156,12 +216,24 @@ let S;
 try{S=JSON.parse(localStorage.getItem("amonat-v3"))}catch(e){}
 if(!S||!S.recipients)S=seed();
 if(!S.mr){S.mr={bal:0,ret:0,sp:[],used:0};delete S.match}
+/* Новые поля: добавляем к старым сохранённым данным, ничего не теряя */
+function upgrade(){
+  S.cfg={...CFG0,...(S.cfg||{})};
+  if(S.spent==null){S.spent=0;S.spentBy={pharmacy:0,shop:0,canteen:0};S.feed.filter(x=>x.k==="pay").forEach(x=>{S.spent+=x.a;const p=S.partners.find(q=>q.id===x.pid);if(p)S.spentBy[p.type]+=x.a})}
+  S.notes=S.notes||[];S.myLeft=S.myLeft||0;S.myDbl=S.myDbl||0;S.myDblFrom=S.myDblFrom||S.day;S.mySub=S.mySub||0;S.tg=!!S.tg;S.mystery=S.mystery||[];S.from=S.from||"tj";S.topUp=!!S.topUp;
+  S.feed.forEach((x,i)=>{if(x.k==="pay"&&!x.id){x.id="t"+i+"-"+x.d;if(x.chk===undefined)x.chk={no:"демо",d:x.d}}});
+  S.partners.forEach(p=>{p.state=p.state||"ok";p.total=p.total||0;p.n=p.n||0;p.why=p.why||""});
+  S.recipients.forEach(r=>{r.pin=r.pin||"1234";r.card=r.card||{no:cardNo(r.id),blocked:false};r.proxy=r.proxy||"";r.lvl=r.lvl||(r.target?"monthly":"monthly");r.votes=r.votes||{};
+    if(r.verifiedDay==null)r.verifiedDay=r.status==="ok"||r.status==="wait"?1:0;r.tries=r.tries||0;if(r.lastBuy==null)r.lastBuy=S.day});
+}
+function cardNo(seed){let h=7;for(const c of String(seed)+Date.now())h=(h*131+c.charCodeAt(0))%100000000;return String(h).padStart(8,"0").replace(/(\d{4})(\d{4})/,"$1 $2")}
+upgrade();
 function save(){try{localStorage.setItem("amonat-v3",JSON.stringify(S))}catch(e){if(!save.warned){save.warned=1;setTimeout(()=>toast("Память браузера заполнена: файлы сохранятся до перезагрузки страницы"),400)}}}
 const $=s=>document.querySelector(s);
 const m=n=>Math.round(n).toLocaleString("ru-RU").replace(/,/g," ")+" смн";
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>el.hidden=true,3000)}
-function log(k,t,a,rid){S.feed.unshift({k,t,a,d:S.day,rid});S.feed=S.feed.slice(0,80)}
+function log(k,t,a,rid){S.feed.unshift({k,t,a,d:S.day,rid});S.feed=S.feed.slice(0,300)}
 const R=id=>S.recipients.find(r=>r.id===id);const P=id=>S.partners.find(p=>p.id===id);
 
 /* ---------- ДВИЖОК ---------- */
@@ -198,7 +270,7 @@ const inflowParts=()=>[["Округление покупок",S.roundUsers*RULE.
 const inflow=()=>inflowParts().reduce((s,x)=>s+x[1],0);
 function daysLeft(extra){const net=burn(extra)-inflow();return net<=0?Infinity:S.pool/net}
 const canAdmit=r=>daysLeft(r.daily)>=RULE.reserve;
-const waiting=()=>S.recipients.filter(r=>r.status==="wait").sort((a,b)=>b.need-a.need||a.since-b.since);
+const waiting=()=>S.recipients.filter(r=>r.status==="wait").sort((a,b)=>(b.lvl==="urgent")-(a.lvl==="urgent")||b.need-a.need||a.since-b.since);
 function admitWaiting(){let n=0;for(const r of waiting()){if(!canAdmit(r))break;r.status="ok";r.lastBuy=S.day;log("join",`${r.name} подключён из листа ожидания`,0,r.id);n++}return n}
 /* Динамическая норма: бюджет дня = фонд / ${RULE.reserve} дней + постоянный доход.
    Если денег много, все получают до 120% средней нормы. Если мало: больным не ниже 50%, остальным не ниже 30%. */
@@ -217,6 +289,7 @@ const pct=x=>Math.round(x*100)+"%";
 function accrue(){
   const inc=Math.round(inflow());if(inc){S.pool+=inc;S.raised+=inc;log("don","Округления и подписки за день",inc)}
   admitWaiting();
+  expireBalances();
   const act=S.recipients.filter(r=>r.status==="ok");
   act.forEach(r=>{const rk=risk(r);if(rk.lvl==="high"&&!r.paused){r.paused=true;r.pauseWhy=rk.sig.map(x=>x[1]).join("; ");log("flag",`${r.name}: начисление на паузе, риск ${rk.score}`,0,r.id)}});
   const full=act.reduce((s,r)=>s+r.daily,0);
@@ -235,6 +308,34 @@ function accrue(){
   S.partners.forEach(p=>{p.paid=0;p.count=0;p.returned=0;p.closed=false});
   return{given,kept,short,k,Kc:pl.Kc};
 }
+/* Срок жизни баланса: не потраченное долго возвращается в общий фонд тем, кто ждёт. Цель на лечение не сгорает */
+const idleDays=r=>S.day-r.lastBuy;
+function expireBalances(){
+  S.recipients.filter(r=>r.status==="ok"&&r.bal>0&&!r.target).forEach(r=>{
+    const d=idleDays(r);
+    if(d>=S.cfg.expire){const a=r.bal;r.bal=0;r.lastBuy=S.day;S.pool+=a;log("ret",`${r.name}: ${S.cfg.expire} дн. без покупок, баланс вернулся в общий фонд`,a,r.id)}
+    else if(d===S.cfg.remind){log("flag",`${r.name}: ${d} дн. без покупок — волонтёру отправлено напоминание проверить, всё ли в порядке`,0,r.id)}
+  });
+}
+/* Сколько фонд может оплатить в этой покупке и почему */
+const spentSince=(r,from)=>r.tx.filter(t=>t.d>from&&!t.flag).reduce((s,t)=>s+t.a,0);
+function fundCap(r,p,cat){
+  const c=S.cfg;
+  if(p.state==="frozen"||p.state==="out")return{max:0,why:"Партнёр на проверке фонда: оплата из фонда временно недоступна"};
+  if(cat&&PCATS[p.type].no.includes(cat))return{max:0,why:`«${cat}» нельзя оплатить из фонда`};
+  const med=p.type==="pharmacy";
+  const lims=[[r.bal,"весь баланс"],[med?c.buyMed:c.buy,`лимит на одну покупку ${m(med?c.buyMed:c.buy)}`],[(med?c.day+c.buyMed:c.day)-spentSince(r,S.day-1),"дневной лимит"],[c.month-spentSince(r,S.day-30),"лимит на месяц"]];
+  if(!med&&r.bal>3*r.daily)lims.push([Math.floor(r.bal*c.share/100),`за раз не больше ${c.share}% баланса`]);
+  let best=lims[0];lims.forEach(x=>{if(x[0]<best[0])best=x});
+  return{max:Math.max(0,Math.floor(best[0])),why:best===lims[0]?"":best[1]};
+}
+/* «След сомони»: часть оплаты засчитывается вашим пожертвованиям */
+const WHAT={"Лекарства":"лекарствами","Медтовары":"медтоварами","Детское питание":"детским питанием","Продукты":"продуктами","Гигиена":"средствами гигиены","Детские товары":"детскими вещами","Обед":"горячим обедом"};
+const WHOM={health:"человека, который лечится",disability:"человека с инвалидностью",lowincome:"малоимущей семьи",elderly:"одинокого пожилого человека"};
+function trace(r,p,a,cat){
+  if(S.myLeft<=0||a<=0)return;const part=Math.min(a,S.myLeft);S.myLeft-=part;
+  S.notes.unshift({d:S.day,a:part,t:`Ваши ${m(part)} стали ${WHAT[cat]||"покупкой"} для ${WHOM[r.cat]} в городе ${r.city}`,p:p.name,tg:S.tg});S.notes=S.notes.slice(0,60);
+}
 function stress(){
   S.pool=2500;
   [["Нигина А.","health",5,35,500,"Лечение почек, лекарства каждую неделю"],["Семья Раҳимовых","lowincome",4,45,0,"Отец потерял работу, 4 детей"],["Саидали Ш.","disability",4,30,0,"Инвалидность II группы"],["Гулчеҳра Б.","elderly",3,25,0,"Пенсионерка, живёт одна"],["Сомон Т.","lowincome",2,30,0,"Временно без работы"]]
@@ -248,16 +349,18 @@ function fundBlock(r){
   if(r.bal<=0)return pend(r)?`${m(pend(r))} поступит завтра`:"Баланс пуст";
   return"";
 }
-function purchase(r,p,a,useFund){
-  const fund=useFund&&!fundBlock(r)?Math.min(r.bal,a):0;
+function purchase(r,p,a,useFund,cat,how){
+  cat=cat||PCATS[p.type].ok[0];
+  const fund=useFund&&!fundBlock(r)?Math.min(a,fundCap(r,p,cat).max):0;
   if(fund>RULE.manual){r.tx.push({d:S.day,a:fund,flag:true});log("flag",`${r.name} · ${p.name}: ждёт подтверждения`,fund,r.id);return{fund:0,own:a,flag:true}}
   if(fund){
     const med=p.type==="pharmacy"&&(r.cat==="health"||r.cat==="disability");
     const big=fund>=RULE.bigMul*r.daily&&!med;
     r.tx.push({d:S.day,a:fund,pid:p.id,max:fund>=r.bal*0.95,big,med});
-    r.bal-=fund;r.lastBuy=S.day;p.paid+=fund;p.count++;
+    r.bal-=fund;r.lastBuy=S.day;p.paid+=fund;p.count++;p.total+=fund;p.n++;S.spent+=fund;S.spentBy[p.type]+=fund;
     if(big)r.hold=S.day+RULE.hold;
-    S.feed.unshift({k:"pay",t:`${r.name} · ${p.name}`,a:fund,d:S.day,rid:r.id,pid:p.id});
+    S.feed.unshift({k:"pay",id:"t"+Date.now()+Math.random().toString(36).slice(2,6),t:`${r.name} · ${p.name}`,a:fund,d:S.day,rid:r.id,pid:p.id,cat,how:how||"app",chk:null});
+    trace(r,p,fund,cat);
   }
   return{fund,own:a-fund,flag:false};
 }
@@ -265,7 +368,7 @@ function simulate(n){
   let tot={given:0,kept:0};
   for(let i=0;i<n;i++){
     const g=accrue();tot.given+=g.given;tot.kept+=g.kept;const d=S.day;
-    const buy=(id,pid,amt)=>{const r=R(id);if(r&&r.bal>=10&&!fundBlock(r))purchase(r,P(pid),Math.min(amt,r.bal),true)};
+    const buy=(id,pid,amt)=>{const r=R(id);if(r&&r.bal>=10&&!fundBlock(r)){const res=purchase(r,P(pid),Math.min(amt,r.bal),true);if(res.fund&&S.feed[0].k==="pay")S.feed[0].chk={no:"фиск. "+(100000+Math.floor(Math.random()*899999)),d:S.day}}};
     if(d%5===0)buy("r1","p1",320);
     buy("r2","p2",R("r2").bal);
     buy("r3",d%2?"p2":"p3",45);
@@ -276,7 +379,8 @@ function simulate(n){
 }
 
 /* ---------- ИНТЕРФЕЙС ---------- */
-let tab=(location.hash||"").slice(1);if(!TABS.some(t=>t[0]===tab))tab="overview";
+let tab=(location.hash||"").slice(1);
+function fixTab(){const t=TABS_();if(t.length&&!t.some(x=>x[0]===tab))tab=t[0][0]}fixTab();
 const EVTYPES=["Свадьба","Рождение ребёнка","Хадж / Умра","Рамазан","Выздоровление","День рождения","В память о близком"];
 function addDon(a,purpose,who,pub){S.donations.unshift({who:who||S.me.name||"Гость",pub:who?!!pub:(S.me.name?S.me.pub:false),a:Math.round(a),purpose,d:S.day});S.donations=S.donations.slice(0,300)}
 function donorTable(list,showAll){const by={};list.forEach(x=>{const key=showAll||x.pub?x.who:"Анонимные доноры";by[key]=by[key]||{who:key,a:0,n:0,anon:!(showAll||x.pub),pub:x.pub};by[key].a+=x.a;by[key].n++});
@@ -299,10 +403,13 @@ const SCALE={round:{name:"Округление покупок",per:RULE.roundPer
   juma:{name:"Джума-садака 5 смн",per:5/7,how:"Каждую пятницу автоматически списывается 5 смн. Это меньше одной лепёшки в неделю."},
   sms:{name:"1 смн в день",per:1,how:"Ежедневная садака в 1 сомони. Подключается одной кнопкой в приложении банка."}};
 const SCALE_STEPS=[1000,10000,50000,100000,300000,500000,1000000,2000000];
-let ui={scMech:"round",scPeople:100000,donName:"",zSave:0,zGold:0,newDocs:[],donAmt:100,donPurpose:"Общая помощь",wr:"r1",payR:"r1",payP:"p1",payAmt:120,step:1,useFund:true,receipt:null,pp:"p1"};
-function renderTabs(){$("#tabs").innerHTML=TABS.map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-tab="${k}">${l}</button>`).join("")}
-document.addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b){tab=b.dataset.tab;history.replaceState(null,"","#"+tab);if(tab==="pay")ui.step=1;render();scrollTo(0,0)}});
-$("#reset").onclick=()=>{S=seed();save();ui.step=1;render();toast("Демо сброшено")};
+let ui={scMech:"round",scPeople:100000,donName:"",zSave:0,zGold:0,newDocs:[],donAmt:100,donPurpose:"Общая помощь",wr:"r1",payR:"r1",payP:"p1",payAmt:120,step:1,useFund:true,receipt:null,pp:"p1",payCat:"",payHow:"app",payBy:"self",pin:""};
+function renderTabs(){const t=TABS_();$("#tabs").hidden=!role||t.length<2;$("#tabs").innerHTML=t.map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-tab="${k}">${l}</button>`).join("");
+  const rb=$("#roleBtn");rb.hidden=!role;if(role){rb.textContent=ROLES[role].ic+" Сменить роль";rb.title=ROLES[role].t}}
+function setRole(r){role=r;try{r?localStorage.setItem("amonat-role",r):localStorage.removeItem("amonat-role")}catch(e){}tab=r?ROLES[r].tabs[0]:"";ui.step=1;history.replaceState(null,"",r?"#"+tab:location.pathname);render();scrollTo(0,0)}
+$("#roleBtn").onclick=()=>setRole(null);
+document.addEventListener("click",e=>{const rl=e.target.closest("[data-role]");if(rl){setRole(rl.dataset.role);return}const b=e.target.closest("[data-tab]");if(b){tab=b.dataset.tab;history.replaceState(null,"","#"+tab);if(tab==="pay")ui.step=1;render();scrollTo(0,0)}});
+$("#reset").onclick=()=>{S=seed();upgrade();save();ui.step=1;render();toast("Демо сброшено")};
 const tierPill=t=>`<span class="pill ${t.k===1?"p-good":t.k>0?"p-warn":"p-bad"}">Норма ${Math.round(t.k*100)}%</span>`;
 const riskPill=k=>`<span class="pill ${k.lvl==="high"?"p-bad":k.lvl==="mid"?"p-warn":"p-good"}">Риск ${k.score}</span>`;
 
@@ -331,7 +438,7 @@ function vOverview(){
   </div>
   <div class="card">
     <div class="row between"><h2>Получатели</h2><span class="note">Проверка: справки, махалля, хукумат</span></div>
-    <div class="list">${S.recipients.map(r=>{const t=tier(r);return`<div class="item"><div class="who"><div class="name">${esc(r.name)} ${r.status==="ok"?tierPill(t):r.status==="wait"?`<span class="pill p-gold">Ожидание №${wl.indexOf(r)+1}</span>`:`<span class="pill p-warn">На проверке</span>`}</div><div class="meta">Нужда: ${NEED[r.need]} · ${CATS[r.cat]} · ${esc(r.note)} · ${esc(r.city)} · ${r.bank}</div><button class="btn small ghost" style="margin-top:6px" data-docs="${r.id}">Документы: ${r.docs.length}</button></div><div class="center">${r.status==="ok"?`<div class="amt">${m(r.bal)}</div><div class="meta">сегодня ${todayAmt(r,pl)} из ${r.daily}</div>`:r.status==="wait"?`<div class="meta">${r.daily} смн/день</div>`:`<button class="btn small" data-docs="${r.id}">Проверить</button>`}</div></div>`}).join("")}</div>
+    <div class="list">${S.recipients.map(r=>{const t=tier(r);return`<div class="item"><div class="who"><div class="name">${esc(r.name)} ${r.status==="ok"?tierPill(t):r.status==="wait"?`<span class="pill p-gold">Ожидание №${wl.indexOf(r)+1}</span>`:`<span class="pill p-warn">На проверке</span>`}</div><div class="meta">${r.lvl==="urgent"?`<b style="color:var(--bad)">Срочно</b> · `:""}Нужда: ${NEED[r.need]} · ${CATS[r.cat]} · ${esc(r.note)} · ${esc(r.city)} · ${r.bank}</div><button class="btn small ghost" style="margin-top:6px" data-docs="${r.id}">Документы: ${r.docs.length}</button></div><div class="center">${r.status==="ok"?`<div class="amt">${m(r.bal)}</div><div class="meta">сегодня ${todayAmt(r,pl)} из ${r.daily}</div>`:r.status==="wait"?`<div class="meta">${r.daily} смн/день</div>`:`<button class="btn small" data-docs="${r.id}">Проверить</button>`}</div></div>`}).join("")}</div>
     <div class="note">Новый человек подключается, только если фонд потянет его норму минимум ${RULE.reserve} дней. Иначе он ждёт в очереди: первым подключится тот, чья нужда выше.</div>
   </div>
   <div class="card">
@@ -343,6 +450,7 @@ function vOverview(){
       <label>Средняя норма в день, смн<input id="nDaily" type="number" min="5" value="30"></label>
       <label>Уровень нужды<select id="nNeed">${NEED.slice(1).map((v,i)=>`<option value="${i+1}" ${i===2?"selected":""}>${v}</option>`).join("")}</select></label>
       <label>Цель на лечение, смн (если есть)<input id="nTarget" type="number" min="0" value="0"></label>
+      <label>Уровень помощи<select id="nLvl">${Object.entries(LEVELS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></label>
       <label style="grid-column:1/-1">Причина нужды<input id="nNote" placeholder="Например: диабет 1 типа, нужен инсулин"></label>
     </div>
     <div class="upload">
@@ -361,9 +469,9 @@ function vOverview(){
     <div class="kpis"><div class="kpi"><div class="l">В резерве</div><div class="v">${m(S.mr.bal)}</div></div><div class="kpi"><div class="l">Уже удвоено</div><div class="v">${m(S.mr.used)}</div></div></div>
     <div class="list">
       <div class="item"><span>Возвраты партнёров</span><span class="amt">${m(S.mr.ret)}</span></div>
-      ${S.mr.sp.map(x=>`<div class="item"><span>Спонсор: ${esc(x.n)}</span><span class="amt">${m(x.a)}</span></div>`).join("")}
+      ${S.mr.sp.map(x=>`<div class="item"><span>Спонсор: ${esc(x.n)}${x.c?` · кампания «${esc(x.c)}»`:""}</span><span class="amt">${m(x.a)}</span></div>`).join("")}
     </div>
-    <div class="grid2"><label>Спонсор (компания или человек)<input id="spName" placeholder="Например: ООО «Нури Субҳ»"></label><label>Сумма на удвоение, смн<input id="spAmt" type="number" min="1" placeholder="10000"></label></div>
+    <div class="grid2"><label>Спонсор (компания или человек)<input id="spName" placeholder="Например: ООО «Нури Субҳ»"></label><label>Сумма на удвоение, смн<input id="spAmt" type="number" min="1" placeholder="10000"></label><label>Кампания (необязательно)<input id="spCamp" placeholder="Например: Рамадан, зимняя помощь"></label></div>
     <div><button class="btn" id="spAdd">Добавить спонсора</button></div>
     <div class="note">Удвоение берётся только из этого резерва, а не из общего фонда: деньги нуждающихся не трогаются. Когда резерв пуст, донор вместо удвоения видит, что даст его взнос.</div>
   </div>
@@ -378,7 +486,7 @@ function vOverview(){
 function feedHtml(f){if(!f.length)return `<div class="note">Пока нет операций.</div>`;
   const ic={join:["p-good","Подключение"],don:["p-good","Пожертвование"],pay:["p-acc","Оплата"],acc:["p-gold","Начисление"],ret:["p-good","Возврат партнёра"],flag:["p-bad","Проверка"]};
   return `<div class="list">${f.map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">${esc(x.t)}</div><div class="meta"><span class="pill ${ic[x.k][0]}">${ic[x.k][1]}</span> · день ${x.d}</div></div>${x.a?`<div class="amt">${x.k==="pay"?"−":x.k==="flag"?"":"+"}${m(x.a)}</div>`:""}</div>`).join("")}</div>`}
-function verify(r){r.since=S.day;r.lastBuy=S.day;if(canAdmit(r)){r.status="ok";toast(`${r.name}: подключён к кошельку`)}else{r.status="wait";log("flag",`${r.name}: в листе ожидания, не хватает резерва`,0,r.id);toast(`${r.name}: проверен, но фонд пока не потянет. Добавлен в очередь`)}log("join",`${r.name}: документы проверены (${r.docs.length})`,0,r.id);save();render()}
+function verify(r){r.since=S.day;r.lastBuy=S.day;r.verifiedDay=S.day;if(canAdmit(r)){r.status="ok";toast(`${r.name}: подключён к кошельку`)}else{r.status="wait";log("flag",`${r.name}: в листе ожидания, не хватает резерва`,0,r.id);toast(`${r.name}: проверен, но фонд пока не потянет. Добавлен в очередь`)}log("join",`${r.name}: документы проверены (${r.docs.length})`,0,r.id);save();render()}
 /* ---------- ДОКУМЕНТЫ ---------- */
 function readDoc(f,kind){return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{
   if(!f.type.startsWith("image/"))return res({kind,name:f.name,size:f.size,day:S.day});
@@ -393,12 +501,20 @@ function openDocs(id){const r=R(id),md=$("#modal");
     <div class="note">${CATS[r.cat]} · Нужда: ${NEED[r.need]} · ${esc(r.note)}</div>
     <div class="docs" id="mDocs">${docsHtml(r.docs,r.id)}</div>
     <div class="upload"><div class="grid2"><label>Тип документа<select id="mKind">${DOCKINDS.map(k=>`<option>${k}</option>`).join("")}</select></label><label>Добавить фото или файл<input id="mFiles" type="file" accept="image/*,application/pdf" multiple></label></div></div>
-    ${r.status==="check"?`<div class="row"><button class="btn" id="mVerify" ${r.docs.length?"":"disabled"}>Документы в порядке, подтвердить</button><button class="btn ghost" id="mReject">Отклонить</button></div>`:`<div class="note">Статус: ${r.status==="ok"?"получает помощь":r.status==="wait"?"в листе ожидания":"на проверке"}. Документы хранятся для повторной проверки.</div>`}
+    ${r.status==="check"?`<div class="card" style="padding:12px;gap:4px"><h3>Комиссия · нужно 3 голоса «за»</h3>
+      ${COMMISSION.map(([k,n])=>`<div class="vote"><span>${n}</span><span class="chips"><button class="chip" data-vote="${k}:1" aria-pressed="${r.votes[k]===true}">За</button><button class="chip" data-vote="${k}:0" aria-pressed="${r.votes[k]===false}">Против</button></span></div>`).join("")}
+      <label style="margin-top:6px">Уровень помощи<select id="mLvl">${Object.entries(LEVELS).map(([k,v])=>`<option value="${k}" ${k===r.lvl?"selected":""}>${v}</option>`).join("")}</select></label></div>
+      <div class="row"><button class="btn" id="mVerify" ${r.docs.length&&COMMISSION.every(([k])=>r.votes[k]===true)?"":"disabled"}>Назначить помощь</button><button class="btn ghost" id="mReject">Отклонить</button></div>
+      <div class="note">${!r.docs.length?"Сначала нужен хотя бы один документ. ":""}Если двое против — заявка отклоняется автоматически.</div>`:`<div class="note">Статус: ${r.status==="ok"?"получает помощь":r.status==="wait"?"в листе ожидания":"на проверке"}. Документы хранятся для повторной проверки.</div>`}
   </div>`;
     $("#mClose").onclick=()=>{md.hidden=true;md.innerHTML="";render()};
     bindDocs($("#mDocs"),r.docs,draw);
     $("#mFiles").onchange=async e=>{const fs=[...e.target.files];for(const f of fs){try{r.docs.push(await readDoc(f,$("#mKind").value))}catch(_){toast(`Не удалось прочитать ${f.name}`)}}save();draw()};
     if($("#mVerify"))$("#mVerify").onclick=()=>{md.hidden=true;md.innerHTML="";verify(r)};
+    md.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>{const[k,v]=b.dataset.vote.split(":");r.votes[k]=v==="1";
+      if(COMMISSION.filter(([q])=>r.votes[q]===false).length>=2){S.recipients=S.recipients.filter(x=>x!==r);log("flag",`${r.name}: комиссия отклонила заявку`,0);md.hidden=true;md.innerHTML="";save();render();return toast("Двое против: заявка отклонена")}
+      save();draw()});
+    if($("#mLvl"))$("#mLvl").onchange=e=>{r.lvl=e.target.value;save()};
     if($("#mReject"))$("#mReject").onclick=()=>{S.recipients=S.recipients.filter(x=>x!==r);log("flag",`${r.name}: заявка отклонена`,0);md.hidden=true;md.innerHTML="";save();render();toast("Заявка отклонена")};
   };draw();md.hidden=false;md.onclick=e=>{if(e.target===md){md.hidden=true;md.innerHTML="";render()}}}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("#zoom").hidden=true;}});
@@ -411,12 +527,12 @@ function bindOverview(){
   bindDocs($("#nDocs"),ui.newDocs,()=>{$("#nDocs").innerHTML=docsHtml(ui.newDocs,"new");bindDocs($("#nDocs"),ui.newDocs)});
   document.querySelectorAll("[data-docs]").forEach(b=>b.onclick=()=>openDocs(b.dataset.docs));
   $("#spAdd").onclick=()=>{const n=$("#spName").value.trim(),a=Math.round(+$("#spAmt").value||0);if(!n)return toast("Укажите спонсора");if(a<=0)return toast("Укажите сумму");
-    S.mr.sp.push({n,a,d:S.day});S.mr.bal+=a;S.raised+=a;addDon(a,"На удвоение",n,true);log("don",`${n}: в резерв удвоения`,a);save();render();toast(`${n} добавлен: +${m(a)} в резерв удвоения`)};
+    S.mr.sp.push({n,a,d:S.day,c:$("#spCamp").value.trim()});S.mr.bal+=a;S.raised+=a;addDon(a,"На удвоение",n,true);log("don",`${n}: в резерв удвоения`,a);save();render();toast(`${n} добавлен: +${m(a)} в резерв удвоения`)};
   $("#addR").onclick=()=>{
     const name=$("#nName").value.trim();if(!name)return toast("Укажите имя");
     if(!ui.newDocs.length)return toast("Прикрепите хотя бы один документ");
-    S.recipients.push({docs:ui.newDocs,id:"r"+Date.now(),name,city:$("#nCity").value.trim()||"Душанбе",cat:$("#nCat").value,note:$("#nNote").value.trim()||"Документы загружены",daily:Math.max(5,+$("#nDaily").value||30),need:+$("#nNeed").value||3,since:S.day,target:Math.max(0,+$("#nTarget").value||0),bal:0,status:"check",bank:"Алиф",pending:[],tx:[],paused:false,reviewed:0,hold:0,lastBuy:S.day});
-    ui.newDocs=[];save();render();toast("Заявка отправлена на проверку");
+    S.recipients.push({docs:ui.newDocs,id:"r"+Date.now(),name,city:$("#nCity").value.trim()||"Душанбе",cat:$("#nCat").value,note:$("#nNote").value.trim()||"Документы загружены",daily:Math.max(5,+$("#nDaily").value||30),need:+$("#nNeed").value||3,since:S.day,target:Math.max(0,+$("#nTarget").value||0),bal:0,status:"check",bank:"Алиф",pending:[],tx:[],paused:false,reviewed:0,hold:0,lastBuy:S.day,lvl:$("#nLvl").value,votes:{},pin:"1234",card:{no:cardNo("n"),blocked:false},proxy:"",verifiedDay:0,tries:0});
+    ui.newDocs=[];save();render();toast("Заявка отправлена комиссии: вкладка «Проверки»");
   };
 }
 
@@ -467,9 +583,9 @@ function bindWatch(){
 
 /* ---------- ДОНОР ---------- */
 function vDonate(){
-  const a=ui.donAmt;const ops=Math.round(a*OPS_SHARE);
+  const a=ui.donAmt;const ops=opsOf(a),toPeople=S.topUp?a:a-ops,charge=S.topUp?a+ops:a;
   const people=S.recipients.filter(r=>r.status==="ok");
-  const mr=S.mr,mAdd=Math.min(mr.bal,a);
+  const mr=S.mr,capLeft=dblLeft(),mAdd=Math.min(mr.bal,toPeople,capLeft),camp=mr.sp.filter(x=>x.c).slice(-1)[0],fr=FROM[S.from];
   const goals=people.filter(r=>r.target>0).map(r=>({r,have:r.bal+pend(r)})).filter(g=>g.have<g.r.target);
   const sc=SCALE[ui.scMech],ppl=ui.scPeople,perMonth=sc.per*30,total=perMonth*ppl;
   const zk=ui.zSave&&ui.zGold?(ui.zSave>=85*ui.zGold?ui.zSave*0.025:0):null;
@@ -482,14 +598,18 @@ function vDonate(){
     </div>
     <div class="note">По умолчанию пожертвование анонимное: тайная садака ценится выше. Фонд видит имя всегда, публичный отчёт только с вашего согласия.</div>
     ${daysLeft()<RULE.warn?`<div class="note" style="color:var(--bad);font-weight:600">Фонду срочно нужна помощь: денег осталось на ${Math.floor(daysLeft())} дн.${waiting().length?`, ${waiting().length} чел. ждут в очереди`:""}.</div>`:""}
-    ${mr.bal>0?`<div style="background:var(--gold-soft);border-radius:12px;padding:10px 12px"><b style="color:var(--gold)">×2 Удвоение работает</b><div class="note">Ваш взнос удвоится из резерва удвоения: это деньги, которые партнёры вернули с покупок${mr.sp.length?", и взносы спонсоров ("+mr.sp.slice(0,3).map(x=>esc(x.n)).join(", ")+")":""}. В резерве осталось ${m(mr.bal)}.</div></div>`:`<div style="background:var(--accent-soft);border-radius:12px;padding:10px 12px"><b style="color:var(--accent)">Что даст ваш взнос</b><div class="note" style="color:var(--fg)">${impact(a)}</div><div class="note">Удвоение сейчас не действует: резерв удвоения пуст. Он пополнится, когда партнёры вернут часть оплат или появится спонсор.</div></div>`}
+    ${mr.bal>0?`<div style="background:var(--gold-soft);border-radius:12px;padding:10px 12px;display:grid;gap:4px"><div class="row between"><b style="color:var(--gold)">×2 Удвоение работает${camp?` · кампания «${esc(camp.c)}»`:""}</b><span class="pill p-gold">Осталось удвоений: ${m(mr.bal)}</span></div><div class="note">Ваш взнос удвоится из отдельного резерва: это деньги, которые партнёры вернули с покупок${mr.sp.length?", и взносы спонсоров — спасибо "+mr.sp.slice(-3).map(x=>esc(x.n)).join(", "):""}. Деньги нуждающихся не трогаются.</div><div class="note">Удваивается до ${m(S.cfg.dblCap)} в месяц на одного человека, чтобы хватило многим. ${capLeft<S.cfg.dblCap?`Вам осталось удвоить: <b style="color:var(--fg)">${m(capLeft)}</b>.`:""}</div></div>`:`<div style="background:var(--accent-soft);border-radius:12px;padding:10px 12px"><b style="color:var(--accent)">Что даст ваш взнос</b><div class="note" style="color:var(--fg)">${impact(a)}</div><div class="note">Удвоение временно на паузе: резерв пуст, фонд ищет спонсора. Ваш взнос всё равно дойдёт полностью, просто без удвоения.</div></div>`}
     <div class="chips">${[50,100,500,1000,5000].map(v=>`<button class="chip" aria-pressed="${a===v}" data-amt="${v}">${v} смн</button>`).join("")}</div>
     <label>Другая сумма<input id="dAmt" type="number" min="1" value="${a}"></label>
     <label>Назначение<select id="dPur">${["Общая помощь","На лекарства","Закят","Садака","Семьям с детьми"].map(p=>`<option ${p===ui.donPurpose?"selected":""}>${p}</option>`).join("")}</select></label>
+    <label>Откуда платите<select id="dFrom">${Object.entries(FROM).map(([k,v])=>`<option value="${k}" ${k===S.from?"selected":""}>${v[0]}</option>`).join("")}</select></label>
+    ${S.from!=="tj"?`<div class="note">С вашей карты спишется примерно <b style="color:var(--fg)">${fr[1]==="₽"?Math.ceil(charge/fr[2]).toLocaleString("ru-RU")+" ₽":"$"+(charge/fr[2]).toFixed(2)}</b> (курс примерный, точный покажет банк). Помогайте дому, где бы вы ни были.</div>`:""}
     <label>От чьего имени (необязательно)<input id="dName" placeholder="Например: в память об отце, за здоровье мамы" value="${esc(ui.donName)}"></label>
-    <div class="split"><i style="width:90%;background:var(--accent)"></i><i style="width:10%;background:var(--gold)"></i></div>
-    <div class="row between note"><span>Нуждающимся: <b style="color:var(--fg)">${m(a-ops+mAdd)}</b>${mAdd?` (с удвоением)`:""}</span><span>Работа фонда: <b style="color:var(--fg)">${m(ops)}</b></span></div>
-    <button class="btn" id="donBtn">Оплатить ${m(a)} через Алиф</button>
+    ${ops?`<div class="split"><i style="width:${toPeople/charge*100}%;background:var(--accent)"></i><i style="width:${ops/charge*100}%;background:var(--gold)"></i></div>
+    <div class="row between note"><span>Нуждающимся: <b style="color:var(--fg)">${m(toPeople+mAdd)}</b>${mAdd?` (с удвоением)`:""}</span><span>Работа фонда (${S.cfg.opsPct}%): <b style="color:var(--fg)">${m(ops)}</b></span></div>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--fg);font-weight:500"><input id="topUp" type="checkbox" style="width:auto" ${S.topUp?"checked":""}>Добавить ${m(ops)} сверху на работу фонда, чтобы вся сумма дошла до людей</label>`:
+    `<div class="note" style="color:var(--good);font-weight:600">100% вашего взноса доходит до людей: работу фонда оплачивает ${esc(S.cfg.opsSponsor||"спонсор")}.</div>${mAdd?`<div class="note">С удвоением нуждающимся: <b style="color:var(--fg)">${m(toPeople+mAdd)}</b></div>`:""}`}
+    <button class="btn" id="donBtn">Оплатить ${m(charge)} · ${S.from==="tj"?"Алиф":S.from==="ru"?"карта РФ / СБП":"Visa / Mastercard"}</button>
     <div class="note">Деньги не попадают на чужую карту. Они тратятся только у проверенных аптек, магазинов и столовых.</div>
   </div>
   ${S.cert?`<div class="card" style="text-align:center">
@@ -518,7 +638,9 @@ function vDonate(){
          ["myJuma","Джума-садака","Каждую пятницу автоматически 5 смн."]].map(([id,t,d])=>`<div class="item"><div class="who"><div class="name">${t}</div><div class="meta">${d}</div></div><button class="chip" id="${id}" aria-pressed="${!!S[id]}">${S[id]?"Включено":"Включить"}</button></div>`).join("")}
     </div>
     <h3>Ежемесячная подписка</h3>
-    <div class="chips">${[10,20,50,100].map(v=>`<button class="chip" data-sub="${v}">${v} смн в месяц</button>`).join("")}</div>
+    ${S.mySub?`<div class="row between"><span>Ваша подписка: <b>${m(S.mySub)} в месяц</b></span><button class="btn small ghost" id="subOff">Отменить</button></div>`:""}
+    <div class="chips">${[10,20,50,100].map(v=>`<button class="chip" data-sub="${v}" aria-pressed="${S.mySub===v}">${v} смн в месяц</button>`).join("")}</div>
+    <div class="note">Списывается автоматически, отмена в один клик.</div>
     <h3>Для компаний</h3>
     <div class="note">Сотрудник соглашается отдавать 1% зарплаты, бухгалтерия перечисляет автоматически. Компания получает публичное «спасибо» в отчёте фонда.</div>
     <div class="row"><button class="btn small ghost" id="payroll">Демо: компания на 200 сотрудников подключила 1%</button></div>
@@ -602,14 +724,18 @@ function vDonate(){
     <div class="note">Сейчас помощь получают ${people.length} человек(а) и семьи.</div>
   </div></div>`;
 }
-function impact(a){const net=a-Math.round(a*OPS_SHARE),days=Math.floor(net/30),meals=Math.floor(net/MEAL);
+function impact(a){const net=S.topUp?a:a-opsOf(a),days=Math.floor(net/30),meals=Math.floor(net/MEAL);
   return days>=1?`Ваши ${m(a)} — это ${days} ${days===1?"день":days<5?"дня":"дней"} помощи одному человеку (продукты или лекарства)${meals>=1?` или ${meals} ${meals===1?"горячий обед":meals<5?"горячих обеда":"горячих обедов"}`:""}.`:`Даже ${m(a)} помогают: из маленьких взносов складываются большие суммы.`}
-function donate(a,purpose,name){
-  const ops=Math.round(a*OPS_SHARE),mAdd=Math.min(S.mr.bal,a);
-  S.pool+=a-ops+mAdd;S.ops+=ops;S.raised+=a;S.myGiven+=a;S.mr.bal-=mAdd;S.mr.used+=mAdd;
-  log("don",`Пожертвование · ${purpose.toLowerCase()}${name?" · от имени: "+name:""}`,a);
+/* Сколько ещё удвоят этому донору в текущем месяце */
+function dblLeft(){if(S.day-S.myDblFrom>=30){S.myDbl=0;S.myDblFrom=S.day}return Math.max(0,S.cfg.dblCap-S.myDbl)}
+function donate(a,purpose,name,guest,from){
+  const ops=opsOf(a),top=S.topUp&&!guest,toPeople=top?a:a-ops,charge=top?a+ops:a;
+  const mAdd=Math.min(S.mr.bal,toPeople,guest?S.cfg.dblCap:dblLeft());
+  S.pool+=toPeople+mAdd;S.ops+=ops;S.raised+=charge;S.mr.bal-=mAdd;S.mr.used+=mAdd;
+  if(!guest){S.myGiven+=charge;S.myLeft+=toPeople+mAdd;S.myDbl+=mAdd}
+  log("don",`Пожертвование · ${purpose.toLowerCase()}${name?" · от имени: "+name:""}${from?" · "+from:""}`,charge);
   if(mAdd)log("don","Удвоение из резерва удвоения",mAdd);
-  addDon(a,purpose);
+  if(guest)addDon(charge,purpose,"Гость: "+name,false);else addDon(charge,purpose);
   S.cert={a,dbl:mAdd,name,purpose,d:S.day,dt:new Date().toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"}),no:String(Date.now()).slice(-7)};return mAdd;
 }
 /* ---------- СЕРТИФИКАТ КАРТИНКОЙ ---------- */
@@ -693,7 +819,7 @@ function bindDonate(){
   $("#meName").onchange=e=>{S.me.name=e.target.value.trim();save()};
   $("#mePub").onchange=e=>{S.me.pub=e.target.checked;save();toast(e.target.checked?"Имя будет видно в отчёте":"Вы будете анонимным донором")};
   $("#dName").oninput=e=>ui.donName=e.target.value;
-  $("#donBtn").onclick=()=>{const mAdd=donate(ui.donAmt,ui.donPurpose,ui.donName.trim());ui.donName="";save();render();toast(mAdd?`Джазакаллаху хайран! Ваш взнос удвоен: +${m(mAdd)} из резерва`:"Джазакаллаху хайран! Пожертвование принято")};
+  $("#donBtn").onclick=()=>{const mAdd=donate(ui.donAmt,ui.donPurpose,ui.donName.trim(),false,S.from!=="tj"?FROM[S.from][0]:"");ui.donName="";save();render();toast(mAdd?`Джазакаллаху хайран! Ваш взнос удвоен: +${m(mAdd)} из резерва`:"Джазакаллаху хайран! Пожертвование принято")};
   $("#scMech").onchange=e=>{ui.scMech=e.target.value;render()};
   $("#scPeople").oninput=e=>{const v=SCALE_STEPS[+e.target.value];$("#scN").textContent=v.toLocaleString("ru-RU")};
   $("#scPeople").onchange=e=>{ui.scPeople=SCALE_STEPS[+e.target.value];render()};
@@ -702,37 +828,68 @@ function bindDonate(){
   $("#round1k").onclick=()=>{S.roundUsers+=1000;save();render();toast(`Постоянный доход фонда: ${m(inflow())} в день`)};
   $("#cash1k").onclick=()=>{S.cashUsers+=1000;save();render();toast(`Постоянный доход фонда: ${m(inflow())} в день`)};
   $("#payroll").onclick=()=>{S.payroll+=200*3000*0.01;S.payrollN++;addDon(6000,"1% от зарплаты","ООО «Сомон Тех» (200 сотрудников)",true);log("don","Компания подключила 1% от зарплаты (200 сотрудников)",200*3000*0.01);save();render();toast("Компания подключена: +6 000 смн в месяц")};
-  document.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>{S.subs+=+b.dataset.sub;S.subsN++;save();render();toast("Подписка оформлена. Джазакаллаху хайран!")});
-  document.querySelectorAll("[data-goal]").forEach(b=>b.onclick=()=>{const r=R(b.dataset.goal),a=Math.round(+b.dataset.ga);addDon(a,"Цель на лечение");r.bal+=a;S.raised+=a;S.myGiven+=a;log("don",`Цель на лечение получателя №${anon(r.id)}`,a,r.id);save();render();toast(r.bal+pend(r)>=r.target?"Цель закрыта! Человек может купить лекарства":"Спасибо! Деньги уже на кошельке получателя")});
+  document.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>{const v=+b.dataset.sub;if(S.mySub){S.subs-=S.mySub}else S.subsN++;S.mySub=v;S.subs+=v;save();render();toast(`Подписка: ${m(v)} в месяц. Джазакаллаху хайран!`)});
+  if($("#subOff"))$("#subOff").onclick=()=>{S.subs-=S.mySub;S.subsN--;S.mySub=0;save();render();toast("Подписка отменена")};
+  $("#dFrom").onchange=e=>{S.from=e.target.value;save();render()};
+  if($("#topUp"))$("#topUp").onchange=e=>{S.topUp=e.target.checked;save();render()};
+  document.querySelectorAll("[data-goal]").forEach(b=>b.onclick=()=>{const r=R(b.dataset.goal),a=Math.round(+b.dataset.ga);addDon(a,"Цель на лечение");r.bal+=a;S.raised+=a;S.myGiven+=a;S.notes.unshift({d:S.day,a,t:`Ваши ${m(a)} пошли на цель лечения получателя №${anon(r.id)} — их можно потратить только в аптеке`,tg:S.tg});log("don",`Цель на лечение получателя №${anon(r.id)}`,a,r.id);save();render();toast(r.bal+pend(r)>=r.target?"Цель закрыта! Человек может купить лекарства":"Спасибо! Деньги уже на кошельке получателя")});
   document.querySelectorAll("[data-meal]").forEach(b=>b.onclick=()=>{const n=+b.dataset.meal;addDon(n*MEAL,"Оплаченные обеды");S.meals+=n;S.raised+=n*MEAL;S.myGiven+=n*MEAL;log("don",`Оплачено обедов: ${n}`,n*MEAL);save();render();toast(`${n} обед(ов) ждут нуждающихся в столовой`)});
   const zs=$("#zSave"),zg=$("#zGold");zs.onchange=()=>{ui.zSave=+zs.value||0;render()};zg.onchange=()=>{ui.zGold=+zg.value||0;render()};
   $("#evCreate").onclick=()=>{const who=$("#evWho").value.trim();if(!who)return toast("Укажите, в честь кого сбор");S.events.unshift({id:"e"+Date.now(),type:$("#evType").value,who,target:Math.max(100,+$("#evTarget").value||3000),raised:0,guests:0,d:S.day});save();render();toast("Сбор создан. Отправьте ссылку гостям")};
-  document.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>{const e=S.events.find(x=>x.id===b.dataset.ev),a=+b.dataset.eva;const mAdd=donate(a,`${e.type}: в честь ${e.who}`,e.who);e.raised+=a+mAdd;e.guests++;save();render();toast(`Гость пожертвовал ${m(a)} в честь ${e.who}`)});
+  document.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>{const e=S.events.find(x=>x.id===b.dataset.ev),a=+b.dataset.eva;const mAdd=donate(a,`${e.type}: в честь ${e.who}`,e.who,true);e.raised+=a+mAdd;e.guests++;save();render();toast(`Гость пожертвовал ${m(a)} в честь ${e.who}`)});
   $("#repBtn").onclick=()=>{ui.showReport=!ui.showReport;render()};
   if($("#zPay"))$("#zPay").onclick=()=>{ui.donAmt=Math.round(ui.zSave*0.025);ui.donPurpose="Закят";save();render();scrollTo(0,0);toast("Сумма закята подставлена. Нажмите «Оплатить»")};
 }
 
 /* ---------- ПОЛУЧАТЕЛЬ ---------- */
+function pcardHtml(r,small){return `<div class="pcard ${r.card.blocked?"blocked":""}" ${small?'style="max-width:280px;margin:0 auto;padding:14px"':""}>
+  <div><div class="t">Фонд «Амонат»</div><div class="s">Карточка получателя №${anon(r.id)}</div></div>
+  <div class="q">${qrSvg(r.id+r.card.no)}</div>
+  <div class="n">${r.card.no}</div>
+  <div class="s" style="grid-column:1/-1">${r.card.blocked?"ЗАБЛОКИРОВАНА":"Оплата по PIN · без имени и диагноза"}</div></div>`}
 function vWallet(){
   const r=R(ui.wr)||S.recipients[0];const t=tier(r);
   const my=S.feed.filter(x=>x.rid===r.id&&x.k==="pay");
+  const left=S.cfg.expire-idleDays(r);
   return `<div class="panel">
-  <label>Чей кошелёк показать<select id="wSel">${S.recipients.map(x=>`<option value="${x.id}" ${x.id===r.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
+  <label>Чей кошелёк показать (демо)<select id="wSel">${S.recipients.map(x=>`<option value="${x.id}" ${x.id===r.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
   <div class="wallet">
     <div class="l">Кошелёк «Амонат» · ${r.bank} Банк</div>
     <div class="big">${m(r.bal)}</div>
-    <div class="l">${pend(r)?`Ещё ${m(pend(r))} поступит ${r.hold>S.day?`в день ${r.hold}`:"завтра"}. `:""}${r.status==="ok"?`Сегодня начислится около ${m(todayAmt(r))} (средняя норма ${r.daily}). `+esc(t.why)+".":r.status==="wait"?`Документы проверены. Вы в очереди, место №${waiting().indexOf(r)+1}. Подключим, как только у фонда появятся деньги.`:"Кошелёк откроется после проверки документов."}</div>
+    <div class="l">${pend(r)?`Ещё ${m(pend(r))} поступит ${r.hold>S.day?`в день ${r.hold}`:"завтра"}. `:""}${r.status==="ok"?`Сегодня начислится около ${m(todayAmt(r))} (средняя норма ${r.daily}). `+esc(t.why)+".":r.status==="wait"?`Документы проверены. Вы в очереди, место №${waiting().indexOf(r)+1}. Подключим, как только у фонда появятся деньги.`:"Кошелёк откроется после решения комиссии."}</div>
   </div>
-  ${r.target?`<div class="card"><h2>Цель на лечение</h2><div class="split"><i style="width:${Math.min(100,(r.bal+pend(r))/r.target*100)}%;background:var(--good)"></i></div><div class="note">${m(r.bal+pend(r))} из ${m(r.target)}. Пока цель не достигнута, норма не снижается.</div></div>`:""}
+  ${r.status==="ok"&&r.bal>0&&!r.target?`<div class="note" style="${left<=15?"color:var(--bad);font-weight:600":""}">Покупайте нужное: не потраченное за ${S.cfg.expire} дн. вернётся в общий фонд другим людям. ${left>0?`Осталось ${left} дн. с последней покупки.`:""}</div>`:""}
+  ${r.target?`<div class="card"><h2>Цель на лечение</h2><div class="split"><i style="width:${Math.min(100,(r.bal+pend(r))/r.target*100)}%;background:var(--good)"></i></div><div class="note">${m(r.bal+pend(r))} из ${m(r.target)}. Пока цель не достигнута, норма не снижается, и деньги на цель не сгорают.</div></div>`:""}
   <div class="card">
-    <h2>Как платить</h2>
-    <div class="note">В аптеке, магазине или столовой-партнёре отсканируйте единый QR в приложении банка. Перед оплатой появится способ «Фонд Амонат». Снять наличные или перевести эти деньги нельзя.</div>
+    <h2>Моя карточка «Амонат»</h2>
+    ${pcardHtml(r)}
+    <div class="note">Для тех, у кого нет смартфона. Кассир сканирует QR на карточке, вы вводите 4-значный PIN. На карточке нет имени и диагноза. <b style="color:var(--fg)">Демо-PIN: 1234</b></div>
+    <div class="row">${r.card.blocked?`<button class="btn" id="cReissue">Перевыпустить карточку</button>`:`<button class="btn ghost" id="cBlock">Карточка потеряна — заблокировать</button>`}</div>
+    <div class="note">При перевыпуске баланс сохраняется. Заблокировать можно и звонком в фонд или через волонтёра.</div>
+  </div>
+  <div class="card">
+    <h2>Доверенное лицо</h2>
+    <div class="note">Если вы не выходите из дома, за вас может покупать родственник или соцработник. Это записывается в вашем профиле, а каждая его покупка видна фонду.</div>
+    <div class="grid2"><label>Имя и кем приходится<input id="proxy" placeholder="Например: Дилшод, сын" value="${esc(r.proxy)}"></label></div>
+    <div class="row"><button class="btn small" id="proxySave">${r.proxy?"Изменить":"Добавить"}</button>${r.proxy?`<button class="btn small ghost" id="proxyDel">Убрать</button>`:""}</div>
+  </div>
+  <div class="card">
+    <h2>Как платить и узнать баланс</h2>
+    <div class="note">В аптеке, магазине или столовой-партнёре: покажите QR в приложении банка или дайте кассиру карточку. Снять наличные или перевести эти деньги нельзя.</div>
+    <div class="note">Баланс можно узнать по SMS «БАЛАНС» на номер фонда, по звонку в фонд или у кассира любого партнёра.</div>
     <div><button class="btn" data-tab="pay">Попробовать оплату</button></div>
   </div>
-  <div class="card"><h2>Мои покупки</h2>${my.length?`<div class="list">${my.map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">${esc((P(x.pid)||{name:""}).name)}</div><div class="meta">день ${x.d}</div></div><div class="amt">−${m(x.a)}</div></div>`).join("")}</div>`:`<div class="note">Покупок пока нет.</div>`}</div>
+  <div class="card"><h2>Мои покупки</h2>${my.length?`<div class="list">${my.map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">${esc((P(x.pid)||{name:""}).name)}</div><div class="meta">${esc(x.cat||"")} · день ${x.d}</div></div><div class="amt">−${m(x.a)}</div></div>`).join("")}</div>`:`<div class="note">Покупок пока нет.</div>`}</div>
   </div>`;
 }
-function bindWallet(){$("#wSel").onchange=e=>{ui.wr=e.target.value;render()}}
+function bindWallet(){
+  $("#wSel").onchange=e=>{ui.wr=e.target.value;render()};
+  const r=R(ui.wr)||S.recipients[0];
+  if($("#cBlock"))$("#cBlock").onclick=()=>{r.card.blocked=true;log("flag",`${r.name}: карточка заблокирована (потеря)`,0,r.id);save();render();toast("Карточка заблокирована. Баланс в безопасности")};
+  if($("#cReissue"))$("#cReissue").onclick=()=>{r.card={no:cardNo(r.id),blocked:false};r.tries=0;log("join",`${r.name}: карточка перевыпущена`,0,r.id);save();render();toast("Новая карточка выпущена, баланс сохранён")};
+  $("#proxySave").onclick=()=>{const v=$("#proxy").value.trim();if(!v)return toast("Укажите имя");r.proxy=v;log("join",`${r.name}: доверенное лицо — ${v}`,0,r.id);save();render();toast("Доверенное лицо добавлено")};
+  if($("#proxyDel"))$("#proxyDel").onclick=()=>{r.proxy="";save();render();toast("Доверенное лицо убрано")};
+}
 
 /* ---------- ОПЛАТА ---------- */
 function qrSvg(seedStr){let h=0;for(const c of seedStr)h=(h*31+c.charCodeAt(0))>>>0;
@@ -742,88 +899,347 @@ function qrSvg(seedStr){let h=0;for(const c of seedStr)h=(h*31+c.charCodeAt(0))>
   return s+fin(0,0)+fin(14,0)+fin(0,14)+"</svg>"}
 function vPay(){
   const r=R(ui.payR)||S.recipients[0],p=P(ui.payP)||S.partners[0],a=ui.payAmt;
-  const block=fundBlock(r),canFund=!block;
-  const on=ui.useFund&&canFund;
-  const fundPart=on?Math.min(r.bal,a):0,own=a-fundPart;
+  const cats=[...PCATS[p.type].ok,...PCATS[p.type].no];if(!cats.includes(ui.payCat))ui.payCat=cats[0];
+  const cat=ui.payCat,card=ui.payHow==="card";
+  const cap=fundCap(r,p,cat),block=fundBlock(r)||(cap.max<=0?cap.why||"Баланс пуст":"");
+  const canFund=!block,on=(ui.useFund||card)&&canFund;
+  const fundPart=on?Math.min(cap.max,a):0,own=a-fundPart;
+  const capNote=on&&fundPart<a&&cap.why?`<div class="note">Фонд оплатит не больше ${m(fundPart)}: ${esc(cap.why)}.</div>`:"";
   let screen="";
-  if(ui.step===1)screen=`<div class="center"><div class="note">Единый QR кассы</div><div class="qr">${qrSvg(p.id+a)}</div><div style="font-weight:600">${esc(p.name)}</div><div class="note">${PTYPES[p.type]} · сумма ${m(a)}</div></div><button class="btn" id="scan">Отсканировать QR</button>`;
-  else if(ui.step===2)screen=`<div><div class="note">Оплата по QR</div><div style="font-weight:600">${esc(p.name)}</div></div><div class="big center">${m(a)}</div>
+  if(ui.step===1)screen=card?(r.card.blocked?`<div class="center"><div class="note">Карточка заблокирована</div></div>${pcardHtml(r,1)}<div class="note center">Перевыпустите её во вкладке «Мой кошелёк».</div>`:
+    `<div class="center"><div class="note">${esc(p.name)} · ${m(a)}</div><div style="font-weight:600;margin-top:4px">Кассир сканирует карточку</div></div>${pcardHtml(r,1)}<button class="btn" id="scan">Отсканировать карточку</button>`)
+    :`<div class="center"><div class="note">Единый QR кассы</div><div class="qr">${qrSvg(p.id+a)}</div><div style="font-weight:600">${esc(p.name)}</div><div class="note">${PTYPES[p.type]} · ${esc(cat)} · сумма ${m(a)}</div></div><button class="btn" id="scan">Отсканировать QR</button>`;
+  else if(ui.step===2&&card)screen=`<div><div class="note">Оплата картой «Амонат»</div><div style="font-weight:600">${esc(p.name)} · ${esc(cat)}</div></div><div class="big center">${m(a)}</div>
+    ${canFund?`<div class="note center">Фонд оплатит <b style="color:var(--fg)">${m(fundPart)}</b>${own?`, доплата наличными <b style="color:var(--fg)">${m(own)}</b>`:""}</div>${capNote}`:`<div class="note center" style="color:var(--bad);font-weight:600">${esc(block)}</div>`}
+    ${ui.payBy==="proxy"&&r.proxy?`<div class="note center">Платит доверенное лицо: ${esc(r.proxy)}</div>`:""}
+    <div class="note center">Введите PIN${r.tries?` · осталось попыток: ${3-r.tries}`:""}</div>
+    <div class="pinbox">${[0,1,2,3].map(i=>`<i class="${ui.pin.length>i?"on":""}"></i>`).join("")}</div>
+    <div class="keys">${[1,2,3,4,5,6,7,8,9,"⌫",0,"✓"].map(k=>`<button data-key="${k}" ${k==="✓"&&(ui.pin.length<4||!canFund)?"disabled":""} ${k==="✓"?'style="background:var(--accent);color:var(--accent-fg)"':""}>${k}</button>`).join("")}</div>
+    <button class="btn ghost" id="back">Отмена</button>`;
+  else if(ui.step===2)screen=`<div><div class="note">Оплата по QR</div><div style="font-weight:600">${esc(p.name)} · ${esc(cat)}</div></div><div class="big center">${m(a)}</div>
     <div class="note">Способ оплаты</div>
-    <label class="payopt ${on?"on":""} ${canFund?"":"off"}"><input type="radio" name="pm" value="fund" ${on?"checked":""} ${canFund?"":"disabled"}><div><div style="color:var(--fg);font-weight:600">Фонд «Амонат»</div><div class="note">${block||`Доступно ${m(r.bal)}`}</div></div></label>
+    <label class="payopt ${on?"on":""} ${canFund?"":"off"}"><input type="radio" name="pm" value="fund" ${on?"checked":""} ${canFund?"":"disabled"}><div><div style="color:var(--fg);font-weight:600">Фонд «Амонат»</div><div class="note">${esc(block)||`Доступно ${m(r.bal)}`}</div></div></label>
     <label class="payopt ${!on?"on":""}"><input type="radio" name="pm" value="own" ${!on?"checked":""}><div><div style="color:var(--fg);font-weight:600">Мой кошелёк</div><div class="note">Обычная оплата</div></div></label>
-    ${fundPart?`<div class="note">Фонд оплатит <b style="color:var(--fg)">${m(fundPart)}</b>${own?`, вы доплатите <b style="color:var(--fg)">${m(own)}</b>`:""}.</div>`:""}
+    ${fundPart?`<div class="note">Фонд оплатит <b style="color:var(--fg)">${m(fundPart)}</b>${own?`, вы доплатите <b style="color:var(--fg)">${m(own)}</b>`:""}.</div>`:""}${capNote}
     <div class="row"><button class="btn ghost" id="back">Назад</button><button class="btn" id="confirm" style="flex:1">Оплатить</button></div>`;
-  else{const rc=ui.receipt;screen=`<div class="ok">✓</div><div class="center"><div style="font-weight:600">${rc.flag?"Покупка отправлена на проверку":"Оплачено"}</div><div class="note">${esc(rc.p)}</div></div>
-    <div class="list"><div class="item"><span>Из фонда «Амонат»</span><span class="amt">${m(rc.fund)}</span></div><div class="item"><span>Из своих</span><span class="amt">${m(rc.own)}</span></div><div class="item"><span>Остаток в фонде</span><span class="amt">${m(rc.left)}</span></div></div>
+  else{const rc=ui.receipt;screen=rc.err?`<div class="ok" style="background:var(--bad-soft);color:var(--bad)">✕</div><div class="center"><div style="font-weight:600">${esc(rc.err)}</div></div><button class="btn" id="again">Понятно</button>`:
+    `<div class="ok">✓</div><div class="center"><div style="font-weight:600">${rc.flag?"Покупка отправлена на проверку":"Оплачено"}</div><div class="note">${esc(rc.p)} · ${esc(rc.cat)}</div></div>
+    <div class="list"><div class="item"><span>Из фонда «Амонат»</span><span class="amt">${m(rc.fund)}</span></div><div class="item"><span>${rc.card?"Наличными":"Из своих"}</span><span class="amt">${m(rc.own)}</span></div><div class="item"><span>Остаток в фонде</span><span class="amt">${m(rc.left)}</span></div></div>
     ${rc.flag?`<div class="note">Сумма больше 1 000 смн: фонд подтвердит её вручную, чтобы исключить обман.</div>`:rc.hold?`<div class="note">Крупная покупка не в аптеке: новые начисления придут с задержкой до дня ${rc.hold}.</div>`:""}
+    ${rc.fund?`<div class="note">Кассир прикрепит чек — после этого фонд перечислит деньги партнёру.</div>`:""}
     <button class="btn" id="again">Новая покупка</button>`}
   return `<div class="panel">
   <div class="card">
-    <h2>Настройка примера</h2>
+    <h2>Покупка</h2>
     <div class="grid2">
       <label>Кто платит<select id="pR">${S.recipients.map(x=>`<option value="${x.id}" ${x.id===r.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
-      <label>Где покупка<select id="pP">${S.partners.map(x=>`<option value="${x.id}" ${x.id===p.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
-      <label>Сумма покупки<input id="pA" type="number" min="1" value="${a}"></label>
+      <label>Где покупка<select id="pP">${S.partners.map(x=>`<option value="${x.id}" ${x.id===p.id?"selected":""}>${esc(x.name)}${x.state!=="ok"?" · "+PSTATE[x.state][1].toLowerCase():""}</option>`).join("")}</select></label>
+      <label>Что покупает<select id="pC">${cats.map(c=>`<option ${c===cat?"selected":""}>${c}${PCATS[p.type].no.includes(c)?" (нельзя из фонда)":""}</option>`).join("")}</select></label>
+      <label>Сумма покупки, смн<input id="pA" type="number" min="1" value="${a}"></label>
     </div>
+    <div class="chips"><button class="chip" data-how="app" aria-pressed="${!card}">📱 Приложение банка</button><button class="chip" data-how="card" aria-pressed="${card}">💳 Карточка с PIN</button>
+    ${card&&r.proxy?`<button class="chip" data-by="self" aria-pressed="${ui.payBy!=="proxy"}">Сам</button><button class="chip" data-by="proxy" aria-pressed="${ui.payBy==="proxy"}">Доверенное лицо</button>`:""}</div>
   </div>
-  <div class="phone" aria-label="Экран телефона">
-    <div class="bar"><span>День ${S.day}</span><span>${r.bank} Банк</span></div>
-    <div class="bankhead"><span class="bankdot">${r.bank[0]}</span>${r.bank} · ${esc(r.name)}</div>
+  <div class="phone" aria-label="Экран ${card?"кассы":"телефона"}">
+    <div class="bar"><span>День ${S.day}</span><span>${card?"Касса · "+esc(p.name):r.bank+" Банк"}</span></div>
+    ${card?"":`<div class="bankhead"><span class="bankdot">${r.bank[0]}</span>${r.bank} · ${esc(r.name)}</div>`}
     ${screen}
   </div></div>`;
 }
 function bindPay(){
-  const reset=()=>{ui.step=1;render()};
+  const reset=()=>{ui.step=1;ui.pin="";render()};
   $("#pR").onchange=e=>{ui.payR=e.target.value;ui.useFund=true;reset()};
   $("#pP").onchange=e=>{ui.payP=e.target.value;reset()};
+  $("#pC").onchange=e=>{ui.payCat=e.target.value.replace(" (нельзя из фонда)","");reset()};
   $("#pA").onchange=e=>{ui.payAmt=Math.max(1,+e.target.value||1);reset()};
-  if(ui.step===1)$("#scan").onclick=()=>{ui.step=2;ui.useFund=true;render()};
-  if(ui.step===2){
+  document.querySelectorAll("[data-how]").forEach(b=>b.onclick=()=>{ui.payHow=b.dataset.how;reset()});
+  document.querySelectorAll("[data-by]").forEach(b=>b.onclick=()=>{ui.payBy=b.dataset.by;render()});
+  if(ui.step===1&&$("#scan"))$("#scan").onclick=()=>{ui.step=2;ui.useFund=true;ui.pin="";render()};
+  const pay=how=>{const r=R(ui.payR),p=P(ui.payP);const before=r.hold;
+    const res=purchase(r,p,ui.payAmt,how==="card"||ui.useFund,ui.payCat,how);
+    if(how==="card"&&ui.payBy==="proxy"&&r.proxy&&res.fund)S.feed[0].t+=` (доверенное лицо: ${r.proxy})`;
+    ui.receipt={p:p.name,cat:ui.payCat,fund:res.fund,own:res.own,left:r.bal,flag:res.flag,hold:r.hold>before?r.hold:0,card:how==="card"};ui.step=3;save();render()};
+  if(ui.step===2&&ui.payHow==="card"){
+    document.querySelectorAll("[data-key]").forEach(b=>b.onclick=()=>{const k=b.dataset.key,r=R(ui.payR);
+      if(k==="⌫")ui.pin=ui.pin.slice(0,-1);
+      else if(k==="✓"){if(ui.pin===r.pin){r.tries=0;ui.pin="";return pay("card")}
+        r.tries++;ui.pin="";if(r.tries>=3){r.card.blocked=true;log("flag",`${r.name}: 3 раза неверный PIN, карточка заблокирована`,0,r.id);ui.receipt={err:"3 раза неверный PIN: карточка заблокирована. Обратитесь в фонд."};ui.step=3;save();return render()}
+        save();toast("Неверный PIN")}
+      else if(ui.pin.length<4)ui.pin+=k;render()});
+    $("#back").onclick=reset;
+  }else if(ui.step===2){
     document.querySelectorAll('input[name="pm"]').forEach(i=>i.onchange=()=>{ui.useFund=i.value==="fund";render()});
     $("#back").onclick=reset;
-    $("#confirm").onclick=()=>{
-      const r=R(ui.payR),p=P(ui.payP);const before=r.hold;
-      const res=purchase(r,p,ui.payAmt,ui.useFund);
-      ui.receipt={p:p.name,fund:res.fund,own:res.own,left:r.bal,flag:res.flag,hold:r.hold>before?r.hold:0};ui.step=3;save();render();
-    };
+    $("#confirm").onclick=()=>pay("app");
   }
   if(ui.step===3)$("#again").onclick=reset;
 }
 
 /* ---------- ПАРТНЁР ---------- */
+const noChk=p=>S.feed.filter(x=>x.k==="pay"&&x.pid===p.id&&x.id&&!x.chk);
+const chkPill=x=>x.chk?`<span class="pill p-good">Чек ${esc(x.chk.no)}</span>`:`<span class="pill p-warn">Ждёт чека</span>`;
 function vPartner(){
   const p=P(ui.pp)||S.partners[0];
   const tx=S.feed.filter(x=>x.k==="pay"&&x.d===S.day&&x.pid===p.id);
+  const wait=noChk(p),waitSum=wait.reduce((s,x)=>s+x.a,0);
+  const st=PSTATE[p.state];
   return `<div class="panel">
   <label>Партнёр<select id="ppSel">${S.partners.map(x=>`<option value="${x.id}" ${x.id===p.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select></label>
+  ${p.state!=="ok"?`<div class="card" style="border-color:var(--${p.state==="warn"?"warn":"bad"});background:var(--${p.state==="warn"?"warn":"bad"}-soft)"><h2 style="color:var(--${p.state==="warn"?"warn":"bad"})">${st[1]}</h2><div class="note" style="color:var(--fg)">${esc(p.why||"Фонд проверяет оплаты")}. ${p.state==="warn"?"Прикрепляйте чеки ко всем оплатам, иначе выплаты будут заморожены.":p.state==="frozen"?"Пока идёт проверка, получатели не могут платить у вас из фонда.":"Вы исключены из сети партнёров. Это отражено в публичном отчёте фонда."}</div></div>`:""}
   <div class="kpis">
     <div class="kpi hl"><div class="l">Оплачено фондом сегодня</div><div class="v">${m(p.paid)}</div></div>
-    <div class="kpi"><div class="l">Покупок</div><div class="v">${p.count}</div></div>
-    <div class="kpi"><div class="l">Возвращено в фонд</div><div class="v">${m(p.returned)}</div></div>
+    <div class="kpi"><div class="l">Покупок сегодня</div><div class="v">${p.count}</div></div>
+    <div class="kpi"><div class="l">Ждут чека</div><div class="v">${wait.length}${waitSum?` · ${m(waitSum)}`:""}</div></div>
   </div>
-  ${p.type==="canteen"?`<div class="card"><h2>Оплаченные обеды</h2><div class="note">Добрые люди заранее оплатили обеды. Выдайте обед нуждающемуся: он покажет QR кошелька «Амонат».</div><div class="row between"><span>В запасе: <b>${S.meals}</b> · выдано: <b>${S.mealsGiven}</b></span><button class="btn small" id="giveMeal" ${S.meals?"":"disabled"}>Выдать обед</button></div></div>`:""}
+  <div class="card">
+    <h2>Что можно оплатить из фонда</h2>
+    <div class="chips">${PCATS[p.type].ok.map(c=>`<span class="pill p-good">✓ ${c}</span>`).join("")}${PCATS[p.type].no.map(c=>`<span class="pill p-bad">✕ ${c}</span>`).join("")}</div>
+    <div class="note">Касса сама не даст оплатить из фонда запрещённое. Продажа запрещённого по QR фонда — нарушение договора: предупреждение, заморозка выплат, исключение.</div>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Прикрепите чеки</h2><span class="pill ${wait.length?"p-warn":"p-good"}">${wait.length?"Есть оплаты без чека":"Все чеки на месте"}</span></div>
+    <div class="note">Фонд перечисляет вам деньги только после чека: номер фискального чека или фото.</div>
+    ${wait.length?`<div class="list">${wait.slice(0,8).map(x=>`<div class="item" style="display:grid;gap:8px"><div class="row between"><div class="who"><div class="name" style="font-weight:500">Получатель №${anon(x.rid)} · ${esc(x.cat||"")}</div><div class="meta">день ${x.d}${S.day-x.d>1?` · <b style="color:var(--bad)">${S.day-x.d} дн. без чека</b>`:""}</div></div><span class="amt">${m(x.a)}</span></div>
+      <div class="grid2"><label>Номер фискального чека<input data-chkno="${x.id}" inputmode="numeric" placeholder="Например 482117"></label><label>Или фото чека<input data-chkimg="${x.id}" type="file" accept="image/*"></label></div>
+      <div><button class="btn small" data-chk="${x.id}">Прикрепить чек</button></div></div>`).join("")}</div>`:`<div class="note">Нет оплат, ожидающих чека.</div>`}
+  </div>
+  ${p.type==="canteen"?`<div class="card"><h2>Оплаченные обеды</h2><div class="note">Добрые люди заранее оплатили обеды. Выдайте обед нуждающемуся: он покажет QR кошелька или карточку «Амонат».</div><div class="row between"><span>В запасе: <b>${S.meals}</b> · выдано: <b>${S.mealsGiven}</b></span><button class="btn small" id="giveMeal" ${S.meals?"":"disabled"}>Выдать обед</button></div></div>`:""}
   <div class="card">
     <h2>Закрытие смены · день ${S.day}</h2>
     ${p.closed?`<div class="note">Смена закрыта. Спасибо за участие: ваш вклад виден в публичном отчёте фонда.</div>`:
-    p.paid?`<div class="note">Сегодня Благотворительный фонд «Амонат» оплатил у вас ${m(p.paid)}. Хотите вернуть часть в фонд как садаку? Эти деньги идут в резерв удвоения: каждый ваш сомони удвоит взнос другого человека.</div>
+    p.paid?`<div class="note">Сегодня фонд «Амонат» оплатил у вас ${m(p.paid)}. Хотите вернуть часть в фонд как садаку? Эти деньги идут в резерв удвоения: каждый ваш сомони удвоит взнос другого человека.</div>
     <div class="chips">${[0,5,10,15].map(v=>`<button class="chip" data-ret="${v}">${v?v+"% · "+m(p.paid*v/100):"Не сейчас"}</button>`).join("")}</div>`:
     `<div class="note">Сегодня оплат от фонда ещё не было. Проведите покупку во вкладке «Оплата QR».</div>`}
   </div>
-  <div class="card"><h2>Оплаты фонда сегодня</h2>${tx.length?`<div class="list">${tx.map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">Получатель №${anon(x.rid)}</div><div class="meta">личные данные скрыты</div></div><div class="amt">${m(x.a)}</div></div>`).join("")}</div>`:`<div class="note">Пусто.</div>`}</div>
+  <div class="card"><h2>Оплаты фонда сегодня</h2>${tx.length?`<div class="list">${tx.map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">Получатель №${anon(x.rid)}</div><div class="meta">${esc(x.cat||"")} · ${x.how==="card"?"карточка с PIN":"приложение банка"} · ${chkPill(x)}</div></div><div class="amt">${m(x.a)}</div></div>`).join("")}</div>`:`<div class="note">Пусто.</div>`}</div>
   </div>`;
 }
 function bindPartner(){
   $("#ppSel").onchange=e=>{ui.pp=e.target.value;render()};
-  if($("#giveMeal"))$("#giveMeal").onclick=()=>{S.meals--;S.mealsGiven++;const p=P(ui.pp);p.paid+=MEAL;p.count++;log("pay",`Оплаченный обед · ${p.name}`,MEAL);save();render();toast("Обед выдан. Оплата из запаса обедов")};
+  if($("#giveMeal"))$("#giveMeal").onclick=()=>{S.meals--;S.mealsGiven++;const p=P(ui.pp);p.paid+=MEAL;p.count++;p.total+=MEAL;p.n++;S.spent+=MEAL;S.spentBy.canteen+=MEAL;log("pay",`Оплаченный обед · ${p.name}`,MEAL);save();render();toast("Обед выдан. Оплата из запаса обедов")};
   document.querySelectorAll("[data-ret]").forEach(b=>b.onclick=()=>{
     const p=P(ui.pp),v=+b.dataset.ret,a=Math.round(p.paid*v/100);
     if(a){p.returned+=a;S.mr.bal+=a;S.mr.ret+=a;log("ret",`${p.name} вернул ${v}% в резерв удвоения`,a)}
     p.closed=true;save();render();toast(a?`В фонд вернулось ${m(a)}`:"Смена закрыта");
   });
+  document.querySelectorAll("[data-chk]").forEach(b=>b.onclick=async()=>{
+    const id=b.dataset.chk,x=S.feed.find(f=>f.id===id);if(!x)return;
+    const no=document.querySelector(`[data-chkno="${id}"]`).value.trim(),f=document.querySelector(`[data-chkimg="${id}"]`).files[0];
+    if(!no&&!f)return toast("Введите номер чека или прикрепите фото");
+    let img=null;if(f){try{img=(await readDoc(f,"Чек")).img}catch(_){return toast("Не удалось прочитать фото")}}
+    x.chk={no:no||"фото",img,d:S.day};save();render();toast("Чек прикреплён. Фонд перечислит оплату")});
 }
 
-const V={overview:[vOverview,bindOverview],watch:[vWatch,bindWatch],donate:[vDonate,bindDonate],wallet:[vWallet,bindWallet],pay:[vPay,bindPay],partner:[vPartner,bindPartner]};
-function render(){renderTabs();$("#view").innerHTML=V[tab][0]();V[tab][1]()}
+/* ---------- ПРОВЕРКИ (фонд) ---------- */
+function prisk(p){
+  const sig=[],pays=S.feed.filter(x=>x.k==="pay"&&x.pid===p.id&&x.id);
+  const late=pays.filter(x=>!x.chk&&S.day-x.d>1).length;
+  if(late)sig.push([Math.min(45,15*late),`${late} оплат без чека больше суток`]);
+  const g={};pays.filter(x=>x.d>S.day-7).forEach(x=>{const k=x.rid+"|"+x.a;(g[k]=g[k]||new Set()).add(x.d)});
+  Object.entries(g).forEach(([k,d])=>{if(d.size>=3){const[rid,a]=k.split("|");sig.push([30,`Получатель №${anon(rid)} платит ровно ${m(+a)} уже ${d.size} дн.`])}});
+  const loyal=S.recipients.filter(r=>{const t=r.tx.filter(t=>t.pid&&t.d>S.day-14);return t.length>=4&&t.every(t=>t.pid===p.id)}).length;
+  if(loyal>=2)sig.push([15,`${loyal} получателей покупают только здесь`]);
+  S.mystery.filter(x=>x.pid===p.id&&!x.ok&&x.d>S.day-30).forEach(x=>sig.push([40,"Тайный покупатель: "+x.t]));
+  const score=Math.min(100,sig.reduce((s,x)=>s+x[0],0));
+  return{score,lvl:score>=60?"high":score>=30?"mid":"low",sig};
+}
+const MYSTERY_BAD=["продали сигареты по QR фонда","предложили выдать наличные вместо товара","пробили товар дороже цены на полке"];
+function vCheck(){
+  const chk=S.recipients.filter(r=>r.status==="check");
+  const idle=S.recipients.filter(r=>r.status==="ok"&&r.bal>0&&!r.target&&idleDays(r)>=30).sort((a,b)=>idleDays(b)-idleDays(a));
+  const rechk=S.recipients.filter(r=>(r.status==="ok"||r.status==="wait")&&r.verifiedDay).map(r=>({r,left:r.verifiedDay+365-S.day})).sort((a,b)=>a.left-b.left);
+  const parts=S.partners.map(p=>({p,k:prisk(p)})).sort((a,b)=>b.k.score-a.k.score);
+  const votes=r=>COMMISSION.filter(([k])=>r.votes[k]===true).length;
+  return `<div class="panel">
+  <div class="kpis">
+    <div class="kpi hl"><div class="l">Заявок на проверке</div><div class="v">${chk.length}</div></div>
+    <div class="kpi"><div class="l">Партнёров с риском</div><div class="v">${parts.filter(x=>x.k.lvl!=="low").length}</div></div>
+    <div class="kpi"><div class="l">Оплат без чека</div><div class="v">${S.partners.reduce((s,p)=>s+noChk(p).length,0)}</div></div>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Комиссия: новые заявки</h2><span class="note">Решают 3 человека</span></div>
+    ${chk.length?`<div class="list">${chk.map(r=>`<div class="item"><div class="who"><div class="name">${esc(r.name)} <span class="pill ${r.lvl==="urgent"?"p-bad":"p-acc"}">${LEVELS[r.lvl]}</span></div><div class="meta">${CATS[r.cat]} · документов: ${r.docs.length} · голосов «за»: ${votes(r)} из 3</div></div><button class="btn small" data-docs="${r.id}">Рассмотреть</button></div>`).join("")}</div>`:`<div class="note">Новых заявок нет. Заявку добавляют во вкладке «Обзор».</div>`}
+    <div class="note">Помощь назначается, только когда все трое — оператор, представитель махалли и волонтёр, побывавший дома, — сказали «за». Так никто не решает в одиночку и «по знакомству».</div>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Партнёры</h2><button class="btn small ghost" id="scnCash">Сценарий: магазин обналичивает</button></div>
+    <div class="list">${parts.map(({p,k})=>`<div class="item" style="align-items:flex-start"><div class="who">
+      <div class="name">${esc(p.name)} <span class="pill ${PSTATE[p.state][0]}">${PSTATE[p.state][1]}</span> ${riskPill(k)}</div>
+      <div class="meta">${PTYPES[p.type]} · всего оплат ${p.n} на ${m(p.total)} · без чека ${noChk(p).length}</div>
+      ${k.sig.map(x=>`<div class="meta" style="color:var(--${k.lvl==="high"?"bad":"warn"})">• ${esc(x[1])}</div>`).join("")}
+      <div class="chips" style="margin-top:6px">${p.state==="ok"?`<button class="btn small ghost" data-pst="${p.id}:warn">Предупредить</button>`:""}${p.state==="ok"||p.state==="warn"?`<button class="btn small ghost" data-pst="${p.id}:frozen">Заморозить выплаты</button>`:""}${p.state!=="out"?`<button class="btn small ghost" data-pst="${p.id}:out">Исключить</button>`:""}${p.state!=="ok"?`<button class="btn small" data-pst="${p.id}:ok">Проверил, всё чисто</button>`:""}</div>
+    </div></div>`).join("")}</div>
+    <div class="note">Порядок: предупреждение → проверка и заморозка выплат → исключение из сети с записью в публичном отчёте.</div>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Тайный покупатель</h2><button class="btn small" id="mystery">Отправить на проверку</button></div>
+    <div class="note">Раз в месяц волонтёр с карточкой фонда идёт к случайному партнёру и пробует купить запрещённое или получить наличные.</div>
+    ${S.mystery.length?`<div class="list">${S.mystery.slice(0,6).map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">${esc((P(x.pid)||{name:""}).name)}</div><div class="meta">день ${x.d}</div></div><span class="pill ${x.ok?"p-good":"p-bad"}">${x.ok?"Нарушений нет":esc(x.t)}</span></div>`).join("")}</div>`:""}
+  </div>
+  <div class="card">
+    <h2>Деньги без движения</h2>
+    ${idle.length?`<div class="list">${idle.map(r=>`<div class="item"><div class="who"><div class="name">${esc(r.name)}</div><div class="meta">${idleDays(r)} дн. без покупок · баланс ${m(r.bal)}</div></div><span class="pill ${idleDays(r)>=S.cfg.remind?"p-bad":"p-warn"}">вернётся в фонд через ${Math.max(0,S.cfg.expire-idleDays(r))} дн.</span></div>`).join("")}</div>`:`<div class="note">Все получатели пользуются помощью.</div>`}
+    <div class="note">Через ${S.cfg.remind} дн. без покупок волонтёр проверяет, всё ли в порядке (человек может быть в больнице). Через ${S.cfg.expire} дн. баланс возвращается в общий фонд тем, кто ждёт. Цель на лечение не сгорает.</div>
+  </div>
+  <div class="card">
+    <h2>Повторная проверка раз в год</h2>
+    ${rechk.length?`<div class="list">${rechk.slice(0,5).map(({r,left})=>`<div class="item"><span>${esc(r.name)}</span><span class="pill ${left<=30?"p-warn":"p-acc"}">${left<=0?"пора проверить":`через ${left} дн.`}</span></div>`).join("")}</div>`:`<div class="note">Нет проверенных получателей.</div>`}
+  </div>
+  </div>`;
+}
+function bindCheck(){
+  document.querySelectorAll("[data-docs]").forEach(b=>b.onclick=()=>openDocs(b.dataset.docs));
+  document.querySelectorAll("[data-pst]").forEach(b=>b.onclick=()=>{const[id,st]=b.dataset.pst.split(":"),p=P(id);
+    const why={warn:"Предупреждение: нарушены правила оплат",frozen:"Выплаты заморожены на время проверки",out:"Исключён из сети за нарушения",ok:""}[st];
+    if(st==="ok"){S.feed.filter(x=>x.k==="pay"&&x.pid===p.id&&!x.chk).forEach(x=>x.chk={no:"сверено фондом",d:S.day});S.mystery=S.mystery.filter(x=>x.pid!==p.id||x.ok)}
+    p.state=st;p.why=why;log(st==="ok"?"join":"flag",`${p.name}: ${PSTATE[st][1].toLowerCase()}`,0);save();render();toast(`${p.name}: ${PSTATE[st][1].toLowerCase()}`)});
+  $("#mystery").onclick=()=>{const live=S.partners.filter(p=>p.state!=="out");if(!live.length)return toast("Нет партнёров");
+    const p=live[S.mystery.length%live.length],ok=Math.random()>.25,t=ok?"":MYSTERY_BAD[Math.floor(Math.random()*MYSTERY_BAD.length)];
+    S.mystery.unshift({pid:p.id,d:S.day,ok,t});log("flag",`Тайный покупатель в «${p.name.replace(/^.*«|»$/g,"")}»: ${ok?"нарушений нет":t}`,0);save();render();toast(ok?`${p.name}: нарушений нет`:`${p.name}: ${t}`)};
+  $("#scnCash").onclick=()=>{const r=R("r3")||S.recipients.find(x=>x.status==="ok"),p=P("p2")||S.partners[0];
+    for(let k=4;k>=1;k--){const d=S.day-k;r.tx.push({d,a:50,pid:p.id,max:true});S.feed.unshift({k:"pay",id:"s"+Date.now()+k,t:`${r.name} · ${p.name}`,a:50,d,rid:r.id,pid:p.id,cat:"Продукты",how:"card",chk:null});p.total+=50;p.n++;S.spent+=50;S.spentBy[p.type]+=50}
+    save();render();toast(`${p.name}: 4 дня подряд ровно 50 смн от одного человека и без чеков`)};
+}
+
+/* ---------- КУДА ПОШЛИ МОИ ДЕНЬГИ (донор) ---------- */
+function vNotes(){
+  const spentMine=S.notes.reduce((s,x)=>s+x.a,0);
+  return `<div class="panel">
+  <div class="kpis">
+    <div class="kpi hl"><div class="l">Вы пожертвовали</div><div class="v">${m(S.myGiven)}</div></div>
+    <div class="kpi"><div class="l">Потрачено на людей (с удвоением)</div><div class="v">${m(spentMine)}</div></div>
+    <div class="kpi"><div class="l">Ещё ждёт покупки</div><div class="v">${m(S.myLeft)}</div></div>
+  </div>
+  <div class="card">
+    <h2>След каждого сомони</h2>
+    ${S.notes.length?`<div class="list">${S.notes.slice(0,20).map(x=>`<div class="item"><div class="who"><div class="name" style="font-weight:500">${esc(x.t)}</div><div class="meta">день ${x.d}${x.p?" · "+esc(x.p):""}${x.tg?" · отправлено в Telegram":""}</div></div></div>`).join("")}</div>`:
+    `<div class="note">${S.myGiven?"Ваши деньги ещё не потрачены. Как только получатель купит лекарства или продукты, здесь появится уведомление.":"Пожертвуйте во вкладке «Пожертвовать» — здесь вы увидите, на что пошёл каждый ваш сомони."}</div>`}
+    <div class="note">Имена получателей скрыты: вы видите только, кому и на что помогли.</div>
+    ${S.myLeft>0?`<div class="row"><button class="btn small ghost" id="nSim">Демо: прокрутить 3 дня покупок</button></div>`:""}
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Telegram-бот «Амонат»</h2><button class="btn small ${S.tg?"ghost":""}" id="tgOn">${S.tg?"Отключить":"Подключить"}</button></div>
+    <div class="note">Жертвуйте и получайте отчёты прямо в Telegram, без приложения.</div>
+    <div class="tg" aria-label="Пример переписки с ботом">
+      <div class="b me">Пожертвовать 100</div>
+      <div class="b">Спасибо! Оплатите по ссылке: Алиф, карта РФ или Visa. ${S.mr.bal>0?"Ваш взнос удвоится 🙌":""}</div>
+      <div class="b">✅ Получено 100 смн. Сертификат садаки во вложении.</div>
+      <div class="b">${esc((S.notes[0]&&S.notes[0].t)||"Ваши 50 смн стали лекарствами для человека, который лечится, в городе Душанбе")} 🤲</div>
+      <div class="b me">Отчёт</div>
+      <div class="b">За месяц фонд собрал ${m(monthReport().don)}, помощь получили ${monthReport().helped} чел. Полный отчёт: ссылка.</div>
+    </div>
+    <div class="note">${S.tg?"Подключено: уведомления о ваших деньгах будут приходить в Telegram.":"Команды бота: «Пожертвовать», «Отчёт», «Подписка», «Закят»."}</div>
+  </div>
+  </div>`;
+}
+function bindNotes(){
+  $("#tgOn").onclick=()=>{S.tg=!S.tg;save();render();toast(S.tg?"Telegram подключён":"Telegram отключён")};
+  if($("#nSim"))$("#nSim").onclick=()=>{simulate(3);save();render();toast("Прошло 3 дня: смотрите, на что пошли деньги")};
+}
+
+/* ---------- ПУБЛИЧНЫЙ ОТЧЁТ ---------- */
+function vReport(){
+  const ok=S.recipients.filter(r=>r.status==="ok"),wl=waiting();
+  const by=[["Лекарства в аптеках",S.spentBy.pharmacy,"var(--good)"],["Продукты в магазинах",S.spentBy.shop,"var(--accent)"],["Обеды в столовых",S.spentBy.canteen,"var(--gold)"]];
+  const mx=Math.max(1,...by.map(x=>x[1]));
+  const rp=monthReport();
+  const chkRate=p=>{const all=S.feed.filter(x=>x.k==="pay"&&x.pid===p.id&&x.id);return all.length?Math.round(all.filter(x=>x.chk).length/all.length*100):100};
+  return `<div class="panel">
+  <div class="card hello"><h2>Открытый отчёт фонда «Амонат»</h2><div class="note">Обновляется каждый день · сейчас день ${S.day}. Имена получателей, лица и диагнозы не показываются.</div></div>
+  <div class="kpis">
+    <div class="kpi hl"><div class="l">Собрано всего</div><div class="v">${m(S.raised)}</div></div>
+    <div class="kpi"><div class="l">Потрачено на людей</div><div class="v">${m(S.spent)}</div></div>
+    <div class="kpi"><div class="l">Получают помощь</div><div class="v">${ok.length} чел.</div></div>
+    <div class="kpi"><div class="l">Резерв удвоения</div><div class="v">${m(S.mr.bal)}</div></div>
+  </div>
+  <div class="card">
+    <h2>На что потрачено</h2>
+    <div class="bars">${by.map(([n,v,c])=>`<div class="r"><span>${n}</span><i style="width:${v/mx*100}%;background:${c}"></i><b>${m(v)}</b></div>`).join("")}</div>
+    <div class="list">
+      <div class="item"><span>Ждёт распределения в фонде</span><span class="amt">${m(S.pool)}</span></div>
+      <div class="item"><span>На кошельках получателей</span><span class="amt">${m(S.recipients.reduce((s,r)=>s+r.bal+pend(r),0))}</span></div>
+      <div class="item"><span>Работа фонда ${S.cfg.ops==="sponsor"?`(оплачивает ${esc(S.cfg.opsSponsor||"спонсор")})`:`(сейчас ${S.cfg.opsPct}% от взносов)`}</span><span class="amt">${m(S.ops)}</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Партнёры</h2>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Партнёр</th><th>Оплат</th><th>Сумма</th><th>Чеки</th><th>Статус</th></tr></thead><tbody>
+    ${[...S.partners].sort((a,b)=>b.total-a.total).map(p=>`<tr><td>${esc(p.name)}<div class="meta note">${PTYPES[p.type]}</div></td><td>${p.n}</td><td class="amt">${m(p.total)}</td><td>${chkRate(p)}%</td><td><span class="pill ${PSTATE[p.state][0]}">${PSTATE[p.state][1]}</span></td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="note">«Чеки» — доля оплат, к которым партнёр приложил чек. Исключённые за нарушения партнёры остаются в списке.</div>
+  </div>
+  <div class="card">
+    <div class="row between"><h2>Очередь на помощь</h2><span class="pill p-acc">${wl.length} чел.</span></div>
+    ${wl.length?`<div class="list">${wl.map((r,i)=>`<div class="item"><span>${i+1}. Заявка №${anon(r.id)} · ${CATS[r.cat]}</span><span class="pill ${r.lvl==="urgent"?"p-bad":"p-gold"}">${r.lvl==="urgent"?"Срочно":"Нужда: "+NEED[r.need].toLowerCase()}</span></div>`).join("")}</div>`:`<div class="note">Очереди нет: все проверенные заявки получают помощь.</div>`}
+    <div class="note">Очередь видна только по номерам. Порядок: срочные, затем по уровню нужды.</div>
+  </div>
+  <div class="card">
+    <h2>Доноры за 30 дней</h2>
+    <div class="list">${rp.donors.slice(0,10).map(d=>`<div class="item"><div class="name" style="${d.anon?"color:var(--muted);font-weight:500":""}">${esc(d.who)}</div><span class="amt">${m(d.a)}</span></div>`).join("")}</div>
+    <div class="note">Имя показывается, только если донор сам разрешил.</div>
+  </div>
+  <div class="card">
+    <h2>Проверки и аудит</h2>
+    <div class="list">
+      <div class="item"><span>Тайных покупателей за месяц</span><span class="amt">${S.mystery.filter(x=>x.d>S.day-30).length}</span></div>
+      <div class="item"><span>Нарушений найдено</span><span class="amt">${S.mystery.filter(x=>!x.ok).length}</span></div>
+      <div class="item"><span>Годовой аудит</span><span class="pill p-gold">После первого года работы</span></div>
+    </div>
+    <div class="note">Годовой отчёт независимой аудиторской компании будет опубликован здесь.</div>
+  </div>
+  </div>`;
+}
+
+/* ---------- ПРАВИЛА (фонд) ---------- */
+function vRules(){
+  const c=S.cfg,f=(k,l,u)=>`<label>${l}<input data-cfg="${k}" type="number" min="0" value="${c[k]}"></label>`;
+  return `<div class="panel">
+  <div class="card">
+    <h2>Лимиты покупок из фонда</h2>
+    <div class="grid2">${f("buy","На одну покупку, смн")}${f("buyMed","В аптеке на одну покупку, смн")}${f("day","В день, смн")}${f("month","В месяц, смн")}${f("share","За раз не больше % баланса")}</div>
+    <div class="note">Касса сама не пропустит покупку выше лимита: остаток человек доплачивает сам. Лекарства в аптеке имеют отдельный, больший лимит.</div>
+  </div>
+  <div class="card">
+    <h2>Срок жизни баланса</h2>
+    <div class="grid2">${f("remind","Напомнить волонтёру через, дн.")}${f("expire","Вернуть в общий фонд через, дн.")}</div>
+    <div class="note">Считается с последней покупки. Деньги на цель лечения не сгорают.</div>
+  </div>
+  <div class="card">
+    <h2>Удвоение</h2>
+    <div class="grid2">${f("dblCap","Удваивать одному донору до, смн в месяц")}</div>
+    <div class="note">Удвоение только из резерва спонсоров и возвратов партнёров. Резерв и спонсоров вы добавляете во вкладке «Обзор».</div>
+  </div>
+  <div class="card">
+    <h2>Кто оплачивает работу фонда</h2>
+    <div class="chips"><button class="chip" data-ops="pct" aria-pressed="${c.ops==="pct"}">Открытый процент</button><button class="chip" data-ops="sponsor" aria-pressed="${c.ops==="sponsor"}">Спонсор расходов</button></div>
+    ${c.ops==="pct"?`<div class="grid2">${f("opsPct","Процент на работу фонда")}</div><div class="note">Процент показывается донору при оплате, и он может добавить его сверху.</div>`:
+    `<div class="grid2"><label>Кто спонсор<input id="opsSp" value="${esc(c.opsSponsor)}" placeholder="Например: Умари Хайём"></label></div><div class="note">Донорам пишем «100% доходит до людей».</div>`}
+  </div>
+  <div class="card">
+    <h2>Что можно покупать у партнёров</h2>
+    <div class="list">${Object.entries(PCATS).map(([t,v])=>`<div class="item" style="display:grid;gap:6px"><div class="name">${PTYPES[t]}</div><div class="chips">${v.ok.map(x=>`<span class="pill p-good">✓ ${x}</span>`).join("")}${v.no.map(x=>`<span class="pill p-bad">✕ ${x}</span>`).join("")}</div></div>`).join("")}</div>
+  </div>
+  </div>`;
+}
+function bindRules(){
+  document.querySelectorAll("[data-cfg]").forEach(i=>i.onchange=()=>{S.cfg[i.dataset.cfg]=Math.max(0,Math.round(+i.value||0));save();toast("Сохранено")});
+  document.querySelectorAll("[data-ops]").forEach(b=>b.onclick=()=>{S.cfg.ops=b.dataset.ops;save();render()});
+  if($("#opsSp"))$("#opsSp").onchange=e=>{S.cfg.opsSponsor=e.target.value.trim();save();toast("Сохранено")};
+}
+
+/* ---------- ВЫБОР РОЛИ ---------- */
+function vRoles(){
+  const main=["donor","recipient","partner","fund"],extra=["public","all"];
+  const card=k=>`<button class="role ${extra.includes(k)?"alt":""}" data-role="${k}"><span class="ic" aria-hidden="true">${ROLES[k].ic}</span><b>${ROLES[k].t}</b><span>${ROLES[k].d}</span></button>`;
+  return `<div class="panel">
+  <div class="card hello"><h2>Ассалому алейкум! Кто вы?</h2><div class="note">Выберите, как вы пользуетесь «Амонатом». Каждый видит только свои экраны. Сменить можно в любой момент кнопкой вверху.</div></div>
+  <div class="roles">${main.map(card).join("")}</div>
+  <div class="roles">${extra.map(card).join("")}</div>
+  <div class="card"><div class="row between"><span class="note">Сейчас в фонде</span><b>${m(S.pool)}</b></div><div class="row between"><span class="note">Получают помощь</span><b>${S.recipients.filter(r=>r.status==="ok").length} чел.</b></div><div class="row between"><span class="note">Потрачено на людей</span><b>${m(S.spent)}</b></div></div>
+  </div>`;
+}
+const V={check:[vCheck,bindCheck],rules:[vRules,bindRules],notes:[vNotes,bindNotes],report:[vReport,()=>{}],overview:[vOverview,bindOverview],watch:[vWatch,bindWatch],donate:[vDonate,bindDonate],wallet:[vWallet,bindWallet],pay:[vPay,bindPay],partner:[vPartner,bindPartner]};
+function render(){renderTabs();if(!role){$("#view").innerHTML=vRoles();return}if(!V[tab])fixTab();$("#view").innerHTML=V[tab][0]();V[tab][1]()}
 render();
 </script>
 
